@@ -1104,7 +1104,7 @@ tr:hover td{background:var(--gray-50)}
         <label class="form-label">Nomor Meja</label>
         <select class="form-control" id="qr-meja-num" onchange="generateQR()" style="width:120px;margin:auto;">
           <option value="umum">Umum</option>
-          <script>for(let i=1;i<=20;i++) document.write('<option value="'+i+'">Meja '+i+'</option>');</script>
+          <option value="1">Meja 1</option><option value="2">Meja 2</option><option value="3">Meja 3</option><option value="4">Meja 4</option><option value="5">Meja 5</option><option value="6">Meja 6</option><option value="7">Meja 7</option><option value="8">Meja 8</option><option value="9">Meja 9</option><option value="10">Meja 10</option><option value="11">Meja 11</option><option value="12">Meja 12</option><option value="13">Meja 13</option><option value="14">Meja 14</option><option value="15">Meja 15</option><option value="16">Meja 16</option><option value="17">Meja 17</option><option value="18">Meja 18</option><option value="19">Meja 19</option><option value="20">Meja 20</option>
         </select>
       </div>
       <div id="qr-code-container" style="margin:16px auto;display:inline-block;padding:12px;background:white;border-radius:8px;box-shadow:var(--shadow);"></div>
@@ -1425,7 +1425,6 @@ let editBundleId=null;
 let editPelangganId=null;
 let currentAntrianNum=null;
 let bundleItemsTemp=[];
-let absensiPeriode='minggu';
 
 function saveProducts()   { localStorage.setItem('kkProduk',        JSON.stringify(products)); }
 function saveTrx()        { localStorage.setItem('kkTransaksi',     JSON.stringify(transactions)); }
@@ -1439,7 +1438,7 @@ const KATEGORI = ['Produksi','Non-Produksi','Penjualan','Lainnya'];
 const HARI_NAMA = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const BULAN_NAMA = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
 
-// ===== NAVIGATION =====
+// ===== NAVIGATION (unified — handles all pages including plugins) =====
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1448,9 +1447,33 @@ function showPage(name){
   document.querySelectorAll('[data-page="'+name+'"]').forEach(n=>n.classList.add('active'));
   const bn=document.getElementById('bnav-'+name); if(bn) bn.classList.add('active');
   if(name==='transaksi'){updateMobileCartBar();}else{document.getElementById('mobile-cart-bar').style.display='none';}
-  const acts={dashboard:renderDashboard,transaksi:renderKasirPage,laporan:()=>renderCurrentLap(),produk:renderProductTable,opname:renderOpname,'riwayat-opname':renderRiwayatOpname,'setting-global':renderSettingGlobal};
-  if(acts[name]) acts[name]();
-  updateStokBadge();
+  // Core page actions
+  const coreActs={
+    dashboard:()=>renderDashboard(),
+    transaksi:()=>renderKasirPage(),
+    laporan:()=>renderCurrentLap(),
+    produk:()=>renderProductTable(),
+    opname:()=>renderOpname(),
+    'riwayat-opname':()=>renderRiwayatOpname(),
+    'setting-global':()=>renderSettingGlobal()
+  };
+  // Plugin page actions (lazy — functions may not exist yet at parse time)
+  const pluginActs={
+    'plugin':()=>{ if(typeof renderPluginGrid!=='undefined') renderPluginGrid(); },
+    'plugin-bisnis':()=>{ if(typeof renderBizProfile!=='undefined') renderBizProfile(); },
+    'plugin-desktop':()=>{ if(typeof renderDesktopPlugin!=='undefined') renderDesktopPlugin(); },
+    'plugin-ingredients':()=>{ if(typeof renderIngredients!=='undefined') renderIngredients(); },
+    'plugin-qr':()=>{ if(typeof renderQRPlugin!=='undefined') renderQRPlugin(); },
+    'plugin-offline':()=>{ if(typeof renderOfflinePlugin!=='undefined') renderOfflinePlugin(); },
+    'plugin-absensi':()=>{ if(typeof renderAbsensiCards!=='undefined'){ renderAbsensiCards(); renderKaryawanTable(); renderAbsensiLaporan(); } },
+    'menu-customer':()=>{ if(typeof renderCustomerMenu!=='undefined') renderCustomerMenu(); },
+    'plugin-pelanggan':()=>{ if(typeof renderPelangganTable!=='undefined'){ renderPelangganTable(); renderPelangganKPI(); } },
+    'plugin-bundle':()=>{ if(typeof renderBundleTable!=='undefined') renderBundleTable(); },
+    'antrian':()=>{ if(typeof renderAntrianLog!=='undefined') renderAntrianLog(); }
+  };
+  const allActs={...coreActs,...pluginActs};
+  if(allActs[name]) allActs[name]();
+  if(typeof updateStokBadge!=='undefined') updateStokBadge();
 }
 
 // ===== TOAST =====
@@ -2775,33 +2798,7 @@ function renderPluginGrid(){
   `).join('');
 }
 
-// ─── OVERRIDE showPage TO ADD PLUGIN PAGES ─────────────────
-const _origShowPage = showPage;
-showPage = function(name){
-  const pluginPages=['plugin','plugin-bisnis','plugin-desktop','plugin-ingredients','plugin-qr','plugin-offline','plugin-absensi','menu-customer'];
-  if(pluginPages.includes(name)){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    document.querySelectorAll('.bottom-nav-item').forEach(n=>n.classList.remove('active'));
-    const pg=document.getElementById('page-'+name); if(pg) pg.classList.add('active');
-    document.querySelectorAll('[data-page="'+name+'"]').forEach(n=>n.classList.add('active'));
-    document.getElementById('mobile-cart-bar').style.display='none';
-    const pluginActions={
-      'plugin': renderPluginGrid,
-      'plugin-bisnis': renderBizProfile,
-      'plugin-desktop': renderDesktopPlugin,
-      'plugin-ingredients': renderIngredients,
-      'plugin-qr': renderQRPlugin,
-      'plugin-offline': renderOfflinePlugin,
-      'plugin-absensi': ()=>{ renderAbsensiCards(); renderKaryawanTable(); renderAbsensiLaporan(); },
-      'menu-customer': renderCustomerMenu,
-    };
-    if(pluginActions[name]) pluginActions[name]();
-    updateStokBadge();
-  } else {
-    _origShowPage(name);
-  }
-};
+// showPage override removed — now handled in unified showPage above
 
 // ═══════════════════════════════════════════
 // PLUGIN 1: BUSINESS ACCOUNT
@@ -3909,29 +3906,7 @@ function removeVarianFromForm(idx){
   products[pidx].variants.splice(idx,1); saveProducts(); renderVarianList(editingProductId);
 }
 
-// ─── PLUGIN PAGES ROUTING (extend plugin showPage) ──────────
-const _origPluginShowPage=showPage;
-showPage=function(name){
-  if(name==='plugin-pelanggan'){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    document.getElementById('page-plugin-pelanggan')?.classList.add('active');
-    document.getElementById('mobile-cart-bar').style.display='none';
-    renderPelangganTable(); renderPelangganKPI(); updateStokBadge();
-  } else if(name==='plugin-bundle'){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-plugin-bundle')?.classList.add('active');
-    document.getElementById('mobile-cart-bar').style.display='none';
-    renderBundleTable(); updateStokBadge();
-  } else if(name==='antrian'){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-antrian')?.classList.add('active');
-    document.getElementById('mobile-cart-bar').style.display='none';
-    renderAntrianLog(); updateStokBadge();
-  } else {
-    _origPluginShowPage(name);
-  }
-};
+// showPage override 2 removed — now handled in unified showPage above
 
 // ─── INIT ──────────────────────────────────────────────────
 updateHoldBadge();
