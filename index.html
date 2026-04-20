@@ -225,6 +225,11 @@ tr:hover td{background:var(--gray-50)}
 .mv-masuk{color:var(--success);font-weight:600}
 .mv-keluar{color:var(--danger);font-weight:600}
 .mv-opname{color:var(--purple);font-weight:600}
+/* SYNC MODAL KHUSUS */
+.sync-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--gray-300)}
+.sync-status-dot.active{background:var(--success);box-shadow:0 0 0 3px var(--success-light)}
+.sync-status-dot.syncing{background:var(--warning);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 /* PRINT */
 @media print{
   .sidebar,.bottom-nav,.mobile-cart-bar,.toast-wrap,.lap-tabs,.lap-filter,.btn,.no-print{display:none!important}
@@ -281,6 +286,8 @@ tr:hover td{background:var(--gray-50)}
     <button class="nav-item" data-page="produk" onclick="showPage('produk')"><span class="nav-icon">📦</span>Produk<span class="nav-badge" id="badge-stok" style="display:none">!</span></button>
     <button class="nav-item" data-page="opname" onclick="showPage('opname')"><span class="nav-icon">🔍</span>Stok Opname</button>
     <button class="nav-item" data-page="riwayat-opname" onclick="showPage('riwayat-opname')"><span class="nav-icon">📋</span>Riwayat Opname</button>
+    <div class="nav-section">Cloud</div>
+    <button class="nav-item" onclick="openSyncModal()"><span class="nav-icon">☁️</span>Sync ke Sheets<span class="sync-status-dot" id="sidebar-sync-dot"></span></button>
     <div class="nav-section">Sistem</div>
     <button class="nav-item" data-page="setting-global" onclick="showPage('setting-global')"><span class="nav-icon">⚙️</span>Pengaturan</button>
   </nav>
@@ -301,7 +308,7 @@ tr:hover td{background:var(--gray-50)}
       <div class="shortcut-card" onclick="showPage('transaksi')"><div class="shortcut-icon">🛒</div><div class="shortcut-label">Transaksi Baru</div></div>
       <div class="shortcut-card" onclick="showPage('laporan');showLapTab('penjualan')"><div class="shortcut-icon">📊</div><div class="shortcut-label">Lihat Laporan</div></div>
       <div class="shortcut-card" onclick="showPage('produk')"><div class="shortcut-icon">📦</div><div class="shortcut-label">Kelola Produk</div></div>
-      <div class="shortcut-card" onclick="showPage('opname')"><div class="shortcut-icon">🔍</div><div class="shortcut-label">Stok Opname</div></div>
+      <div class="shortcut-card" onclick="openSyncModal()"><div class="shortcut-icon">☁️</div><div class="shortcut-label">Sync ke Sheets</div></div>
     </div></div></div>
   </div>
   <div class="card"><div class="card-header"><span class="card-title">📋 Transaksi Terbaru</span></div>
@@ -345,7 +352,6 @@ tr:hover td{background:var(--gray-50)}
       <button class="btn btn-outline btn-sm no-print" onclick="lapShareText()">📋 Salin</button>
     </div>
   </div>
-  <!-- TAB NAVIGASI -->
   <div class="lap-tabs no-print">
     <button class="lap-tab active" id="ltab-penjualan" onclick="showLapTab('penjualan')">📈 Penjualan</button>
     <button class="lap-tab" id="ltab-pembelian" onclick="showLapTab('pembelian')">🛒 Pembelian</button>
@@ -355,7 +361,6 @@ tr:hover td{background:var(--gray-50)}
     <button class="lap-tab" id="ltab-labarugi" onclick="showLapTab('labarugi')">💰 Laba Rugi</button>
     <button class="lap-tab" id="ltab-aruskas" onclick="showLapTab('aruskas')">💵 Arus Kas</button>
   </div>
-  <!-- FILTER GLOBAL -->
   <div class="lap-filter no-print">
     <span style="font-size:12px;font-weight:600;color:var(--gray-700);">Periode:</span>
     <button class="filter-btn active" onclick="setLapFilter('hari',this)">Hari Ini</button>
@@ -681,7 +686,50 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
+<!-- MODAL: SYNC KE GOOGLE SPREADSHEET -->
+<div class="modal-overlay" id="sync-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">☁️ Sync ke Google Spreadsheet</span>
+      <button class="modal-close" onclick="closeSyncModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-info">
+        Masukkan <strong>Web App URL</strong> dari Google Apps Script yang sudah di-deploy.
+        Data akan dikirim ke Google Spreadsheet Anda sebagai backup cloud.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Web App URL *</label>
+        <input class="form-control" id="sync-url-input" placeholder="https://script.google.com/macros/s/...">
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="sync-auto-check" style="width:16px;height:16px;cursor:pointer;">
+        <label for="sync-auto-check" style="font-size:12px;font-weight:500;color:var(--gray-700);cursor:pointer;">
+          Auto-sync setiap transaksi baru
+        </label>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+        <button class="btn btn-outline btn-sm" onclick="testSyncConnection()">🧪 Test Koneksi</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSyncConfig()">💾 Simpan URL</button>
+      </div>
+      <div id="sync-status-msg" style="margin-top:10px;font-size:12px;font-weight:500;min-height:18px;"></div>
+      <hr style="margin:14px 0;border:none;border-top:1px solid var(--gray-200);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:var(--gray-500);">
+          Terakhir sync: <span id="sync-last-time" style="font-weight:600;">Belum pernah</span>
+        </div>
+        <div style="font-size:11px;color:var(--gray-500);" id="sync-data-count"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeSyncModal()">Tutup</button>
+      <button class="btn btn-success" onclick="syncToSpreadsheet()">☁️ Sync Sekarang</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap"></div>
+
 <script>
 // ===== DATA LAYER =====
 let products      = JSON.parse(localStorage.getItem('kkProduk')        || '[]');
@@ -811,7 +859,6 @@ function renderLapPenjualan(){
     <div class="kpi-card purple"><div class="kpi-label">Item Terjual</div><div class="kpi-val">${totalQty}</div><div class="kpi-sub">unit</div></div>
     <div class="kpi-card"><div class="kpi-label">Rata-rata/Hari</div><div class="kpi-val">${rpShort(totalPend/days)}</div><div class="kpi-sub">${days} hari periode</div></div>
   `;
-  // Line chart harian
   const dayMap={};
   const cur=new Date(from); cur.setHours(0,0,0,0);
   const end=new Date(to); end.setHours(23,59,59,999);
@@ -826,14 +873,12 @@ function renderLapPenjualan(){
       {label:'HPP',data:dVals.map(v=>v.hpp),borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.1)',tension:.3,fill:false,pointRadius:2}
     ]
   },{plugins:{legend:{labels:{font:{size:10}}}}});
-  // Donut kategori
   const katMap={};
   filt.forEach(t=>t.items.forEach(i=>{katMap[i.kategori]=(katMap[i.kategori]||0)+i.harga*i.qty;}));
   const katKeys=Object.keys(katMap);
   mkChart('chart-pjl-donut','doughnut',{
     labels:katKeys,datasets:[{data:katKeys.map(k=>katMap[k]),backgroundColor:['#1a56db','#059669','#d97706','#7c3aed','#db2777']}]
   },{plugins:{legend:{position:'right'}}});
-  // Bar top produk
   const prodMap={};
   filt.forEach(t=>t.items.forEach(i=>{if(!prodMap[i.nama])prodMap[i.nama]={qty:0,rev:0};prodMap[i.nama].qty+=i.qty;prodMap[i.nama].rev+=i.harga*i.qty;}));
   const top10=Object.entries(prodMap).sort((a,b)=>b[1].rev-a[1].rev).slice(0,10);
@@ -841,7 +886,6 @@ function renderLapPenjualan(){
     labels:top10.map(([n])=>n.length>14?n.slice(0,14)+'…':n),
     datasets:[{label:'Pendapatan',data:top10.map(([,d])=>d.rev),backgroundColor:'rgba(26,86,219,.7)'},{label:'Qty',data:top10.map(([,d])=>d.qty),backgroundColor:'rgba(5,150,105,.7)',yAxisID:'y2'}]
   },{scales:{y:{beginAtZero:true,ticks:{callback:v=>rpShort(v),font:{size:9}}},y2:{type:'linear',position:'right',beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}});
-  // Tabel
   const tbody=document.getElementById('lap-pjl-table');
   tbody.innerHTML=filt.length?[...filt].reverse().map((t,i)=>`<tr>
     <td>${filt.length-i}</td>
@@ -858,7 +902,6 @@ function renderLapPenjualan(){
 
 // ===== 2. LAPORAN PEMBELIAN =====
 function renderLapPembelian(){
-  // Populate produk select
   const sel=document.getElementById('beli-produk');
   sel.innerHTML=products.filter(p=>p.status!=='nonaktif').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
   document.getElementById('beli-tgl').value=todayISO();
@@ -869,15 +912,10 @@ function renderLapPembelian(){
     <div class="kpi-card"><div class="kpi-label">Jumlah Pembelian</div><div class="kpi-val">${filtBeli.length}</div><div class="kpi-sub">transaksi pembelian</div></div>
     <div class="kpi-card amber"><div class="kpi-label">Total Qty Dibeli</div><div class="kpi-val">${filtBeli.reduce((s,b)=>s+b.qty,0)}</div><div class="kpi-sub">unit</div></div>
   `;
-  // Tabel pembelian
   const tbody=document.getElementById('lap-beli-table');
-  // Check harga naik per produk
-  const lastHarga={};
   const sortedBeli=[...pembelian].sort((a,b)=>a.tanggal-b.tanggal);
-  sortedBeli.forEach(b=>lastHarga[b.produkId]=b.hargaBeli);
   tbody.innerHTML=filtBeli.length?[...filtBeli].reverse().map(b=>{
     const p=products.find(x=>x.id===b.produkId);
-    // find prev purchase for this product
     const prevPurchases=sortedBeli.filter(x=>x.produkId===b.produkId&&x.tanggal<b.tanggal);
     const prevHarga=prevPurchases.length?prevPurchases[prevPurchases.length-1].hargaBeli:null;
     const hargaStatus=prevHarga===null?'<span class="badge badge-gray">Pertama</span>':b.hargaBeli>prevHarga?`<span class="badge badge-red">↑ Naik</span>`:b.hargaBeli<prevHarga?`<span class="badge badge-green">↓ Turun</span>`:`<span class="badge badge-gray">= Sama</span>`;
@@ -893,7 +931,6 @@ function renderLapPembelian(){
       <td style="font-size:10px;color:var(--gray-500);">${b.catatan||'-'}</td>
     </tr>`;
   }).join(''):`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--gray-400);">Belum ada pembelian</td></tr>`;
-  // Bar chart restok
   const beliMap={};
   filtBeli.forEach(b=>{ const p=products.find(x=>x.id===b.produkId); const n=p?p.nama:'(dihapus)'; beliMap[n]=(beliMap[n]||0)+b.qty; });
   const topBeli=Object.entries(beliMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -901,7 +938,6 @@ function renderLapPembelian(){
     labels:topBeli.map(([n])=>n.length>14?n.slice(0,14)+'…':n),
     datasets:[{label:'Qty Dibeli',data:topBeli.map(([,q])=>q),backgroundColor:'rgba(220,38,38,.7)'}]
   },{scales:{y:{beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}});
-  // MV Stok Masuk vs Terjual
   const mvBody=document.getElementById('lap-beli-mv');
   mvBody.innerHTML=products.map(p=>{
     const masuk=(p.stok||0)+filtBeli.filter(b=>b.produkId===p.id).reduce((s,b)=>s+b.qty,0);
@@ -930,7 +966,6 @@ function savePembelian(){
   const entry={id:genId(),produkId:pid,qty,hargaBeli,supplier,catatan,tanggal:tgl?new Date(tgl).getTime():Date.now(),metode:settingMetode};
   pembelian.push(entry);
   savePembelianData();
-  // Also add to stokBatch
   stokBatch.push({id:genId(),produkId:pid,qty,hargaBeli,tanggal:entry.tanggal,metode:settingMetode,supplier});
   saveBatches();
   ['beli-qty','beli-harga','beli-supplier','beli-catatan'].forEach(id=>document.getElementById(id).value='');
@@ -946,11 +981,9 @@ function renderLapPengunjung(){
   const totalPeng=filt.length;
   const totalPend=filt.reduce((s,t)=>s+t.total,0);
   const rataRata=totalPeng?Math.round(totalPend/totalPeng):0;
-  // Jam tersibuk
   const jamMap={}; for(let i=0;i<24;i++) jamMap[i]=0;
   filt.forEach(t=>{ const h=new Date(t.tanggal).getHours(); jamMap[h]=(jamMap[h]||0)+1; });
   const jamPuncak=Object.entries(jamMap).sort((a,b)=>b[1]-a[1])[0];
-  // Hari tersibuk
   const hariMap={}; HARI_NAMA.forEach(h=>hariMap[h]=0);
   filt.forEach(t=>{ const h=HARI_NAMA[new Date(t.tanggal).getDay()]; hariMap[h]++; });
   const hariPuncak=Object.entries(hariMap).sort((a,b)=>b[1]-a[1])[0];
@@ -960,7 +993,6 @@ function renderLapPengunjung(){
     <div class="kpi-card amber"><div class="kpi-label">Jam Puncak</div><div class="kpi-val">${jamPuncak?jamPuncak[0]+':00':'-'}</div><div class="kpi-sub">${jamPuncak?jamPuncak[1]+' transaksi':''}</div></div>
     <div class="kpi-card purple"><div class="kpi-label">Rata-rata/Trx</div><div class="kpi-val">${rpShort(rataRata)}</div><div class="kpi-sub">nilai transaksi</div></div>
   `;
-  // Insight
   const insight=document.getElementById('lap-insight-box');
   if(totalPeng>0){
     const jp=jamPuncak?parseInt(jamPuncak[0]):0;
@@ -971,13 +1003,11 @@ function renderLapPengunjung(){
     </div>`;
     insight.style.display='block';
   } else { insight.style.display='none'; }
-  // Bar per hari minggu
   const dayColors=HARI_NAMA.map(h=>h===(hariPuncak?hariPuncak[0]:'')?'rgba(26,86,219,.9)':'rgba(26,86,219,.3)');
   mkChart('chart-peng-day','bar',{
     labels:HARI_NAMA,
     datasets:[{label:'Kunjungan',data:HARI_NAMA.map(h=>hariMap[h]),backgroundColor:dayColors}]
   },{scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9}}},x:{ticks:{font:{size:9}}}}});
-  // Bar jam
   const jamVals=Object.values(jamMap);
   const maxJam=Math.max(...jamVals);
   const jamColors=jamVals.map(v=>v===maxJam&&v>0?'rgba(220,38,38,.85)':'rgba(5,150,105,.4)');
@@ -985,7 +1015,6 @@ function renderLapPengunjung(){
     labels:Object.keys(jamMap).map(h=>h+':00'),
     datasets:[{label:'Transaksi',data:jamVals,backgroundColor:jamColors}]
   },{scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9}}},x:{ticks:{font:{size:8}}}}});
-  // Tabel ringkasan harian
   const dayData={};
   const cur=new Date(from); cur.setHours(0,0,0,0);
   const end=new Date(to); end.setHours(23,59,59,999);
@@ -1019,10 +1048,7 @@ function renderLapSedekah(){
   const thisMonthStart=new Date(now.getFullYear(),now.getMonth(),1).getTime();
   const lastMonthStart=new Date(now.getFullYear(),now.getMonth()-1,1).getTime();
   const lastMonthEnd=new Date(now.getFullYear(),now.getMonth(),0,23,59,59).getTime();
-  const calcSedekah=(t)=>{
-    const base=settingSedekahBasis==='laba'?(t.laba||0):t.total;
-    return Math.round(base*(settingSedekahPct/100));
-  };
+  const calcSedekah=(t)=>{ const base=settingSedekahBasis==='laba'?(t.laba||0):t.total; return Math.round(base*(settingSedekahPct/100)); };
   const totalSdk=filt.reduce((s,t)=>s+calcSedekah(t),0);
   const thisMonthTrx=transactions.filter(t=>t.tanggal>=thisMonthStart);
   const lastMonthTrx=transactions.filter(t=>t.tanggal>=lastMonthStart&&t.tanggal<=lastMonthEnd);
@@ -1036,7 +1062,6 @@ function renderLapSedekah(){
     <div class="kpi-card"><div class="kpi-label">Sudah Diserahkan</div><div class="kpi-val">${rpShort(diserahkan)}</div></div>
     <div class="kpi-card amber"><div class="kpi-label">Belum Diserahkan</div><div class="kpi-val">${rpShort(belumDiserahkan)}</div></div>
   `;
-  // Yearly bar per month
   const yearMap=Array(12).fill(0);
   transactions.filter(t=>new Date(t.tanggal).getFullYear()===now.getFullYear())
     .forEach(t=>{ yearMap[new Date(t.tanggal).getMonth()]+=calcSedekah(t); });
@@ -1044,13 +1069,11 @@ function renderLapSedekah(){
     labels:BULAN_NAMA,
     datasets:[{label:'Sedekah',data:yearMap,backgroundColor:'rgba(219,39,119,.6)'}]
   },{scales:{y:{beginAtZero:true,ticks:{callback:v=>rpShort(v),font:{size:9}}},x:{ticks:{font:{size:9}}}}});
-  // Status penyerahan
   document.getElementById('lap-sdk-status').innerHTML=`
     <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;">Sudah Diserahkan</span><strong style="color:var(--success);">${rp(diserahkan)}</strong></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:14px;"><span style="font-size:12px;">Belum Diserahkan</span><strong style="color:var(--warning);">${rp(Math.max(0,belumDiserahkan))}</strong></div>
     <button class="btn btn-sm btn-success btn-full" onclick="tandaiDiserahkan()">✅ Tandai Periode Ini Sudah Diserahkan</button>
   `;
-  // Tabel
   const tbody=document.getElementById('lap-sdk-table');
   tbody.innerHTML=filt.length?[...filt].reverse().map(t=>{
     const sdk=calcSedekah(t);
@@ -1067,8 +1090,7 @@ function renderLapSedekah(){
   }).join(''):`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada data</td></tr>`;
 }
 function tandaiDiserahkan(){
-  const filt=getFilteredTrx();
-  let n=0;
+  const filt=getFilteredTrx(); let n=0;
   filt.forEach(t=>{
     if(!sedekahLog.find(s=>s.trxId===t.id)){
       const base=settingSedekahBasis==='laba'?(t.laba||0):t.total;
@@ -1085,19 +1107,8 @@ function cetakSedekah(){
   const total=filt.reduce((s,t)=>s+calcSdkLocal(t),0);
   const lines=filt.map(t=>`${fmtDate(t.tanggal)} | #${t.id.toUpperCase().slice(-6)} | ${rp(t.total)} | ${rp(calcSdkLocal(t))}`).join('\n');
   const win=window.open('','_blank');
-  win.document.write(`<pre style="font-family:monospace;font-size:12px;padding:20px;max-width:640px;">
-===== LAPORAN SEDEKAH / INFAQ =====
-Toko  : ${settingNamaToko}
-Bulan : ${m} ${y}
-Persen: ${settingSedekahPct}% dari ${settingSedekahBasis}
-===================================
-${lines||'Tidak ada transaksi'}
------------------------------------
-TOTAL SEDEKAH: ${rp(total)}
-===================================
-Disiapkan oleh: ${settingNamaToko}
-Tanggal: ${now.toLocaleDateString('id-ID')}
-  </pre>`); win.print();
+  win.document.write(`<pre style="font-family:monospace;font-size:12px;padding:20px;max-width:640px;">===== LAPORAN SEDEKAH / INFAQ =====\nToko  : ${settingNamaToko}\nBulan : ${m} ${y}\nPersen: ${settingSedekahPct}% dari ${settingSedekahBasis}\n===================================\n${lines||'Tidak ada transaksi'}\n-----------------------------------\nTOTAL SEDEKAH: ${rp(total)}\n===================================\nDisiapkan oleh: ${settingNamaToko}\nTanggal: ${now.toLocaleDateString('id-ID')}</pre>`);
+  win.print();
 }
 
 // ===== 5. LAPORAN STOK =====
@@ -1113,26 +1124,22 @@ function renderLapStok(){
     <div class="kpi-card amber"><div class="kpi-label">Stok Menipis</div><div class="kpi-val">${tipisArr.length}</div><div class="kpi-sub">produk</div></div>
     <div class="kpi-card green"><div class="kpi-label">Nilai Stok (HPP)</div><div class="kpi-val">${rpShort(nilaiStok)}</div><div class="kpi-sub">${rp(nilaiStok)}</div></div>
   `;
-  // Alert stok
   const alertBody=document.getElementById('lap-stok-alert-table');
   const alertProd=[...habisArr,...tipisArr];
   alertBody.innerHTML=alertProd.length?alertProd.map(p=>{
     const s=getStokSistem(p.id); const ss=stokStatus(p);
     return`<tr><td style="font-weight:500;">${p.nama}</td><td style="font-size:10px;color:var(--gray-400);">${p.sku||'-'}</td><td><strong>${s}</strong> ${p.satuan||'pcs'}</td><td>${p.stokMin||0}</td><td><span class="stok-dot ${ss==='habis'?'stok-habis':'stok-tipis'}"></span><span class="badge ${ss==='habis'?'badge-red':'badge-amber'}">${ss}</span></td></tr>`;
   }).join(''):`<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--success);">✅ Semua stok aman</td></tr>`;
-  // Nilai stok per metode
   const avgVal=aktif.reduce((s,p)=>{ const q=getStokSistem(p.id); const batches=stokBatch.filter(b=>b.produkId===p.id); const totalQ=batches.reduce((a,b)=>a+b.qty,0)+(p.stok||0); const totalV=batches.reduce((a,b)=>a+b.qty*b.hargaBeli,0)+(p.stok||0)*(p.hargaBeli||0); const avg=totalQ?totalV/totalQ:(p.hargaBeli||0); return s+q*avg; },0);
   document.getElementById('lap-stok-nilai').innerHTML=`
     <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-100);"><span style="font-size:12px;">Default (Harga Beli)</span><strong>${rp(nilaiStok)}</strong></div>
     <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-100);"><span style="font-size:12px;">Average (Rata-rata)</span><strong>${rp(Math.round(avgVal))}</strong></div>
     <div style="padding:7px 0;font-size:10px;color:var(--gray-400);">FIFO/LIFO memerlukan batch tracking lengkap</div>
   `;
-  // Populate produk filter untuk pergerakan
   const mvSel=document.getElementById('lap-stok-mv-produk');
   const lapStokSel=document.getElementById('lap-stok-filter-prod');
   mvSel.innerHTML='<option value="">Pilih Produk</option>'+products.map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
   lapStokSel.innerHTML='<option value="">Semua Produk</option>'+products.map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
-  // Tabel semua produk
   renderStokTable(); renderStokMovement();
 }
 function renderStokTable(){
@@ -1162,13 +1169,9 @@ function renderStokMovement(){
   if(!pid){ tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--gray-400);">Pilih produk di atas</td></tr>`; return; }
   const p=products.find(x=>x.id===pid); if(!p){ tbody.innerHTML=''; return; }
   let moves=[];
-  // Initial stok
   moves.push({ts:0,jenis:'Stok Awal',qty:p.stok||0,ket:'Stok awal saat produk dibuat'});
-  // Batch masuk
   stokBatch.filter(b=>b.produkId===pid).forEach(b=>moves.push({ts:b.tanggal,jenis:'Masuk',qty:b.qty,ket:'Restok'+(b.supplier?' dari '+b.supplier:'')}));
-  // Terjual
   transactions.forEach(t=>{const it=t.items.find(i=>i.produkId===pid);if(it) moves.push({ts:t.tanggal,jenis:'Keluar',qty:-it.qty,ket:'Terjual, trx #'+t.id.toUpperCase().slice(-6)});});
-  // Opname
   riwayatOpname.forEach(op=>{const it=op.items.find(i=>i.produkId===pid);if(it&&it.selisih!==0) moves.push({ts:op.tanggal,jenis:'Opname',qty:it.selisih,ket:'Opname: sistem='+it.stokSistem+', fisik='+it.stokFisik});});
   moves.sort((a,b)=>a.ts-b.ts);
   let sisa=0;
@@ -1204,7 +1207,6 @@ function renderLapLabaRugi(){
     <div class="kpi-card pink"><div class="kpi-label">Sedekah</div><div class="kpi-val">${rpShort(totalSedekah)}</div><div class="kpi-sub">${settingSedekahOn?settingSedekahPct+'%':'Nonaktif'}</div></div>
     <div class="kpi-card teal"><div class="kpi-label">Laba Bersih</div><div class="kpi-val">${rpShort(labaBersih)}</div><div class="kpi-sub">${rp(labaBersih)}</div></div>
   `;
-  // Monthly bar chart
   const now=new Date(); const year=now.getFullYear();
   const monthlyPend=Array(12).fill(0),monthlyHPP=Array(12).fill(0),monthlyLaba=Array(12).fill(0);
   transactions.filter(t=>new Date(t.tanggal).getFullYear()===year).forEach(t=>{
@@ -1219,7 +1221,6 @@ function renderLapLabaRugi(){
       {label:'Laba',data:monthlyLaba,backgroundColor:'rgba(5,150,105,.7)'}
     ]
   },{scales:{y:{beginAtZero:true,ticks:{callback:v=>rpShort(v),font:{size:9}}},x:{ticks:{font:{size:9}}}}});
-  // Tabel bulanan
   const monthlyPembelian=Array(12).fill(0);
   pembelian.filter(b=>new Date(b.tanggal).getFullYear()===year).forEach(b=>{ monthlyPembelian[new Date(b.tanggal).getMonth()]+=b.qty*b.hargaBeli; });
   const monthlySdk=Array(12).fill(0);
@@ -1260,7 +1261,6 @@ function renderLapArusKas(){
     <div class="kpi-card"><div class="kpi-label">Transaksi Penjualan</div><div class="kpi-val">${filt.length}</div></div>
     <div class="kpi-card"><div class="kpi-label">Transaksi Pembelian</div><div class="kpi-val">${filtBeli.length}</div></div>
   `;
-  // Combine untuk chart & tabel
   const{from,to}=getLapDateRange();
   const dayMapMasuk={}, dayMapKeluar={};
   const cur=new Date(from); cur.setHours(0,0,0,0);
@@ -1282,24 +1282,19 @@ function renderLapArusKas(){
       {label:'Keluar (Pembelian)',data:keys.map(k=>dayMapKeluar[k]),backgroundColor:'rgba(220,38,38,.6)'}
     ]
   },{scales:{y:{beginAtZero:true,ticks:{callback:v=>rpShort(v),font:{size:9}}},x:{ticks:{font:{size:9}}}}});
-  // Tabel arus kas
   const allEntries=[];
   filt.forEach(t=>allEntries.push({ts:t.tanggal,jenis:'Penjualan',ket:t.items.slice(0,2).map(i=>i.nama).join(', '),masuk:t.total,keluar:0}));
-  filtBeli.forEach(b=>{ const p=products.find(x=>x.id===b.produkId); allEntries.push({ts:b.tanggal,jenis:'Pembelian',ket:p?p.nama:'(dihapus)'+( b.supplier?' - '+b.supplier:''),masuk:0,keluar:b.qty*b.hargaBeli}); });
+  filtBeli.forEach(b=>{ const p=products.find(x=>x.id===b.produkId); allEntries.push({ts:b.tanggal,jenis:'Pembelian',ket:p?p.nama:'(dihapus)'+(b.supplier?' - '+b.supplier:''),masuk:0,keluar:b.qty*b.hargaBeli}); });
   allEntries.sort((a,b)=>b.ts-a.ts);
-  let saldo=saldoBersih;
   const tbody=document.getElementById('lap-ak-table');
-  tbody.innerHTML=allEntries.length?allEntries.map(e=>{
-    const rowSaldo=saldo; // simplified - just show running from filtered data
-    return`<tr>
-      <td style="font-size:10px;white-space:nowrap;">${fmtDate(e.ts)}</td>
-      <td><span class="badge ${e.jenis==='Penjualan'?'badge-green':'badge-red'}">${e.jenis}</span></td>
-      <td style="font-size:10px;max-width:180px;">${e.ket}</td>
-      <td style="color:var(--success);font-weight:600;">${e.masuk?rp(e.masuk):'-'}</td>
-      <td style="color:var(--danger);font-weight:600;">${e.keluar?rp(e.keluar):'-'}</td>
-      <td style="font-weight:700;">${rp(e.masuk-e.keluar)}</td>
-    </tr>`;
-  }).join(''):`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada data</td></tr>`;
+  tbody.innerHTML=allEntries.length?allEntries.map(e=>`<tr>
+    <td style="font-size:10px;white-space:nowrap;">${fmtDate(e.ts)}</td>
+    <td><span class="badge ${e.jenis==='Penjualan'?'badge-green':'badge-red'}">${e.jenis}</span></td>
+    <td style="font-size:10px;max-width:180px;">${e.ket}</td>
+    <td style="color:var(--success);font-weight:600;">${e.masuk?rp(e.masuk):'-'}</td>
+    <td style="color:var(--danger);font-weight:600;">${e.keluar?rp(e.keluar):'-'}</td>
+    <td style="font-weight:700;">${rp(e.masuk-e.keluar)}</td>
+  </tr>`).join(''):`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada data</td></tr>`;
 }
 
 // ===== EXPORT =====
@@ -1360,7 +1355,23 @@ function openProductModal(id=null){
   document.getElementById('prod-metode').value='';
   document.getElementById('prod-status').value='aktif';
   document.getElementById('product-modal-title').textContent=id?'Edit Produk':'Tambah Produk';
-  if(id){ const p=products.find(x=>x.id===id); if(p){ ['prod-nama','prod-sku','prod-deskripsi'].forEach(fi=>document.getElementById(fi).value=p[fi.replace('prod-','').replace('-','')]||p[fi.replace('prod-','')]||''); document.getElementById('prod-harga-beli').value=p.hargaBeli||''; document.getElementById('prod-harga').value=p.harga||''; document.getElementById('prod-stok').value=p.stok!=null?p.stok:''; document.getElementById('prod-stok-min').value=p.stokMin||''; document.getElementById('prod-kategori').value=p.kategori||'Produksi'; document.getElementById('prod-satuan').value=p.satuan||'pcs'; document.getElementById('prod-metode').value=p.metode||''; document.getElementById('prod-status').value=p.status||'aktif'; document.getElementById('prod-deskripsi').value=p.deskripsi||''; document.getElementById('prod-nama').value=p.nama||''; document.getElementById('prod-sku').value=p.sku||''; if(p.foto){currentPhoto=p.foto;document.getElementById('photo-preview-img').src=p.foto;document.getElementById('photo-preview-img').style.display='block';document.getElementById('photo-upload-placeholder').style.display='none';} } }
+  if(id){
+    const p=products.find(x=>x.id===id);
+    if(p){
+      document.getElementById('prod-nama').value=p.nama||'';
+      document.getElementById('prod-sku').value=p.sku||'';
+      document.getElementById('prod-harga-beli').value=p.hargaBeli||'';
+      document.getElementById('prod-harga').value=p.harga||'';
+      document.getElementById('prod-stok').value=p.stok!=null?p.stok:'';
+      document.getElementById('prod-stok-min').value=p.stokMin||'';
+      document.getElementById('prod-kategori').value=p.kategori||'Produksi';
+      document.getElementById('prod-satuan').value=p.satuan||'pcs';
+      document.getElementById('prod-metode').value=p.metode||'';
+      document.getElementById('prod-status').value=p.status||'aktif';
+      document.getElementById('prod-deskripsi').value=p.deskripsi||'';
+      if(p.foto){currentPhoto=p.foto;document.getElementById('photo-preview-img').src=p.foto;document.getElementById('photo-preview-img').style.display='block';document.getElementById('photo-upload-placeholder').style.display='none';}
+    }
+  }
   document.getElementById('product-modal').classList.add('open');
 }
 function closeProductModal(){ document.getElementById('product-modal').classList.remove('open'); }
@@ -1468,16 +1479,12 @@ function bayar(){
   const totalHPP=order.reduce((s,x)=>s+calcHPP(x.produkId,x.qty,null),0);
   const trx={id:genId(),tanggal:Date.now(),items:order.map(x=>({...x,hpp:calcHPP(x.produkId,x.qty,null)})),total,totalHPP,laba:total-totalHPP,metode:settingMetode,kategori:order.length===1?order[0].kategori:'Mix'};
   transactions.push(trx);saveTrx();
-  // Auto sedekah
-  if(settingSedekahOn){
-    const base=settingSedekahBasis==='laba'?trx.laba:trx.total;
-    const nominal=Math.round(base*(settingSedekahPct/100));
-    // Just track, user will mark as diserahkan
-  }
   lastReceiptData=trx;showReceipt(trx);
   order=[];renderOrder();updateMobileCartBar();
   document.getElementById('order-panel').classList.remove('mobile-show');
   renderKasirProducts();updateStokBadge();
+  // Auto-sync jika diaktifkan
+  autoSyncIfEnabled();
 }
 
 // ===== RECEIPT =====
@@ -1612,7 +1619,6 @@ function saveBatch(){
   if(!pid||!qty||qty<=0){toast('Isi produk dan qty','danger');return;}
   const ts=tanggalStr?new Date(tanggalStr).getTime():Date.now();
   stokBatch.push({id:genId(),produkId:pid,qty,hargaBeli,tanggal:ts,metode:settingMetode,supplier});
-  // Also add to pembelian
   if(hargaBeli>0) pembelian.push({id:genId(),produkId:pid,qty,hargaBeli,supplier,catatan:'',tanggal:ts,metode:settingMetode});
   saveBatches();savePembelianData();closeBatchModal();renderBatchTable();updateStokBadge();
   toast('Stok masuk disimpan ✓','success');
@@ -1709,6 +1715,163 @@ function exportAllData(){
   toast('Data diekspor ✓','success');
 }
 
+// ============================================================
+//  SYNC MODULE — Google Spreadsheet via Apps Script
+// ============================================================
+
+let syncConfig = JSON.parse(localStorage.getItem('kkSyncConfig') || '{}');
+
+/**
+ * Kirim semua data ke Google Spreadsheet
+ */
+async function syncToSpreadsheet() {
+  const url = syncConfig.webAppUrl;
+  if (!url) {
+    toast('Isi Web App URL dulu di menu Sync', 'danger');
+    return;
+  }
+  updateSyncStatus('syncing', '⏳ Menyinkronkan data...');
+
+  const productsWithStock = products.map(p => ({
+    ...p,
+    stokSistem: getStokSistem(p.id)
+  }));
+  const pembelianWithName = pembelian.map(b => {
+    const prod = products.find(p => p.id === b.produkId);
+    return { ...b, namaProduk: prod ? prod.nama : '(dihapus)' };
+  });
+  const payload = {
+    action: 'syncAll',
+    data: {
+      products:      productsWithStock,
+      transactions:  transactions,
+      stokBatch:     stokBatch,
+      pembelian:     pembelianWithName,
+      riwayatOpname: riwayatOpname,
+      sedekahLog:    sedekahLog
+    }
+  };
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    syncConfig.lastSync = new Date().toISOString();
+    localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
+    updateSyncStatus('success', '✅ Sync berhasil: ' + new Date().toLocaleTimeString('id-ID'));
+    updateSidebarSyncDot(true);
+    toast('Data berhasil disinkronkan ke Spreadsheet! ✓', 'success');
+  } catch (err) {
+    updateSyncStatus('error', '❌ Gagal: ' + err.message);
+    toast('Sync gagal: ' + err.message, 'danger');
+  }
+}
+
+/**
+ * Test koneksi ke Web App URL
+ */
+async function testSyncConnection() {
+  const inputEl = document.getElementById('sync-url-input');
+  const url = inputEl ? inputEl.value.trim() : syncConfig.webAppUrl;
+  if (!url) { toast('Masukkan Web App URL dulu', 'danger'); return; }
+
+  updateSyncStatus('syncing', '⏳ Mengetes koneksi...');
+  try {
+    const res = await fetch(url + '?action=status');
+    const json = await res.json();
+    if (json.ok) {
+      updateSyncStatus('success', '✅ Koneksi OK! Spreadsheet: ' + (json.spreadsheet || '-'));
+      toast('Koneksi ke Spreadsheet berhasil ✓', 'success');
+    } else {
+      updateSyncStatus('error', '❌ ' + (json.message || 'Error'));
+    }
+  } catch (err) {
+    updateSyncStatus('error', '❌ Tidak bisa konek. Pastikan script sudah di-deploy.');
+    toast('Gagal konek. Cek URL dan deploy status.', 'danger');
+  }
+}
+
+/**
+ * Simpan konfigurasi sync ke localStorage
+ */
+function saveSyncConfig() {
+  const inputEl = document.getElementById('sync-url-input');
+  const autoEl  = document.getElementById('sync-auto-check');
+  const url  = inputEl ? inputEl.value.trim() : '';
+  const auto = autoEl  ? autoEl.checked : false;
+
+  if (url && !url.includes('script.google.com')) {
+    toast('URL tidak valid — harus dari script.google.com', 'danger');
+    return;
+  }
+  syncConfig.webAppUrl = url;
+  syncConfig.autoSync  = auto;
+  localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
+  updateSidebarSyncDot(!!url);
+  toast('Konfigurasi sync disimpan ✓', 'success');
+}
+
+/**
+ * Update teks status di modal sync
+ */
+function updateSyncStatus(type, msg) {
+  const el = document.getElementById('sync-status-msg');
+  if (!el) return;
+  const colors = { syncing: '#d97706', success: '#059669', error: '#dc2626' };
+  el.style.color = colors[type] || '#6b7280';
+  el.textContent = msg;
+}
+
+/**
+ * Update dot indikator di sidebar
+ */
+function updateSidebarSyncDot(connected) {
+  const dot = document.getElementById('sidebar-sync-dot');
+  if (!dot) return;
+  dot.className = 'sync-status-dot' + (connected ? ' active' : '');
+}
+
+/**
+ * Auto-sync setelah transaksi (jika diaktifkan)
+ */
+function autoSyncIfEnabled() {
+  if (syncConfig.autoSync && syncConfig.webAppUrl) {
+    setTimeout(() => syncToSpreadsheet(), 1500);
+  }
+}
+
+/**
+ * Buka modal sync
+ */
+function openSyncModal() {
+  const el = document.getElementById('sync-modal');
+  if (!el) return;
+  const inputEl = document.getElementById('sync-url-input');
+  const autoEl  = document.getElementById('sync-auto-check');
+  const countEl = document.getElementById('sync-data-count');
+  if (inputEl) inputEl.value = syncConfig.webAppUrl || '';
+  if (autoEl)  autoEl.checked = syncConfig.autoSync || false;
+  const lastSync = syncConfig.lastSync
+    ? new Date(syncConfig.lastSync).toLocaleString('id-ID')
+    : 'Belum pernah';
+  document.getElementById('sync-last-time').textContent = lastSync;
+  if (countEl) countEl.textContent =
+    `${transactions.length} trx · ${products.length} produk`;
+  document.getElementById('sync-status-msg').textContent = '';
+  el.classList.add('open');
+}
+
+/**
+ * Tutup modal sync
+ */
+function closeSyncModal() {
+  const el = document.getElementById('sync-modal');
+  if (el) el.classList.remove('open');
+}
+
 // ===== INIT =====
 renderDashboard();
 renderProductTable();
@@ -1716,8 +1879,14 @@ renderOrder();
 updateStokBadge();
 document.getElementById('lap-date-from').value=todayISO();
 document.getElementById('lap-date-to').value=todayISO();
-['product-modal','receipt-modal','import-modal','batch-modal'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+// Inisialisasi dot sync di sidebar
+updateSidebarSyncDot(!!(syncConfig && syncConfig.webAppUrl));
+
+// Tutup modal jika klik overlay
+['product-modal','receipt-modal','import-modal','batch-modal','sync-modal'].forEach(id=>{
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
 });
 </script>
 </body>
