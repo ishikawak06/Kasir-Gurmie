@@ -749,12 +749,14 @@ let lapFilter='hari', lastReceiptData=null, importParsedData=[];
 let currentLapTab='penjualan';
 let charts={};
 
-function saveProducts()   { localStorage.setItem('kkProduk',        JSON.stringify(products)); }
-function saveTrx()        { localStorage.setItem('kkTransaksi',     JSON.stringify(transactions)); }
-function saveBatches()    { localStorage.setItem('kkStokBatch',     JSON.stringify(stokBatch)); }
-function savePembelianData(){ localStorage.setItem('kkPembelian',   JSON.stringify(pembelian)); }
-function saveOpnameData() { localStorage.setItem('kkRiwayatOpname', JSON.stringify(riwayatOpname)); }
-function saveSedekahData(){ localStorage.setItem('kkSedekah',       JSON.stringify(sedekahLog)); }
+// Ditambahkan Try-Catch agar muncul pesan jelas jika Storage Penuh (Limit 5MB Browser)
+function saveProducts()   { try { localStorage.setItem('kkProduk',        JSON.stringify(products)); } catch(e){ toast('Memori penuh! Hapus/kompres foto produk.','danger'); console.error(e); } }
+function saveTrx()        { try { localStorage.setItem('kkTransaksi',     JSON.stringify(transactions)); } catch(e){ toast('Memori penuh!','danger'); } }
+function saveBatches()    { try { localStorage.setItem('kkStokBatch',     JSON.stringify(stokBatch)); } catch(e){ toast('Memori penuh!','danger'); } }
+function savePembelianData(){ try { localStorage.setItem('kkPembelian',   JSON.stringify(pembelian)); } catch(e){ toast('Memori penuh!','danger'); } }
+function saveOpnameData() { try { localStorage.setItem('kkRiwayatOpname', JSON.stringify(riwayatOpname)); } catch(e){ toast('Memori penuh!','danger'); } }
+function saveSedekahData(){ try { localStorage.setItem('kkSedekah',       JSON.stringify(sedekahLog)); } catch(e){ toast('Memori penuh!','danger'); } }
+
 function genId()          { return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function genSKUCode()     { return 'SKU-'+Date.now().toString(36).toUpperCase().slice(-5); }
 const KATEGORI = ['Produksi','Non-Produksi','Penjualan','Lainnya'];
@@ -1375,16 +1377,44 @@ function openProductModal(id=null){
   document.getElementById('product-modal').classList.add('open');
 }
 function closeProductModal(){ document.getElementById('product-modal').classList.remove('open'); }
-function handlePhotoUpload(e){ const file=e.target.files[0];if(!file)return; const reader=new FileReader(); reader.onload=ev=>{currentPhoto=ev.target.result;document.getElementById('photo-preview-img').src=currentPhoto;document.getElementById('photo-preview-img').style.display='block';document.getElementById('photo-upload-placeholder').style.display='none';}; reader.readAsDataURL(file); }
+
+// DITAMBAHKAN: Resizer & compress agar ukuran file foto tidak bikin QuotaExceededError di localStorage (maks. 5MB)
+function handlePhotoUpload(e){ 
+  const file=e.target.files[0]; if(!file)return; 
+  const reader=new FileReader(); 
+  reader.onload=ev=>{
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 400; // Resize resolusi
+      const MAX_HEIGHT = 400;
+      let width = img.width; let height = img.height;
+      if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+      else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      currentPhoto = canvas.toDataURL('image/jpeg', 0.6); // Compress quality 60% agar hemat
+      document.getElementById('photo-preview-img').src=currentPhoto;
+      document.getElementById('photo-preview-img').style.display='block';
+      document.getElementById('photo-upload-placeholder').style.display='none';
+    };
+    img.src = ev.target.result;
+  }; 
+  reader.readAsDataURL(file); 
+}
+
 function saveProduct(){
   const nama=document.getElementById('prod-nama').value.trim();
   const harga=parseFloat(document.getElementById('prod-harga').value);
   if(!nama){ toast('Nama produk wajib diisi','danger'); return; }
   if(isNaN(harga)||harga<0){ toast('Harga jual tidak valid','danger'); return; }
   const data={nama,sku:document.getElementById('prod-sku').value.trim()||genSKUCode(),hargaBeli:parseFloat(document.getElementById('prod-harga-beli').value)||0,harga,stok:parseInt(document.getElementById('prod-stok').value)||0,stokMin:parseInt(document.getElementById('prod-stok-min').value)||0,kategori:document.getElementById('prod-kategori').value,satuan:document.getElementById('prod-satuan').value,metode:document.getElementById('prod-metode').value,status:document.getElementById('prod-status').value,deskripsi:document.getElementById('prod-deskripsi').value.trim(),foto:currentPhoto||(editingProductId?(products.find(x=>x.id===editingProductId)||{}).foto:null)||null};
+  
   if(editingProductId){const idx=products.findIndex(p=>p.id===editingProductId);if(idx>=0)products[idx]={...products[idx],...data};}
   else{products.push({id:genId(),...data});}
-  saveProducts();closeProductModal();renderProductTable();updateStokBadge();
+  
+  saveProducts(); closeProductModal(); renderProductTable(); updateStokBadge();
   toast(editingProductId?'Produk diperbarui ✓':'Produk ditambahkan ✓','success');
 }
 function deleteProduct(id){ if(!confirm('Hapus produk ini?'))return; products=products.filter(p=>p.id!==id);saveProducts();renderProductTable();updateStokBadge();toast('Produk dihapus'); }
@@ -1483,7 +1513,6 @@ function bayar(){
   order=[];renderOrder();updateMobileCartBar();
   document.getElementById('order-panel').classList.remove('mobile-show');
   renderKasirProducts();updateStokBadge();
-  // Auto-sync jika diaktifkan
   autoSyncIfEnabled();
 }
 
@@ -1716,7 +1745,7 @@ function exportAllData(){
 }
 
 // ============================================================
-//  SYNC MODULE — Google Spreadsheet via Apps Script
+//  SYNC MODULE — Google Spreadsheet via Apps Script (Diperbaiki)
 // ============================================================
 
 let syncConfig = JSON.parse(localStorage.getItem('kkSyncConfig') || '{}');
@@ -1732,14 +1761,20 @@ async function syncToSpreadsheet() {
   }
   updateSyncStatus('syncing', '⏳ Menyinkronkan data...');
 
-  const productsWithStock = products.map(p => ({
-    ...p,
-    stokSistem: getStokSistem(p.id)
-  }));
+  // MENCEGAH TIMEOUT: Foto Base64 dihilangkan sebelum disync karena bikin ukuran payload membludak
+  const productsWithStock = products.map(p => {
+    const { foto, ...rest } = p; 
+    return {
+      ...rest,
+      stokSistem: getStokSistem(p.id)
+    };
+  });
+  
   const pembelianWithName = pembelian.map(b => {
     const prod = products.find(p => p.id === b.produkId);
     return { ...b, namaProduk: prod ? prod.nama : '(dihapus)' };
   });
+  
   const payload = {
     action: 'syncAll',
     data: {
@@ -1753,12 +1788,23 @@ async function syncToSpreadsheet() {
   };
 
   try {
-    await fetch(url, {
+    // FIXED: Hapus mode 'no-cors' dan header 'Content-Type'.
+    // Ini mengizinkan bypass preflight (OPTIONS) sehingga GAS mau menerima POST kita.
+    const res = await fetch(url, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload) 
     });
+    
+    const textRes = await res.text();
+    let result;
+    try {
+      result = JSON.parse(textRes);
+    } catch(e) {
+      throw new Error("Response script tidak valid. Pastikan URL & Hak Akses benar.");
+    }
+    
+    if (!result.ok) throw new Error(result.error || result.message || 'Gagal sync');
+
     syncConfig.lastSync = new Date().toISOString();
     localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
     updateSyncStatus('success', '✅ Sync berhasil: ' + new Date().toLocaleTimeString('id-ID'));
@@ -1781,7 +1827,8 @@ async function testSyncConnection() {
   updateSyncStatus('syncing', '⏳ Mengetes koneksi...');
   try {
     const res = await fetch(url + '?action=status');
-    const json = await res.json();
+    const textRes = await res.text();
+    const json = JSON.parse(textRes);
     if (json.ok) {
       updateSyncStatus('success', '✅ Koneksi OK! Spreadsheet: ' + (json.spreadsheet || '-'));
       toast('Koneksi ke Spreadsheet berhasil ✓', 'success');
@@ -1789,7 +1836,7 @@ async function testSyncConnection() {
       updateSyncStatus('error', '❌ ' + (json.message || 'Error'));
     }
   } catch (err) {
-    updateSyncStatus('error', '❌ Tidak bisa konek. Pastikan script sudah di-deploy.');
+    updateSyncStatus('error', '❌ Tidak bisa konek. Pastikan script sudah di-deploy dengan hak akses Anyone.');
     toast('Gagal konek. Cek URL dan deploy status.', 'danger');
   }
 }
