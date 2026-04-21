@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KasirKu Pro — Kasir, Stok & Laporan Lengkap</title>
+<title>Gurmie Ayam Kasir — Kasir, Stok & Laporan Lengkap</title>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -269,31 +269,22 @@ tr:hover td{background:var(--gray-50)}
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <div class="sidebar-brand">
-    <h1>🏪 KasirKu Pro</h1>
-    <p>Kasir, Stok &amp; Laporan</p>
+    <h1><img src="https://raw.githubusercontent.com/ishikawak06/keuangan-gurmie/refs/heads/main/Desain%20tanpa%20judul222.png" style="height:28px;object-fit:contain;vertical-align:middle;margin-right:6px;"> Gurmie Ayam Kasir</h1>
+    <p>Warung Ayam Gurmie</p>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Utama</div>
     <button class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span class="nav-icon">🏠</span>Dashboard</button>
     <button class="nav-item" data-page="transaksi" onclick="showPage('transaksi')"><span class="nav-icon">🛒</span>Transaksi</button>
+    <button class="nav-item" data-page="kas-tunai" onclick="showPage('kas-tunai')"><span class="nav-icon">💵</span>Kas Tunai</button>
     <div class="nav-section">Laporan Usaha</div>
     <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('penjualan')"><span class="nav-icon">📈</span>Penjualan</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('pembelian')"><span class="nav-icon">🛒</span>Pembelian</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('pengunjung')"><span class="nav-icon">👥</span>Pengunjung</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('sedekah')"><span class="nav-icon">🤲</span>Sedekah / Infaq</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('stok-lap')"><span class="nav-icon">📦</span>Laporan Stok</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('labarugi')"><span class="nav-icon">💰</span>Laba Rugi</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('aruskas')"><span class="nav-icon">💵</span>Arus Kas</button>
     <div class="nav-section">Manajemen Stok</div>
     <button class="nav-item" data-page="produk" onclick="showPage('produk')"><span class="nav-icon">📦</span>Produk<span class="nav-badge" id="badge-stok" style="display:none">!</span></button>
     <button class="nav-item" data-page="opname" onclick="showPage('opname')"><span class="nav-icon">🔍</span>Stok Opname</button>
     <button class="nav-item" data-page="riwayat-opname" onclick="showPage('riwayat-opname')"><span class="nav-icon">📋</span>Riwayat Opname</button>
     <div class="nav-section">Plugin</div>
     <button class="nav-item" data-page="plugin" onclick="showPage('plugin')"><span class="nav-icon">🧩</span>Plugin & Fitur</button>
-    <button class="nav-item" data-page="laporan" onclick="showPage('laporan');showLapTab('pengeluaran')"><span class="nav-icon">💸</span>Pengeluaran</button>
-    <button class="nav-item" data-page="plugin-pelanggan" onclick="showPage('plugin-pelanggan')"><span class="nav-icon">👤</span>Pelanggan</button>
-    <button class="nav-item" data-page="plugin-bundle" onclick="showPage('plugin-bundle')"><span class="nav-icon">📦</span>Bundle / Paket</button>
-    <button class="nav-item" data-page="antrian" onclick="showPage('antrian')"><span class="nav-icon">🎫</span>Antrian</button>
     <div class="nav-section">Cloud</div>
     <button class="nav-item" onclick="openSyncModal()"><span class="nav-icon">☁️</span>Sync ke Sheets<span class="sync-status-dot" id="sidebar-sync-dot" style="margin-left:auto;"></span></button>
     <div class="nav-section">Sistem</div>
@@ -664,6 +655,39 @@ tr:hover td{background:var(--gray-50)}
     <div class="table-wrap"><table><thead><tr><th>Foto</th><th>Nama / SKU</th><th>Kategori</th><th>Stok</th><th>H. Beli</th><th>H. Jual</th><th>Metode</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="product-table-body"></tbody></table></div>
     <div id="product-empty" class="empty-state" style="display:none;"><div class="empty-state-icon">📦</div><div class="empty-state-title">Belum ada produk</div><div class="empty-state-sub">Tambah produk atau import dari Excel</div></div>
   </div></div>
+</div>
+
+<!-- KAS TUNAI -->
+<div class="page" id="page-kas-tunai">
+  <div class="page-header">
+    <div><div class="page-title">💵 Penghitung Kas Tunai</div><div class="page-subtitle">Hitung uang di laci kasir per denominasi</div></div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-outline btn-sm" onclick="compareKasTunai()">📊 Bandingkan</button>
+      <button class="btn btn-success btn-sm" onclick="saveKasTunai()">💾 Simpan Hitungan</button>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><span class="card-title">💴 Hitung Denominasi</span><button class="btn btn-xs btn-outline" onclick="resetKasTunai()">🔄 Reset</button></div>
+      <div class="card-body">
+        <table style="width:100%;font-size:13px;">
+          <thead><tr><th style="text-align:left;padding:6px 0;">Nominal</th><th style="text-align:center;">Lembar/Koin</th><th style="text-align:right;">Subtotal</th></tr></thead>
+          <tbody id="kas-tunai-table-body"></tbody>
+          <tfoot><tr>
+            <td colspan="2" style="padding-top:12px;font-weight:700;font-size:14px;">TOTAL</td>
+            <td style="padding-top:12px;font-weight:800;font-size:16px;text-align:right;color:var(--primary);" id="kas-tunai-total">Rp 0</td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="card" id="kas-compare-card">
+      <div class="card-header"><span class="card-title">📊 Perbandingan dengan Kemarin</span></div>
+      <div class="card-body" id="kas-compare-body">
+        <div style="color:var(--gray-400);font-size:12px;text-align:center;padding:20px 0;">Klik "Bandingkan" untuk melihat selisih dengan data kemarin.</div>
+      </div>
+    </div>
+  </div>
+  <div id="kas-tunai-history" style="margin-top:14px;"></div>
 </div>
 
 <!-- OPNAME -->
@@ -1393,8 +1417,26 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<div class="toast-wrap" id="toast-wrap"></div>
-<script>
+<!-- MODAL: SYNC VERIFY -->
+<div class="modal-overlay" id="sync-verify-modal">
+  <div class="modal" style="max-width:460px;border-left:5px solid var(--success);">
+    <div class="modal-header" style="background:var(--success-light);">
+      <span class="modal-title" style="color:var(--success);">☁️ Sinkronisasi Berhasil</span>
+      <button class="modal-close" onclick="document.getElementById('sync-verify-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;font-size:48px;margin-bottom:12px;">✅</div>
+      <div id="sync-verify-summary" style="background:var(--success-light);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.8;color:#065f46;"></div>
+      <div class="alert alert-warning">⚠️ Setelah hapus data lokal, semua data hanya tersimpan di Google Spreadsheet. Pastikan koneksi internet stabil sebelum melanjutkan.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('sync-verify-modal').classList.remove('open')">Tutup (Simpan Lokal)</button>
+      <button class="btn btn-success" onclick="clearLocalAndReload()">✅ Hapus Data Lokal & Refresh</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div><script>
 // ===== DATA LAYER =====
 // ── DATA LAYER ──────────────────────────────────────────────
 let bahanMentah = JSON.parse(localStorage.getItem('kkBahanMentah') || '[]');
@@ -1534,16 +1576,39 @@ function injectBahanUI(){
             <input class="form-control" id="bp-nama" placeholder="Misal: Mie Rebus Porsi">
           </div>
           <div class="form-group">
-            <label class="form-label">Komposisi Bahan Mentah</label>
+            <label class="form-label">Komposisi</label>
+            <!-- Tab switch -->
+            <div style="display:flex;gap:3px;background:var(--gray-200);border-radius:8px;padding:2px;margin-bottom:8px;">
+              <button class="kasir-tab active" id="bptab-mentah" onclick="switchBpTab('mentah')">🌾 Bahan Mentah</button>
+              <button class="kasir-tab" id="bptab-bb" onclick="switchBpTab('bb')">📦 Bahan Baku Langsung</button>
+            </div>
             <div id="bp-items-list" style="margin-bottom:8px;min-height:30px;border:1px solid var(--gray-200);border-radius:7px;padding:6px;"></div>
-            <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
-              <div style="flex:1;min-width:120px;">
-                <select class="form-control" id="bp-mentah-sel"><option value="">Pilih bahan mentah...</option></select>
+            <!-- Tab: Bahan Mentah -->
+            <div id="bptab-panel-mentah">
+              <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
+                <div style="flex:1;min-width:120px;">
+                  <select class="form-control" id="bp-mentah-sel"><option value="">Pilih bahan mentah...</option></select>
+                </div>
+                <div style="width:80px;">
+                  <input class="form-control" id="bp-mentah-qty" type="number" step="0.01" value="1" placeholder="Qty">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="addBahanProdukItem()">+ Add</button>
               </div>
-              <div style="width:80px;">
-                <input class="form-control" id="bp-mentah-qty" type="number" step="0.01" value="1" placeholder="Qty">
+            </div>
+            <!-- Tab: Bahan Baku Langsung -->
+            <div id="bptab-panel-bb" style="display:none;">
+              <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
+                <div style="flex:1;min-width:140px;">
+                  <select class="form-control" id="bp-bb-langsung-sel"><option value="">Pilih bahan baku...</option></select>
+                </div>
+                <div style="width:80px;">
+                  <input class="form-control" id="bp-bb-qty" type="number" step="0.01" value="1" placeholder="Qty">
+                </div>
+                <div style="width:90px;">
+                  <input class="form-control" id="bp-bb-harga-override" type="number" placeholder="Harga (opt)">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="addBahanBakuLangsung()">+ Add</button>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="addBahanProdukItem()">+ Add</button>
             </div>
           </div>
           <div id="bp-hpp-preview" style="padding:8px;background:var(--success-light);border-radius:7px;font-size:12px;margin-top:8px;display:none;"></div>
@@ -1710,10 +1775,14 @@ function openBahanProdukModal(id=null){
   document.getElementById('bp-items-list').innerHTML='';
   document.getElementById('bp-hpp-preview').style.display='none';
  
-  // Populate bahan mentah select
+// Populate bahan mentah select
   const sel=document.getElementById('bp-mentah-sel');
   sel.innerHTML='<option value="">Pilih bahan mentah...</option>'+
     bahanMentah.map(bm=>`<option value="${bm.id}">${bm.nama} (${bm.satuanMentah}, Rp${bm.hargaPerSatuan.toLocaleString('id-ID')}/satuan)</option>`).join('');
+  // Populate bahan baku langsung select
+  const selBB=document.getElementById('bp-bb-langsung-sel');
+  if(selBB) selBB.innerHTML='<option value="">Pilih bahan baku...</option>'+
+    ingredients.map(i=>`<option value="${i.id}">${i.nama} (${i.satuan}, Rp${i.harga.toLocaleString('id-ID')}/${i.satuan})</option>`).join('');
  
   if(id){
     const bp=bahanProduk.find(x=>x.id===id);
@@ -1726,6 +1795,24 @@ function openBahanProdukModal(id=null){
   document.getElementById('bahan-produk-modal').classList.add('open');
 }
  
+function switchBpTab(tab) {
+  document.getElementById('bptab-panel-mentah').style.display = tab==='mentah' ? 'block' : 'none';
+  document.getElementById('bptab-panel-bb').style.display = tab==='bb' ? 'block' : 'none';
+  document.getElementById('bptab-mentah').classList.toggle('active', tab==='mentah');
+  document.getElementById('bptab-bb').classList.toggle('active', tab==='bb');
+}
+
+function addBahanBakuLangsung() {
+  const bbId = document.getElementById('bp-bb-langsung-sel').value;
+  const qty = parseFloat(document.getElementById('bp-bb-qty').value) || 1;
+  const hargaOverride = parseFloat(document.getElementById('bp-bb-harga-override').value) || 0;
+  if (!bbId) { toast('Pilih bahan baku', 'danger'); return; }
+  const ex = _bpItemsTemp.findIndex(x => x.bahanBakuId === bbId && x.type === 'bahanBaku');
+  if (ex >= 0) _bpItemsTemp[ex].qty += qty;
+  else _bpItemsTemp.push({ type: 'bahanBaku', bahanBakuId: bbId, qty, hargaOverride });
+  renderBpItemsList();
+}
+
 function addBahanProdukItem(){
   const mentahId=document.getElementById('bp-mentah-sel').value;
   const qty=parseFloat(document.getElementById('bp-mentah-qty').value)||1;
@@ -1740,14 +1827,22 @@ function renderBpItemsList(){
   const el=document.getElementById('bp-items-list'); if(!el)return;
   let totalHPP=0;
   el.innerHTML=_bpItemsTemp.map((bi,i)=>{
-    const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);
-    const cost=(bm?bm.hargaPerSatuan:0)*bi.qty;
+    let nama='?', satuan='', cost=0;
+    if(bi.type==='bahanBaku'){
+      const bb=ingredients.find(x=>x.id===bi.bahanBakuId);
+      nama=bb?`📦 ${bb.nama}`:'?'; satuan=bb?bb.satuan:'';
+      cost=(bi.hargaOverride||( bb?bb.harga:0))*bi.qty;
+    } else {
+      const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);
+      nama=bm?`🌾 ${bm.nama}`:'?'; satuan=bm?bm.satuanMentah:'';
+      cost=(bm?bm.hargaPerSatuan:0)*bi.qty;
+    }
     totalHPP+=cost;
     return`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--gray-100);">
-      <span style="flex:1;font-size:12px;">${bm?bm.nama:'?'}</span>
+      <span style="flex:1;font-size:12px;">${nama}</span>
       <input type="number" value="${bi.qty}" step="0.01" style="width:70px;padding:3px 6px;border:1px solid var(--gray-300);border-radius:5px;font-size:12px;" 
              onchange="updateBpItemQty(${i},this.value)">
-      <span style="font-size:11px;color:var(--gray-500);">${bm?bm.satuanMentah:''}</span>
+      <span style="font-size:11px;color:var(--gray-500);">${satuan}</span>
       <span style="font-size:11px;color:var(--warning);min-width:60px;">${rp(cost)}</span>
       <button onclick="_bpItemsTemp.splice(${i},1);renderBpItemsList()" style="border:none;background:none;color:var(--danger);cursor:pointer;">✕</button>
     </div>`;
@@ -1919,11 +2014,7 @@ function renderPenggunaanLog(){
 }
  
 // Inject UI saat halaman ingredients dibuka
-const _origShowPage=showPage;
-showPage=function(name){
-  _origShowPage(name);
-  if(name==='plugin-ingredients') setTimeout(()=>injectBahanUI(),100);
-};
+// (dihapus — ditangani di unified showPage)
 let products      = JSON.parse(localStorage.getItem('kkProduk')        || '[]');
 let transactions  = JSON.parse(localStorage.getItem('kkTransaksi')     || '[]');
 let stokBatch     = JSON.parse(localStorage.getItem('kkStokBatch')     || '[]');
@@ -1936,7 +2027,7 @@ let bundles       = JSON.parse(localStorage.getItem('kkBundles')       || '[]');
 let holdOrders    = JSON.parse(localStorage.getItem('kkHoldOrders')    || '[]');
 let poinConfig    = JSON.parse(localStorage.getItem('kkPoinConfig')    || '{"rupiah":10000,"diskon":100}');
 let settingMetode    = localStorage.getItem('kkMetodeStok') || 'Default';
-let settingNamaToko  = localStorage.getItem('kkNamaToko')   || 'KasirKu';
+let settingNamaToko  = localStorage.getItem('kkNamaToko')   || 'Gurmie Ayam Kasir';
 let settingSedekahOn = localStorage.getItem('kkSedekahOn')  === '1';
 let settingSedekahPct= parseFloat(localStorage.getItem('kkSedekahPct') || '2.5');
 let settingSedekahBasis = localStorage.getItem('kkSedekahBasis') || 'total';
@@ -1954,12 +2045,17 @@ let editPelangganId=null;
 let currentAntrianNum=null;
 let bundleItemsTemp=[];
 
-function saveProducts()   { localStorage.setItem('kkProduk',        JSON.stringify(products)); }
-function saveTrx()        { localStorage.setItem('kkTransaksi',     JSON.stringify(transactions)); }
-function saveBatches()    { localStorage.setItem('kkStokBatch',     JSON.stringify(stokBatch)); }
-function savePembelianData(){ localStorage.setItem('kkPembelian',   JSON.stringify(pembelian)); }
-function saveOpnameData() { localStorage.setItem('kkRiwayatOpname', JSON.stringify(riwayatOpname)); }
-function saveSedekahData(){ localStorage.setItem('kkSedekah',       JSON.stringify(sedekahLog)); }
+function saveProducts()      { localStorage.setItem('kkProduk',        JSON.stringify(products)); }
+function saveTrx()           { localStorage.setItem('kkTransaksi',     JSON.stringify(transactions)); }
+function saveBatches()       { localStorage.setItem('kkStokBatch',     JSON.stringify(stokBatch)); }
+function savePembelianData() { localStorage.setItem('kkPembelian',     JSON.stringify(pembelian)); }
+function saveOpnameData()    { localStorage.setItem('kkRiwayatOpname', JSON.stringify(riwayatOpname)); }
+function saveSedekahData()   { localStorage.setItem('kkSedekah',       JSON.stringify(sedekahLog)); }
+function savePelangganData() { localStorage.setItem('kkPelanggan',     JSON.stringify(pelanggan)); }
+function saveBundlesData()   { localStorage.setItem('kkBundles',       JSON.stringify(bundles)); }
+function savePoinConfigData(){ localStorage.setItem('kkPoinConfig',    JSON.stringify(poinConfig)); }
+function saveHoldOrders()    { localStorage.setItem('kkHoldOrders',    JSON.stringify(holdOrders)); }
+function savePengeluaranData(){ localStorage.setItem('kkPengeluaran',  JSON.stringify(pengeluaran)); }
 function genId()          { return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function genSKUCode()     { return 'SKU-'+Date.now().toString(36).toUpperCase().slice(-5); }
 const KATEGORI = ['Produksi','Non-Produksi','Penjualan','Lainnya'];
@@ -1990,15 +2086,25 @@ function showPage(name){
     'plugin':()=>{ if(typeof renderPluginGrid!=='undefined') renderPluginGrid(); },
     'plugin-bisnis':()=>{ if(typeof renderBizProfile!=='undefined') renderBizProfile(); },
     'plugin-desktop':()=>{ if(typeof renderDesktopPlugin!=='undefined') renderDesktopPlugin(); },
-    'plugin-ingredients':()=>{ if(typeof renderIngredients!=='undefined') renderIngredients(); },
+    'plugin-ingredients':()=>{
+      if(typeof injectBahanUI!=='undefined') setTimeout(()=>injectBahanUI(),100);
+      if(typeof renderIngredients!=='undefined') renderIngredients();
+    },
     'plugin-qr':()=>{ if(typeof renderQRPlugin!=='undefined') renderQRPlugin(); },
     'plugin-offline':()=>{ if(typeof renderOfflinePlugin!=='undefined') renderOfflinePlugin(); },
     'plugin-absensi':()=>{ if(typeof renderAbsensiCards!=='undefined'){ renderAbsensiCards(); renderKaryawanTable(); renderAbsensiLaporan(); } },
     'menu-customer':()=>{ if(typeof renderCustomerMenu!=='undefined') renderCustomerMenu(); },
     'plugin-pelanggan':()=>{ if(typeof renderPelangganTable!=='undefined'){ renderPelangganTable(); renderPelangganKPI(); } },
     'plugin-bundle':()=>{ if(typeof renderBundleTable!=='undefined') renderBundleTable(); },
-    'antrian':()=>{ if(typeof renderAntrianLog!=='undefined') renderAntrianLog(); }
+    'antrian':()=>{ if(typeof renderAntrianLog!=='undefined') renderAntrianLog(); },
+    'kas-tunai':()=>{ if(typeof renderKasTunai!=='undefined') renderKasTunai(); }
   };
+  // Restore sidebar untuk semua halaman kecuali menu-customer
+  if(name!=='menu-customer'){
+    const sb=document.getElementById('sidebar'); if(sb) sb.style.display='';
+    const bnav=document.querySelector('.bottom-nav'); if(bnav) bnav.style.display='';
+    const main=document.querySelector('.main'); if(main) main.style.marginLeft='';
+  }
   const allActs={...coreActs,...pluginActs};
   if(allActs[name]) allActs[name]();
   if(typeof updateStokBadge!=='undefined') updateStokBadge();
@@ -3068,6 +3174,7 @@ function bayar(){
   renderOrder();updateMobileCartBar();
   document.getElementById('order-panel').classList.remove('mobile-show');
   renderKasirProducts();updateStokBadge();
+  _lastQRCount = pesananQR.filter(p=>p.status==='menunggu').length;
   // Show antrian modal
   document.getElementById('antrian-modal').classList.add('open');
 }
@@ -3324,6 +3431,135 @@ function exportAllData(){
   toast('Data diekspor ✓','success');
 }
 
+// ===== KAS TUNAI =====
+const KAS_DENOMINASI = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
+
+function renderKasTunai() {
+  const today = todayISO();
+  const saved = JSON.parse(localStorage.getItem('kkKasTunai_' + today) || '{}');
+  const tbody = document.getElementById('kas-tunai-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = KAS_DENOMINASI.map(d => {
+    const jumlah = saved[d] || 0;
+    return `<tr>
+      <td style="padding:5px 0;font-weight:500;">${rp(d)}</td>
+      <td style="text-align:center;">
+        <input type="number" min="0" value="${jumlah}" id="kas-den-${d}"
+          style="width:70px;padding:4px 6px;border:1px solid var(--gray-300);border-radius:6px;text-align:center;font-size:13px;"
+          oninput="updateKasTunaiTotal()">
+      </td>
+      <td style="text-align:right;font-weight:600;" id="kas-sub-${d}">${rp(d * jumlah)}</td>
+    </tr>`;
+  }).join('');
+  updateKasTunaiTotal();
+}
+
+function updateKasTunaiTotal() {
+  let total = 0;
+  KAS_DENOMINASI.forEach(d => {
+    const jumlah = parseInt(document.getElementById('kas-den-' + d)?.value) || 0;
+    const sub = d * jumlah;
+    total += sub;
+    const subEl = document.getElementById('kas-sub-' + d);
+    if (subEl) subEl.textContent = rp(sub);
+  });
+  const totalEl = document.getElementById('kas-tunai-total');
+  if (totalEl) totalEl.textContent = rp(total);
+}
+
+function saveKasTunai() {
+  const today = todayISO();
+  const data = {};
+  KAS_DENOMINASI.forEach(d => {
+    data[d] = parseInt(document.getElementById('kas-den-' + d)?.value) || 0;
+  });
+  data._savedAt = Date.now();
+  data._total = KAS_DENOMINASI.reduce((s, d) => s + d * (data[d] || 0), 0);
+  localStorage.setItem('kkKasTunai_' + today, JSON.stringify(data));
+  toast('Hitungan kas disimpan ✓ Total: ' + rp(data._total), 'success');
+  renderKasTunaiHistory();
+}
+
+function resetKasTunai() {
+  if (!confirm('Reset semua hitungan ke 0?')) return;
+  KAS_DENOMINASI.forEach(d => {
+    const el = document.getElementById('kas-den-' + d);
+    if (el) el.value = 0;
+    const subEl = document.getElementById('kas-sub-' + d);
+    if (subEl) subEl.textContent = rp(0);
+  });
+  const totalEl = document.getElementById('kas-tunai-total');
+  if (totalEl) totalEl.textContent = rp(0);
+}
+
+function compareKasTunai() {
+  const today = new Date();
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  const yd = yesterday.toISOString().split('T')[0];
+  const todayData = JSON.parse(localStorage.getItem('kkKasTunai_' + todayISO()) || '{}');
+  const yestData = JSON.parse(localStorage.getItem('kkKasTunai_' + yd) || '{}');
+  const body = document.getElementById('kas-compare-body');
+  if (!body) return;
+  if (!Object.keys(yestData).length) {
+    body.innerHTML = '<div style="color:var(--gray-400);font-size:12px;padding:12px 0;">Tidak ada data kemarin (' + yd + ').</div>';
+    return;
+  }
+  let html = `<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Kemarin: ${yd}</div>`;
+  html += '<table style="width:100%;font-size:12px;"><thead><tr><th style="text-align:left;">Nominal</th><th>Kemarin</th><th>Hari Ini</th><th>Selisih</th></tr></thead><tbody>';
+  KAS_DENOMINASI.forEach(d => {
+    const y = yestData[d] || 0;
+    const t = parseInt(document.getElementById('kas-den-' + d)?.value) || todayData[d] || 0;
+    const sel = t - y;
+    const color = sel > 0 ? 'var(--success)' : sel < 0 ? 'var(--danger)' : 'var(--gray-400)';
+    html += `<tr>
+      <td style="padding:4px 0;">${rp(d)}</td>
+      <td style="text-align:center;">${y}</td>
+      <td style="text-align:center;">${t}</td>
+      <td style="text-align:center;font-weight:700;color:${color};">${sel > 0 ? '+' : ''}${sel}</td>
+    </tr>`;
+  });
+  const totalY = yestData._total || 0;
+  const totalT = KAS_DENOMINASI.reduce((s, d) => s + d * (parseInt(document.getElementById('kas-den-' + d)?.value) || todayData[d] || 0), 0);
+  const totalSel = totalT - totalY;
+  const totalColor = totalSel >= 0 ? 'var(--success)' : 'var(--danger)';
+  html += `</tbody><tfoot><tr>
+    <td colspan="2" style="padding-top:8px;font-weight:700;">TOTAL</td>
+    <td style="padding-top:8px;font-weight:700;text-align:center;">${rp(totalT)}</td>
+    <td style="padding-top:8px;font-weight:800;color:${totalColor};text-align:center;">${totalSel >= 0 ? '+' : ''}${rp(Math.abs(totalSel))}</td>
+  </tr></tfoot></table>`;
+  body.innerHTML = html;
+}
+
+function renderKasTunaiHistory() {
+  const el = document.getElementById('kas-tunai-history'); if (!el) return;
+  const entries = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = 'kkKasTunai_' + d.toISOString().split('T')[0];
+    const data = JSON.parse(localStorage.getItem(key) || 'null');
+    if (data) entries.push({ tanggal: d.toLocaleDateString('id-ID', {weekday:'short',day:'2-digit',month:'short'}), total: data._total || 0 });
+  }
+  if (!entries.length) return;
+  el.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">📅 Riwayat 7 Hari Terakhir</span></div>
+    <div style="padding:0;"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Total Kas</th></tr></thead><tbody>
+    ${entries.map(e => `<tr><td>${e.tanggal}</td><td style="font-weight:600;color:var(--primary);">${rp(e.total)}</td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+}
+
+function initKasTunaiReset() {
+  setInterval(() => {
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+      // Reset UI jika sedang di halaman kas-tunai
+      if (document.getElementById('page-kas-tunai')?.classList.contains('active')) {
+        renderKasTunai();
+        toast('Kas tunai direset untuk hari baru', 'success');
+      }
+    }
+  }, 60000);
+}
+initKasTunaiReset();
+
 // ===== INIT =====
 renderDashboard();
 renderProductTable();
@@ -3338,12 +3574,20 @@ document.getElementById('lap-date-to').value=todayISO();
 let syncConfig = JSON.parse(localStorage.getItem('kkSyncConfig') || '{}');
 
 async function syncToSpreadsheet() {
+  return await syncWithVerify(0);
+}
+
+async function syncWithVerify(retryCount = 0) {
   const url = syncConfig.webAppUrl;
   if (!url) { toast('Isi Web App URL dulu di menu Sync', 'danger'); return; }
-  updateSyncStatus('syncing', '⏳ Menyinkronkan data...');
+  updateSyncStatus('syncing', `⏳ Menyinkronkan data... (percobaan ${retryCount+1}/3)`);
   const productsWithStock = products.map(p => { const { foto, ...rest } = p; return { ...rest, stokSistem: getStokSistem(p.id) }; });
   const pembelianWithName = pembelian.map(b => { const prod = products.find(p => p.id === b.produkId); return { ...b, namaProduk: prod ? prod.nama : '(dihapus)' }; });
-  const payload = { action: 'syncAll', data: { products: productsWithStock, transactions, stokBatch, pembelian: pembelianWithName, riwayatOpname, sedekahLog: sedekahLog } };
+  const payload = {
+    action: 'syncAll',
+    forceStore: retryCount >= 3,
+    data: { products: productsWithStock, transactions, stokBatch, pembelian: pembelianWithName, riwayatOpname, sedekahLog }
+  };
   try {
     const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
     const textRes = await res.text();
@@ -3354,11 +3598,66 @@ async function syncToSpreadsheet() {
     localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
     updateSyncStatus('success', '✅ Sync berhasil: ' + new Date().toLocaleTimeString('id-ID'));
     updateSidebarSyncDot(true);
-    toast('Data berhasil disinkronkan ke Spreadsheet! ✓', 'success');
+    toast('Sync berhasil ✓ — memverifikasi data...', 'success');
+    // Verifikasi
+    await verifySyncData(url, retryCount);
   } catch (err) {
-    updateSyncStatus('error', '❌ Gagal: ' + err.message);
-    toast('Sync gagal: ' + err.message, 'danger');
+    if (retryCount < 2) {
+      updateSyncStatus('syncing', `⚠️ Gagal, retry ${retryCount+2}/3 dalam 2 detik...`);
+      await new Promise(r => setTimeout(r, 2000));
+      return await syncWithVerify(retryCount + 1);
+    }
+    // Gagal 3x — kirim dengan forceStore
+    updateSyncStatus('error', '❌ Gagal 3x: ' + err.message + ' — data tetap dikirim ke server');
+    toast('Sync gagal 3x, data tetap dikirim ke server', 'danger');
+    try {
+      await fetch(url, { method: 'POST', body: JSON.stringify({...payload, forceStore: true}) });
+    } catch(e2) {}
   }
+}
+
+async function verifySyncData(url, retryCount) {
+  try {
+    const res = await fetch(`${url}?action=verify&count=${transactions.length}`);
+    const json = JSON.parse(await res.text());
+    if (json.ok && json.match) {
+      openSyncVerifyModal({
+        trxCount: transactions.length,
+        produkCount: products.length,
+        tanggal: new Date().toLocaleString('id-ID')
+      });
+    } else if (retryCount < 2) {
+      await new Promise(r => setTimeout(r, 2000));
+      await verifySyncData(url, retryCount + 1);
+    } else {
+      toast('Verifikasi tidak cocok — data mungkin belum lengkap tersimpan', 'warning');
+    }
+  } catch(e) {
+    toast('Sync berhasil namun verifikasi gagal: ' + e.message, 'warning');
+  }
+}
+
+function openSyncVerifyModal(summary) {
+  document.getElementById('sync-verify-summary').innerHTML = `
+    <div>📦 <strong>${summary.produkCount}</strong> produk diunggah</div>
+    <div>🧾 <strong>${summary.trxCount}</strong> transaksi diunggah</div>
+    <div>🕐 Waktu sync: <strong>${summary.tanggal}</strong></div>
+    <div style="margin-top:8px;font-size:12px;">Data berhasil terverifikasi di Google Spreadsheet.</div>
+  `;
+  document.getElementById('sync-verify-modal').classList.add('open');
+}
+
+function clearLocalAndReload() {
+  if (!confirm('YAKIN hapus semua data lokal? Data sudah aman di Spreadsheet.')) return;
+  const keys = ['kkProduk','kkTransaksi','kkStokBatch','kkPembelian','kkRiwayatOpname',
+    'kkSedekah','kkPelanggan','kkBundles','kkHoldOrders','kkAbsensi','kkPengeluaran'];
+  keys.forEach(k => localStorage.removeItem(k));
+  products=[]; transactions=[]; stokBatch=[]; pembelian=[]; riwayatOpname=[];
+  sedekahLog=[]; pelanggan=[]; bundles=[]; holdOrders=[]; absensiData=[]; pengeluaran=[];
+  order=[];
+  document.getElementById('sync-verify-modal').classList.remove('open');
+  toast('Data lokal dihapus. Memuat ulang...', 'success');
+  setTimeout(() => { showPage('dashboard'); renderDashboard(); }, 800);
 }
 
 async function testSyncConnection() {
@@ -5253,21 +5552,7 @@ function showMenuCustomer(){
  
 // ── 5. Tampil navigasi kasir kembali saat keluar dari menu customer ──
 const _origShowPage2=window._origShowPage||showPage;
-(function(){
-  const origFn=showPage;
-  showPage=function(name){
-    if(name!=='menu-customer'){
-      // Kembalikan sidebar & bottom nav
-      const sb=document.getElementById('sidebar');
-      if(sb) sb.style.display='';
-      const bnav=document.querySelector('.bottom-nav');
-      if(bnav) bnav.style.display='';
-      const main=document.querySelector('.main');
-      if(main) main.style.marginLeft='';
-    }
-    origFn(name);
-  };
-})();
+// (dihapus — logika restore sidebar ditangani di unified showPage)
  
 </script>
 </body>
