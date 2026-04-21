@@ -1312,12 +1312,16 @@ tr:hover td{background:var(--gray-50)}
         <div style="font-size:11px;color:var(--gray-500);" id="sync-data-count"></div>
       </div>
     </div>
-    <div class="modal-footer">
+   <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeSyncModal()">Tutup</button>
+      <button class="btn btn-primary btn-sm" onclick="pullFromSpreadsheet()">📥 Download dari Cloud</button>
       <button class="btn btn-success" onclick="syncToSpreadsheet()">☁️ Sync Sekarang</button>
     </div>
   </div>
 </div>
+
+
+<!-- MODAL: SYNC VERIFY -->
 
 
 <!-- MODAL: VARIAN PRODUK -->
@@ -3434,11 +3438,35 @@ function exportAllData(){
 // ===== KAS TUNAI =====
 const KAS_DENOMINASI = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
 
+let kasTunaiSelectedDate = todayISO();
+
 function renderKasTunai() {
-  const today = todayISO();
-  const saved = JSON.parse(localStorage.getItem('kkKasTunai_' + today) || '{}');
+  // Inject date navigator sekali
+  const headerCard = document.querySelector('#page-kas-tunai .card-header');
+  if (headerCard && !document.getElementById('kas-date-nav')) {
+    headerCard.insertAdjacentHTML('afterend', `
+      <div id="kas-date-nav" style="display:flex;align-items:center;gap:8px;padding:10px 15px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);">
+        <button class="btn btn-xs btn-outline" onclick="navigateKasTunai(-1)">← Kemarin</button>
+        <input type="date" id="kas-tanggal-input" value="${kasTunaiSelectedDate}"
+          class="form-control" style="width:145px;"
+          onchange="kasTunaiSelectedDate=this.value;loadKasTunaiForDate()">
+        <button class="btn btn-xs btn-outline" onclick="navigateKasTunai(1)">Besok →</button>
+        <span id="kas-date-label" style="font-size:11px;color:var(--gray-400);"></span>
+      </div>
+    `);
+  }
+  loadKasTunaiForDate();
+}
+
+function loadKasTunaiForDate() {
+  const dateEl = document.getElementById('kas-tanggal-input');
+  if (dateEl) dateEl.value = kasTunaiSelectedDate;
+  const saved = JSON.parse(localStorage.getItem('kkKasTunai_' + kasTunaiSelectedDate) || '{}');
   const tbody = document.getElementById('kas-tunai-table-body');
   if (!tbody) return;
+  const isToday = kasTunaiSelectedDate === todayISO();
+  const label = document.getElementById('kas-date-label');
+  if (label) label.textContent = isToday ? '(Hari Ini)' : '';
   tbody.innerHTML = KAS_DENOMINASI.map(d => {
     const jumlah = saved[d] || 0;
     return `<tr>
@@ -3454,6 +3482,12 @@ function renderKasTunai() {
   updateKasTunaiTotal();
 }
 
+function navigateKasTunai(delta) {
+  const d = new Date(kasTunaiSelectedDate);
+  d.setDate(d.getDate() + delta);
+  kasTunaiSelectedDate = d.toISOString().split('T')[0];
+  loadKasTunaiForDate();
+}
 function updateKasTunaiTotal() {
   let total = 0;
   KAS_DENOMINASI.forEach(d => {
@@ -3468,15 +3502,15 @@ function updateKasTunaiTotal() {
 }
 
 function saveKasTunai() {
-  const today = todayISO();
+  const targetDate = kasTunaiSelectedDate || todayISO();
   const data = {};
   KAS_DENOMINASI.forEach(d => {
     data[d] = parseInt(document.getElementById('kas-den-' + d)?.value) || 0;
   });
   data._savedAt = Date.now();
   data._total = KAS_DENOMINASI.reduce((s, d) => s + d * (data[d] || 0), 0);
-  localStorage.setItem('kkKasTunai_' + today, JSON.stringify(data));
-  toast('Hitungan kas disimpan ✓ Total: ' + rp(data._total), 'success');
+  localStorage.setItem('kkKasTunai_' + targetDate, JSON.stringify(data));
+  toast(`Kas ${targetDate} disimpan ✓ Total: ` + rp(data._total), 'success');
   renderKasTunaiHistory();
 }
 
@@ -3493,10 +3527,10 @@ function resetKasTunai() {
 }
 
 function compareKasTunai() {
-  const today = new Date();
-  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
-  const yd = yesterday.toISOString().split('T')[0];
-  const todayData = JSON.parse(localStorage.getItem('kkKasTunai_' + todayISO()) || '{}');
+  const selDate = new Date(kasTunaiSelectedDate || todayISO());
+  const prevDate = new Date(selDate); prevDate.setDate(selDate.getDate() - 1);
+  const yd = prevDate.toISOString().split('T')[0];
+  const todayData = JSON.parse(localStorage.getItem('kkKasTunai_' + (kasTunaiSelectedDate||todayISO())) || '{}');
   const yestData = JSON.parse(localStorage.getItem('kkKasTunai_' + yd) || '{}');
   const body = document.getElementById('kas-compare-body');
   if (!body) return;
@@ -3618,31 +3652,100 @@ async function syncWithVerify(retryCount = 0) {
 
 async function verifySyncData(url, retryCount) {
   try {
-    const res = await fetch(`${url}?action=verify&count=${transactions.length}`);
-    const json = JSON.parse(await res.text());
-    if (json.ok && json.match) {
+    const res = await fetch(`${url}?action=verify&count=${transactions.length}`, {cache:'no-store'});
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch(e) { throw new Error('Response verifikasi tidak valid'); }
+    if (json.ok && (json.match || json.serverCount >= transactions.length)) {
       openSyncVerifyModal({
         trxCount: transactions.length,
         produkCount: products.length,
+        serverCount: json.serverCount || transactions.length,
         tanggal: new Date().toLocaleString('id-ID')
       });
     } else if (retryCount < 2) {
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 2500));
       await verifySyncData(url, retryCount + 1);
     } else {
-      toast('Verifikasi tidak cocok — data mungkin belum lengkap tersimpan', 'warning');
+      // Verifikasi gagal tapi sync tetap dianggap berhasil
+      openSyncVerifyModal({
+        trxCount: transactions.length,
+        produkCount: products.length,
+        serverCount: json.serverCount || '?',
+        tanggal: new Date().toLocaleString('id-ID'),
+        warning: true
+      });
     }
   } catch(e) {
-    toast('Sync berhasil namun verifikasi gagal: ' + e.message, 'warning');
+    toast('Sync berhasil, verifikasi dilewati: ' + e.message, 'warning');
+    openSyncVerifyModal({
+      trxCount: transactions.length, produkCount: products.length,
+      serverCount: '?', tanggal: new Date().toLocaleString('id-ID'), warning: true
+    });
   }
 }
 
+async function pullFromSpreadsheet() {
+  const url = syncConfig.webAppUrl;
+  if (!url) { toast('Isi Web App URL dulu', 'danger'); return; }
+  updateSyncStatus('syncing', '⏳ Mengambil data dari cloud...');
+  try {
+    const res = await fetch(`${url}?action=pullAll`, {cache:'no-store'});
+    const text = await res.text();
+    let result;
+    try { result = JSON.parse(text); } catch(e) { throw new Error('Response tidak valid'); }
+    if (!result.ok) throw new Error(result.error || 'Gagal pull data');
+    const d = result.data;
+    if (d.products)     { products = d.products;         saveProducts(); }
+    if (d.transactions) { transactions = d.transactions; saveTrx(); }
+    if (d.stokBatch)    { stokBatch = d.stokBatch;       saveBatches(); }
+    if (d.pembelian)    { pembelian = d.pembelian;        savePembelianData(); }
+    if (d.riwayatOpname){ riwayatOpname = d.riwayatOpname; saveOpnameData(); }
+    if (d.sedekahLog)   { sedekahLog = d.sedekahLog;     saveSedekahData(); }
+    order = [];
+    updateSyncStatus('success', `✅ Pull berhasil: ${(d.transactions||[]).length} trx, ${(d.products||[]).length} produk`);
+    syncConfig.lastSync = new Date().toISOString();
+    localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
+    toast('Data berhasil diunduh dari cloud ✓', 'success');
+    renderDashboard(); renderProductTable(); updateStokBadge();
+    document.getElementById('sync-modal').classList.remove('open');
+  } catch(err) {
+    updateSyncStatus('error', '❌ Pull gagal: ' + err.message);
+    toast('Gagal mengambil data: ' + err.message, 'danger');
+  }
+}
+
+function checkAutoPull() {
+  const url = syncConfig.webAppUrl;
+  if (!url) return;
+  const hasData = products.length > 0 || transactions.length > 0;
+  if (hasData) return;
+  // localStorage kosong + ada URL → tawarkan pull
+  setTimeout(() => {
+    const el = document.getElementById('sync-modal');
+    if (!el) return;
+    updateSyncStatus('syncing', '🔍 Mendeteksi localStorage kosong...');
+    const banner = document.createElement('div');
+    banner.id = 'auto-pull-banner';
+    banner.className = 'alert alert-warning';
+    banner.style.cssText = 'margin-top:10px;';
+    banner.innerHTML = `📭 Data lokal kosong! Apakah ingin mengambil data dari cloud?
+      <button class="btn btn-sm btn-primary" style="margin-left:8px;" onclick="pullFromSpreadsheet()">📥 Download Sekarang</button>`;
+    const body = el.querySelector('.modal-body');
+    if (body && !document.getElementById('auto-pull-banner')) body.appendChild(banner);
+    el.classList.add('open');
+  }, 800);
+}
+
 function openSyncVerifyModal(summary) {
+  const isWarning = summary.warning;
   document.getElementById('sync-verify-summary').innerHTML = `
     <div>📦 <strong>${summary.produkCount}</strong> produk diunggah</div>
-    <div>🧾 <strong>${summary.trxCount}</strong> transaksi diunggah</div>
+    <div>🧾 <strong>${summary.trxCount}</strong> transaksi lokal | Server: <strong>${summary.serverCount}</strong></div>
     <div>🕐 Waktu sync: <strong>${summary.tanggal}</strong></div>
-    <div style="margin-top:8px;font-size:12px;">Data berhasil terverifikasi di Google Spreadsheet.</div>
+    <div style="margin-top:8px;font-size:12px;color:${isWarning?'#92400e':'#065f46'};">
+      ${isWarning ? '⚠️ Verifikasi server tidak dapat dikonfirmasi, namun data sudah dikirim.' : '✅ Data berhasil terverifikasi di Google Spreadsheet.'}
+    </div>
   `;
   document.getElementById('sync-verify-modal').classList.add('open');
 }
@@ -3713,6 +3816,7 @@ function closeSyncModal() { const el = document.getElementById('sync-modal'); if
 ['product-modal','receipt-modal','import-modal','batch-modal','sync-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
+checkAutopull();
 
 // ============================================================
 // PLUGINS
