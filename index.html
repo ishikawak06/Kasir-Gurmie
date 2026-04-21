@@ -1396,6 +1396,534 @@ tr:hover td{background:var(--gray-50)}
 <div class="toast-wrap" id="toast-wrap"></div>
 <script>
 // ===== DATA LAYER =====
+// ── DATA LAYER ──────────────────────────────────────────────
+let bahanMentah = JSON.parse(localStorage.getItem('kkBahanMentah') || '[]');
+// bahanMentah: { id, nama, satuanMentah, bahanBakuId, qtyPerSatuan, hargaPerSatuan }
+// Contoh: { nama:'Terigu', satuanMentah:'gram', bahanBakuId:'xxx', qtyPerSatuan:100, hargaPerSatuan:1000 }
+// → artinya 100 gram terigu = Rp1000 (dari bahan baku terigu 1kg=10rb)
+ 
+let bahanProduk = JSON.parse(localStorage.getItem('kkBahanProduk') || '[]');
+// bahanProduk: { id, nama, items:[{bahanMentahId, qty}] }
+// Penggunaan bahanProduk mengurangi stok bahanMentah → mengurangi bahanBaku
+ 
+let penggunaanBahanLog = JSON.parse(localStorage.getItem('kkPenggunaanBahan') || '[]');
+ 
+function saveBahanMentah(){ localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah)); }
+function saveBahanProduk(){ localStorage.setItem('kkBahanProduk', JSON.stringify(bahanProduk)); }
+function savePenggunaanBahan(){ localStorage.setItem('kkPenggunaanBahan', JSON.stringify(penggunaanBahanLog)); }
+ 
+// ── OVERRIDE renderIngredients ───────────────────────────────
+function renderIngredients(){
+  renderIngredientTable();       // Bahan Baku (sudah ada)
+  renderBahanMentahTable();      // BARU
+  renderBahanProdukTable();      // BARU
+  renderHPPTable();
+ 
+  // Populate selects
+  const selProd=document.getElementById('resep-produk-sel');
+  if(selProd) selProd.innerHTML='<option value="">Pilih Produk</option>'+products.map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
+}
+ 
+// ── INJECT UI ke halaman plugin-ingredients ─────────────────
+function injectBahanUI(){
+  const page=document.getElementById('page-plugin-ingredients');
+  if(!page||document.getElementById('bahan-mentah-section'))return;
+ 
+  // Cari card terakhir di page dan append sections baru
+  page.insertAdjacentHTML('beforeend',`
+    <!-- BAHAN MENTAH -->
+    <div id="bahan-mentah-section" class="two-col" style="margin-top:14px;">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🌾 Bahan Mentah (Porsi Pakai)</span>
+          <button class="btn btn-sm btn-success" onclick="openBahanMentahModal()">➕ Tambah</button>
+        </div>
+        <div style="padding:0;"><div class="table-wrap">
+          <table><thead><tr>
+            <th>Nama</th><th>Satuan Pakai</th><th>Dari Bahan Baku</th>
+            <th>Qty per Satuan</th><th>Harga/Satuan</th><th>Aksi</th>
+          </tr></thead><tbody id="bahan-mentah-table-body"></tbody></table>
+        </div></div>
+      </div>
+ 
+      <!-- BAHAN PRODUK -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🏭 Bahan Produk (Resep Produksi)</span>
+          <button class="btn btn-sm btn-primary" onclick="openBahanProdukModal()">➕ Tambah</button>
+        </div>
+        <div style="padding:0;"><div class="table-wrap">
+          <table><thead><tr>
+            <th>Nama Produk Bahan</th><th>Komposisi</th><th>Total HPP</th><th>Aksi</th>
+          </tr></thead><tbody id="bahan-produk-table-body"></tbody></table>
+        </div></div>
+      </div>
+    </div>
+ 
+    <!-- LOG PENGGUNAAN -->
+    <div class="card" style="margin-top:14px;">
+      <div class="card-header">
+        <span class="card-title">📋 Log Penggunaan Bahan</span>
+        <button class="btn btn-xs btn-outline" onclick="renderPenggunaanLog()">🔄 Refresh</button>
+      </div>
+      <div style="padding:0;"><div class="table-wrap">
+        <table><thead><tr><th>Waktu</th><th>Bahan Produk</th><th>Qty</th><th>Bahan Mentah Berkurang</th><th>Bahan Baku Berkurang</th></tr></thead>
+        <tbody id="penggunaan-log-body"></tbody></table>
+      </div></div>
+    </div>
+ 
+    <!-- MODAL BAHAN MENTAH -->
+    <div class="modal-overlay" id="bahan-mentah-modal">
+      <div class="modal" style="max-width:440px;">
+        <div class="modal-header">
+          <span class="modal-title" id="bm-modal-title">Tambah Bahan Mentah</span>
+          <button class="modal-close" onclick="document.getElementById('bahan-mentah-modal').classList.remove('open')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" style="font-size:11px;">
+            💡 Bahan mentah adalah <strong>porsi</strong> yang dipakai dari bahan baku.
+            Contoh: Bahan baku = Terigu 1kg (Rp10.000). 
+            Bahan mentah = 100 gram terigu (Rp1.000).
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nama Bahan Mentah *</label>
+            <input class="form-control" id="bm-nama" placeholder="Misal: Terigu 100gr">
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Satuan Pakai</label>
+              <select class="form-control" id="bm-satuan">
+                <option>gram</option><option>ml</option><option>pcs</option>
+                <option>sdm</option><option>sdt</option><option>lembar</option><option>buah</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Qty per 1 Satuan Pakai</label>
+              <input class="form-control" id="bm-qty-per-satuan" type="number" step="0.01" placeholder="Misal: 100 (gram)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dari Bahan Baku</label>
+            <select class="form-control" id="bm-bahan-baku-sel" onchange="calcHargaMentah()">
+              <option value="">-- Pilih Bahan Baku --</option>
+            </select>
+          </div>
+          <div id="bm-harga-preview" style="display:none;padding:8px;background:var(--primary-light);border-radius:7px;font-size:12px;margin-bottom:8px;"></div>
+          <div class="form-group">
+            <label class="form-label">Harga per Satuan Pakai (Rp) <span style="color:var(--gray-400);font-size:10px;">(otomatis / bisa diubah)</span></label>
+            <input class="form-control" id="bm-harga" type="number" placeholder="0" step="0.01">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="document.getElementById('bahan-mentah-modal').classList.remove('open')">Batal</button>
+          <button class="btn btn-primary" onclick="saveBahanMentahItem()">💾 Simpan</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- MODAL BAHAN PRODUK -->
+    <div class="modal-overlay" id="bahan-produk-modal">
+      <div class="modal" style="max-width:480px;">
+        <div class="modal-header">
+          <span class="modal-title" id="bp-modal-title">Tambah Bahan Produk</span>
+          <button class="modal-close" onclick="document.getElementById('bahan-produk-modal').classList.remove('open')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Nama Bahan Produk *</label>
+            <input class="form-control" id="bp-nama" placeholder="Misal: Mie Rebus Porsi">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Komposisi Bahan Mentah</label>
+            <div id="bp-items-list" style="margin-bottom:8px;min-height:30px;border:1px solid var(--gray-200);border-radius:7px;padding:6px;"></div>
+            <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
+              <div style="flex:1;min-width:120px;">
+                <select class="form-control" id="bp-mentah-sel"><option value="">Pilih bahan mentah...</option></select>
+              </div>
+              <div style="width:80px;">
+                <input class="form-control" id="bp-mentah-qty" type="number" step="0.01" value="1" placeholder="Qty">
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addBahanProdukItem()">+ Add</button>
+            </div>
+          </div>
+          <div id="bp-hpp-preview" style="padding:8px;background:var(--success-light);border-radius:7px;font-size:12px;margin-top:8px;display:none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="document.getElementById('bahan-produk-modal').classList.remove('open')">Batal</button>
+          <button class="btn btn-primary" onclick="saveBahanProdukItem()">💾 Simpan</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- MODAL PAKAI BAHAN PRODUK -->
+    <div class="modal-overlay" id="pakai-bahan-produk-modal">
+      <div class="modal" style="max-width:400px;">
+        <div class="modal-header">
+          <span class="modal-title">⚙️ Gunakan Bahan Produk</span>
+          <button class="modal-close" onclick="document.getElementById('pakai-bahan-produk-modal').classList.remove('open')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Bahan Produk</label>
+            <select class="form-control" id="pakai-bp-sel" onchange="previewPakaiBahanProduk()">
+              <option value="">Pilih...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jumlah Produksi</label>
+            <input class="form-control" id="pakai-bp-qty" type="number" value="1" min="1" oninput="previewPakaiBahanProduk()">
+          </div>
+          <div id="pakai-bp-preview" style="margin-top:10px;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="document.getElementById('pakai-bahan-produk-modal').classList.remove('open')">Batal</button>
+          <button class="btn btn-success" onclick="konfirmasiPakaiBahanProduk()">✅ Konfirmasi Penggunaan</button>
+        </div>
+      </div>
+    </div>
+  `);
+ 
+  // Populate pilih bahan produk ke tombol di tabel
+  renderBahanMentahTable();
+  renderBahanProdukTable();
+  renderPenggunaanLog();
+}
+ 
+// ── BAHAN MENTAH ─────────────────────────────────────────────
+let _editBahanMentahId=null;
+let _bpItemsTemp=[];
+ 
+function openBahanMentahModal(id=null){
+  _editBahanMentahId=id;
+  document.getElementById('bm-modal-title').textContent=id?'Edit Bahan Mentah':'Tambah Bahan Mentah';
+  ['bm-nama','bm-qty-per-satuan','bm-harga'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('bm-satuan').value='gram';
+  document.getElementById('bm-harga-preview').style.display='none';
+ 
+  // Populate bahan baku select
+  const sel=document.getElementById('bm-bahan-baku-sel');
+  sel.innerHTML='<option value="">-- Pilih Bahan Baku --</option>'+
+    ingredients.map(i=>`<option value="${i.id}">${i.nama} (${i.satuan}, Rp${i.harga.toLocaleString('id-ID')})</option>`).join('');
+ 
+  if(id){
+    const bm=bahanMentah.find(x=>x.id===id);
+    if(bm){
+      document.getElementById('bm-nama').value=bm.nama||'';
+      document.getElementById('bm-satuan').value=bm.satuanMentah||'gram';
+      document.getElementById('bm-qty-per-satuan').value=bm.qtyPerSatuan||'';
+      document.getElementById('bm-bahan-baku-sel').value=bm.bahanBakuId||'';
+      document.getElementById('bm-harga').value=bm.hargaPerSatuan||'';
+      calcHargaMentah();
+    }
+  }
+  document.getElementById('bahan-mentah-modal').classList.add('open');
+}
+ 
+function calcHargaMentah(){
+  const bbId=document.getElementById('bm-bahan-baku-sel').value;
+  const qty=parseFloat(document.getElementById('bm-qty-per-satuan').value)||0;
+  const prev=document.getElementById('bm-harga-preview');
+ 
+  if(!bbId||!qty){prev.style.display='none';return;}
+  const bb=ingredients.find(x=>x.id===bbId); if(!bb){prev.style.display='none';return;}
+ 
+  // Hitung harga proporsional
+  // Asumsi: bb.harga = harga per 1 satuan bahan baku (misal per kg, per liter)
+  // Kita perlu tahu berapa gram/ml dalam 1 satuan bahan baku
+  // Default: 1 satuan = 1000 gram (untuk kg/liter), atau 1 (untuk pcs)
+  let satuanFaktor=1;
+  const sat=(bb.satuan||'').toLowerCase();
+  if(sat==='kg'||sat==='liter') satuanFaktor=1000;
+  else if(sat==='gram'||sat==='ml') satuanFaktor=1;
+ 
+  const hargaPerUnit=satuanFaktor>1 ? (bb.harga/satuanFaktor)*qty : bb.harga*qty;
+  
+  prev.style.display='block';
+  prev.innerHTML=`
+    📊 Dari ${bb.nama}: ${qty} ${document.getElementById('bm-satuan').value || 'satuan'} 
+    = <strong>Rp ${Math.round(hargaPerUnit).toLocaleString('id-ID')}</strong>
+    <br><small style="color:var(--gray-500);">Basis: ${bb.harga.toLocaleString('id-ID')} / ${bb.satuan}</small>
+  `;
+  document.getElementById('bm-harga').value=Math.round(hargaPerUnit);
+}
+ 
+function saveBahanMentahItem(){
+  const nama=document.getElementById('bm-nama').value.trim();
+  if(!nama){toast('Nama bahan mentah wajib diisi','danger');return;}
+  const data={
+    nama,
+    satuanMentah:document.getElementById('bm-satuan').value,
+    qtyPerSatuan:parseFloat(document.getElementById('bm-qty-per-satuan').value)||1,
+    bahanBakuId:document.getElementById('bm-bahan-baku-sel').value||null,
+    hargaPerSatuan:parseFloat(document.getElementById('bm-harga').value)||0,
+    stok:0 // bahan mentah tidak punya stok sendiri, diturunkan dari bahan baku
+  };
+ 
+  if(_editBahanMentahId){
+    const idx=bahanMentah.findIndex(x=>x.id===_editBahanMentahId);
+    if(idx>=0) bahanMentah[idx]={...bahanMentah[idx],...data};
+  } else {
+    bahanMentah.push({id:genId(),...data});
+  }
+  saveBahanMentah();
+  document.getElementById('bahan-mentah-modal').classList.remove('open');
+  renderBahanMentahTable();
+  toast(_editBahanMentahId?'Bahan mentah diperbarui ✓':'Bahan mentah ditambahkan ✓','success');
+}
+ 
+function renderBahanMentahTable(){
+  const body=document.getElementById('bahan-mentah-table-body'); if(!body)return;
+  if(!bahanMentah.length){
+    body.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--gray-400);">Belum ada bahan mentah</td></tr>`;
+    return;
+  }
+  body.innerHTML=bahanMentah.map(bm=>{
+    const bb=ingredients.find(x=>x.id===bm.bahanBakuId);
+    return`<tr>
+      <td style="font-weight:500;">${bm.nama}</td>
+      <td>1 ${bm.satuanMentah}</td>
+      <td>${bb?`<span class="badge badge-blue">${bb.nama}</span>`:'-'}</td>
+      <td>${bm.qtyPerSatuan} ${bb?bb.satuan:''}</td>
+      <td style="font-weight:600;color:var(--primary);">${rp(bm.hargaPerSatuan)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-xs btn-outline" onclick="openBahanMentahModal('${bm.id}')" style="margin-right:2px;">✏️</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteBahanMentah('${bm.id}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+ 
+function deleteBahanMentah(id){
+  if(!confirm('Hapus bahan mentah ini?'))return;
+  bahanMentah=bahanMentah.filter(x=>x.id!==id);
+  saveBahanMentah(); renderBahanMentahTable();
+}
+ 
+// ── BAHAN PRODUK ─────────────────────────────────────────────
+let _editBahanProdukId=null;
+ 
+function openBahanProdukModal(id=null){
+  _editBahanProdukId=id;
+  _bpItemsTemp=[];
+  document.getElementById('bp-modal-title').textContent=id?'Edit Bahan Produk':'Tambah Bahan Produk';
+  document.getElementById('bp-nama').value='';
+  document.getElementById('bp-items-list').innerHTML='';
+  document.getElementById('bp-hpp-preview').style.display='none';
+ 
+  // Populate bahan mentah select
+  const sel=document.getElementById('bp-mentah-sel');
+  sel.innerHTML='<option value="">Pilih bahan mentah...</option>'+
+    bahanMentah.map(bm=>`<option value="${bm.id}">${bm.nama} (${bm.satuanMentah}, Rp${bm.hargaPerSatuan.toLocaleString('id-ID')}/satuan)</option>`).join('');
+ 
+  if(id){
+    const bp=bahanProduk.find(x=>x.id===id);
+    if(bp){
+      document.getElementById('bp-nama').value=bp.nama||'';
+      _bpItemsTemp=[...(bp.items||[])];
+    }
+  }
+  renderBpItemsList();
+  document.getElementById('bahan-produk-modal').classList.add('open');
+}
+ 
+function addBahanProdukItem(){
+  const mentahId=document.getElementById('bp-mentah-sel').value;
+  const qty=parseFloat(document.getElementById('bp-mentah-qty').value)||1;
+  if(!mentahId){toast('Pilih bahan mentah','danger');return;}
+  const ex=_bpItemsTemp.findIndex(x=>x.bahanMentahId===mentahId);
+  if(ex>=0) _bpItemsTemp[ex].qty+=qty;
+  else _bpItemsTemp.push({bahanMentahId:mentahId,qty});
+  renderBpItemsList();
+}
+ 
+function renderBpItemsList(){
+  const el=document.getElementById('bp-items-list'); if(!el)return;
+  let totalHPP=0;
+  el.innerHTML=_bpItemsTemp.map((bi,i)=>{
+    const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);
+    const cost=(bm?bm.hargaPerSatuan:0)*bi.qty;
+    totalHPP+=cost;
+    return`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--gray-100);">
+      <span style="flex:1;font-size:12px;">${bm?bm.nama:'?'}</span>
+      <input type="number" value="${bi.qty}" step="0.01" style="width:70px;padding:3px 6px;border:1px solid var(--gray-300);border-radius:5px;font-size:12px;" 
+             onchange="updateBpItemQty(${i},this.value)">
+      <span style="font-size:11px;color:var(--gray-500);">${bm?bm.satuanMentah:''}</span>
+      <span style="font-size:11px;color:var(--warning);min-width:60px;">${rp(cost)}</span>
+      <button onclick="_bpItemsTemp.splice(${i},1);renderBpItemsList()" style="border:none;background:none;color:var(--danger);cursor:pointer;">✕</button>
+    </div>`;
+  }).join('')||'<div style="color:var(--gray-400);font-size:11px;padding:6px;">Belum ada bahan</div>';
+ 
+  const prev=document.getElementById('bp-hpp-preview');
+  if(_bpItemsTemp.length){
+    prev.style.display='block';
+    prev.innerHTML=`💰 Total HPP Bahan: <strong style="color:var(--success);">${rp(totalHPP)}</strong>`;
+  } else { prev.style.display='none'; }
+}
+ 
+function updateBpItemQty(idx,val){
+  _bpItemsTemp[idx].qty=parseFloat(val)||1;
+  renderBpItemsList();
+}
+ 
+function saveBahanProdukItem(){
+  const nama=document.getElementById('bp-nama').value.trim();
+  if(!nama){toast('Nama bahan produk wajib diisi','danger');return;}
+  if(!_bpItemsTemp.length){toast('Tambah minimal 1 bahan mentah','danger');return;}
+  const data={nama,items:[..._bpItemsTemp]};
+  if(_editBahanProdukId){
+    const idx=bahanProduk.findIndex(x=>x.id===_editBahanProdukId);
+    if(idx>=0) bahanProduk[idx]={...bahanProduk[idx],...data};
+  } else {
+    bahanProduk.push({id:genId(),...data});
+  }
+  saveBahanProduk();
+  document.getElementById('bahan-produk-modal').classList.remove('open');
+  renderBahanProdukTable();
+  toast(_editBahanProdukId?'Bahan produk diperbarui ✓':'Bahan produk ditambahkan ✓','success');
+}
+ 
+function renderBahanProdukTable(){
+  const body=document.getElementById('bahan-produk-table-body'); if(!body)return;
+  if(!bahanProduk.length){
+    body.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--gray-400);">Belum ada bahan produk</td></tr>`;
+    return;
+  }
+  body.innerHTML=bahanProduk.map(bp=>{
+    const totalHPP=bp.items.reduce((s,bi)=>{const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);return s+(bm?bm.hargaPerSatuan*bi.qty:0);},0);
+    const komposisi=bp.items.map(bi=>{const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);return`${bm?bm.nama:'?'} x${bi.qty}`;}).join(', ');
+    return`<tr>
+      <td style="font-weight:600;">${bp.nama}</td>
+      <td style="font-size:11px;">${komposisi}</td>
+      <td style="font-weight:700;color:var(--warning);">${rp(totalHPP)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-xs btn-success" onclick="openPakaiBahanProdukModal('${bp.id}')" style="margin-right:2px;" title="Gunakan">⚙️ Pakai</button>
+        <button class="btn btn-xs btn-outline" onclick="openBahanProdukModal('${bp.id}')" style="margin-right:2px;">✏️</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteBahanProduk('${bp.id}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+ 
+function deleteBahanProduk(id){
+  if(!confirm('Hapus bahan produk ini?'))return;
+  bahanProduk=bahanProduk.filter(x=>x.id!==id);
+  saveBahanProduk(); renderBahanProdukTable();
+}
+ 
+// ── PAKAI BAHAN PRODUK (kurangi stok bahan baku) ─────────────
+function openPakaiBahanProdukModal(bpId){
+  const modal=document.getElementById('pakai-bahan-produk-modal'); if(!modal)return;
+  const sel=document.getElementById('pakai-bp-sel');
+  sel.innerHTML='<option value="">Pilih...</option>'+bahanProduk.map(bp=>`<option value="${bp.id}">${bp.nama}</option>`).join('');
+  sel.value=bpId;
+  document.getElementById('pakai-bp-qty').value=1;
+  previewPakaiBahanProduk();
+  modal.classList.add('open');
+}
+ 
+function previewPakaiBahanProduk(){
+  const bpId=document.getElementById('pakai-bp-sel')?.value;
+  const qty=parseFloat(document.getElementById('pakai-bp-qty')?.value)||1;
+  const prev=document.getElementById('pakai-bp-preview'); if(!prev)return;
+ 
+  const bp=bahanProduk.find(x=>x.id===bpId);
+  if(!bp){prev.innerHTML='';return;}
+ 
+  let html='<div style="font-size:12px;font-weight:600;margin-bottom:6px;">Yang akan berkurang:</div>';
+  let totalHPP=0;
+  let warnings=[];
+ 
+  bp.items.forEach(bi=>{
+    const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);
+    if(!bm){warnings.push('Bahan mentah tidak ditemukan');return;}
+    const bb=ingredients.find(x=>x.id===bm.bahanBakuId);
+ 
+    const mentahKurang=bi.qty*qty;
+    const bbKurang=bm.qtyPerSatuan*bi.qty*qty; // qty bahan baku yang berkurang
+    const cost=bm.hargaPerSatuan*bi.qty*qty;
+    totalHPP+=cost;
+ 
+    const stokBBCukup=bb?(bb.stok>=bbKurang):true;
+ 
+    html+=`<div style="padding:5px 0;border-bottom:1px solid var(--gray-100);font-size:11px;">
+      <div style="display:flex;justify-content:space-between;">
+        <span>🌾 <strong>${bm.nama}</strong> ${mentahKurang} ${bm.satuanMentah}</span>
+        <span style="color:var(--warning);">${rp(cost)}</span>
+      </div>
+      ${bb?`<div style="color:var(--gray-400);font-size:10px;">→ Bahan baku: ${bb.nama} berkurang <strong>${bbKurang} ${bb.satuan}</strong> 
+        (stok: ${bb.stok} ${bb.satuan} ${stokBBCukup?'✅':'⚠️ KURANG'})</div>`:''}
+    </div>`;
+  });
+ 
+  html+=`<div style="margin-top:8px;font-weight:700;color:var(--success);">Total HPP: ${rp(totalHPP)}</div>`;
+  if(warnings.length) html+=`<div class="alert alert-warning" style="margin-top:6px;">${warnings.join('<br>')}</div>`;
+  prev.innerHTML=html;
+}
+ 
+function konfirmasiPakaiBahanProduk(){
+  const bpId=document.getElementById('pakai-bp-sel')?.value;
+  const qty=parseFloat(document.getElementById('pakai-bp-qty')?.value)||1;
+  const bp=bahanProduk.find(x=>x.id===bpId);
+  if(!bp||!bpId){toast('Pilih bahan produk','danger');return;}
+ 
+  const reductions=[];
+ 
+  // Kurangi stok bahan baku
+  for(const bi of bp.items){
+    const bm=bahanMentah.find(x=>x.id===bi.bahanMentahId);
+    if(!bm)continue;
+    const bb=ingredients.find(x=>x.id===bm.bahanBakuId);
+    if(!bb)continue;
+ 
+    const bbKurang=bm.qtyPerSatuan*bi.qty*qty;
+    if(bb.stok<bbKurang){
+      if(!confirm(`Stok ${bb.nama} tidak cukup! Stok: ${bb.stok} ${bb.satuan}, butuh: ${bbKurang} ${bb.satuan}. Tetap lanjutkan?`)){
+        return;
+      }
+    }
+    reductions.push({bahanBakuId:bb.id,bahanBakuNama:bb.nama,kurang:bbKurang,satuan:bb.satuan,bahanMentahNama:bm.nama,mentahKurang:bi.qty*qty,mentahSatuan:bm.satuanMentah});
+    bb.stok=Math.max(0,bb.stok-bbKurang);
+  }
+ 
+  saveIngredients();
+ 
+  // Catat log
+  penggunaanBahanLog.push({
+    id:genId(),waktu:Date.now(),bahanProdukId:bpId,bahanProdukNama:bp.nama,
+    qty,reductions
+  });
+  savePenggunaanBahan();
+ 
+  document.getElementById('pakai-bahan-produk-modal').classList.remove('open');
+  renderBahanMentahTable();
+  renderIngredientTable();
+  renderPenggunaanLog();
+  toast(`✓ ${qty}x ${bp.nama} digunakan — stok bahan baku berkurang`,'success');
+}
+ 
+function renderPenggunaanLog(){
+  const body=document.getElementById('penggunaan-log-body'); if(!body)return;
+  const recent=[...penggunaanBahanLog].reverse().slice(0,20);
+  if(!recent.length){body.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:14px;color:var(--gray-400);">Belum ada log</td></tr>`;return;}
+  body.innerHTML=recent.map(log=>{
+    const mentahStr=log.reductions.map(r=>`${r.bahanMentahNama} ${r.mentahKurang}${r.mentahSatuan}`).join(', ');
+    const bbStr=log.reductions.map(r=>`${r.bahanBakuNama} ${r.kurang}${r.satuan}`).join(', ');
+    return`<tr>
+      <td style="font-size:10px;white-space:nowrap;">${fmtDate(log.waktu)}</td>
+      <td style="font-weight:600;">${log.bahanProdukNama}</td>
+      <td>${log.qty}x</td>
+      <td style="font-size:10px;color:var(--teal);">${mentahStr}</td>
+      <td style="font-size:10px;color:var(--danger);">${bbStr}</td>
+    </tr>`;
+  }).join('');
+}
+ 
+// Inject UI saat halaman ingredients dibuka
+const _origShowPage=showPage;
+showPage=function(name){
+  _origShowPage(name);
+  if(name==='plugin-ingredients') setTimeout(()=>injectBahanUI(),100);
+};
 let products      = JSON.parse(localStorage.getItem('kkProduk')        || '[]');
 let transactions  = JSON.parse(localStorage.getItem('kkTransaksi')     || '[]');
 let stokBatch     = JSON.parse(localStorage.getItem('kkStokBatch')     || '[]');
