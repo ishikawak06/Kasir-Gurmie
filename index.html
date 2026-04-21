@@ -4081,7 +4081,183 @@ addPWALog('Aplikasi dimulai');
 if(window.location.hash.startsWith('#menu')){ showPage('menu-customer'); }
 window.addEventListener('hashchange',()=>{ if(window.location.hash.startsWith('#menu')) showPage('menu-customer'); });
 
-
+// ── CSS tambahan untuk UI perbaikan ──────────────────────────
+(function injectPatch03CSS(){
+  const style=document.createElement('style');
+  style.textContent=`
+    /* Order item redesign */
+    .order-item {
+      display:flex; align-items:flex-start; gap:6px;
+      padding:8px 6px; border-radius:8px;
+      border-bottom:1px solid var(--gray-100);
+      transition:background .1s;
+    }
+    .order-item:hover { background:var(--gray-50); }
+    .order-item-left { flex:1; min-width:0; }
+    .order-item-name { 
+      font-size:12px; font-weight:600; color:var(--gray-800);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .order-item-price-edit {
+      display:flex; align-items:center; gap:4px; margin-top:3px;
+    }
+    .order-item-price-edit input {
+      width:80px; padding:2px 5px; border:1px solid var(--gray-300);
+      border-radius:5px; font-size:11px; font-weight:600;
+      color:var(--primary); background:var(--white);
+    }
+    .order-item-price-edit input:focus { 
+      border-color:var(--primary); outline:none;
+      box-shadow:0 0 0 2px rgba(26,86,219,.15);
+    }
+    .price-label { font-size:10px; color:var(--gray-400); }
+    .order-item-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+    .order-item-subtotal { font-size:11px; font-weight:700; color:var(--gray-800); }
+ 
+    /* Metode bayar buttons redesign */
+    .metode-bayar-btns {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:5px; margin-bottom:8px;
+    }
+    .mbtn {
+      padding:7px 6px; border-radius:8px; font-size:11px; font-weight:600;
+      cursor:pointer; border:1.5px solid var(--gray-200);
+      background:var(--white); color:var(--gray-600);
+      transition:all .15s; text-align:center;
+    }
+    .mbtn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+    .mbtn.active { 
+      background:var(--primary); color:var(--white); 
+      border-color:var(--primary); box-shadow:0 2px 6px rgba(26,86,219,.3);
+    }
+ 
+    /* Diskon row redesign */
+    .diskon-row {
+      display:flex; align-items:center; gap:4px; 
+      margin-bottom:6px; background:var(--gray-50);
+      border-radius:8px; padding:4px 6px;
+    }
+    .diskon-toggle {
+      min-width:30px; height:26px; border-radius:6px;
+      border:1px solid var(--gray-300); background:var(--white);
+      font-size:11px; font-weight:700; cursor:pointer; color:var(--gray-600);
+      transition:all .15s;
+    }
+    .diskon-toggle.active { background:var(--purple); color:var(--white); border-color:var(--purple); }
+ 
+    /* Kembalian row */
+    .kembalian-row {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:8px;
+    }
+    .kembalian-val { font-size:13px; font-weight:700; color:var(--success); }
+    .kembalian-val.kembalian-neg { color:var(--danger); }
+ 
+    /* Kasir tab */
+    .kasir-filter-tabs {
+      display:flex; gap:3px; background:var(--gray-200);
+      border-radius:8px; padding:2px;
+    }
+    .kasir-tab {
+      padding:5px 12px; border-radius:6px; font-size:12px; font-weight:500;
+      cursor:pointer; border:none; background:none; color:var(--gray-600);
+      transition:all .15s;
+    }
+    .kasir-tab.active { background:var(--white); color:var(--primary); font-weight:600; box-shadow:var(--shadow); }
+ 
+    /* Order panel header */
+    .order-header {
+      padding:10px 12px; border-bottom:1px solid var(--gray-100);
+      background:var(--gray-50);
+    }
+    .order-title { font-size:13px; font-weight:700; color:var(--gray-900); }
+ 
+    /* Bayar button */
+    #btn-bayar {
+      background:linear-gradient(135deg,var(--success),#047857);
+      border:none; font-size:14px; font-weight:700;
+      padding:11px; border-radius:10px; letter-spacing:.3px;
+      box-shadow:0 3px 10px rgba(5,150,105,.35);
+    }
+    #btn-bayar:not(:disabled):hover { transform:translateY(-1px); box-shadow:0 5px 14px rgba(5,150,105,.4); }
+    #btn-bayar:disabled { background:var(--gray-300); box-shadow:none; }
+ 
+    /* Hold btn */
+    #btn-hold { border-radius:8px; font-size:12px; }
+ 
+    /* Product grid card hover */
+    .product-card:not(.stok-nol):hover { transform:translateY(-2px); }
+  `;
+  document.head.appendChild(style);
+})();
+ 
+// ── Override renderOrder — tambah editable harga ─────────────
+function renderOrder(){
+  const list=document.getElementById('order-items-list');
+  const subtotal=order.reduce((s,x)=>s+x.harga*x.qty,0);
+  const totalHPP=order.reduce((s,x)=>s+calcHPP(x.produkId,x.qty,null),0);
+ 
+  document.getElementById('order-total').textContent=rp(subtotal);
+  document.getElementById('order-hpp-info').textContent=
+    order.length?`HPP: ${rp(totalHPP)} | Laba est.: ${rp(subtotal-totalHPP)}`:'';
+ 
+  if(!order.length){
+    list.innerHTML=`
+      <div class="order-empty">
+        <div class="order-empty-icon">🛒</div>
+        <div style="font-size:12px;color:var(--gray-400);font-weight:500;">Tap produk untuk menambahkan</div>
+      </div>`;
+  } else {
+    list.innerHTML=order.map((item,idx)=>`
+      <div class="order-item">
+        <div class="order-item-left">
+          <div class="order-item-name">${item.nama}${item.varianNama?` <span style="font-size:9px;color:var(--purple);">(${item.varianNama})</span>`:''}</div>
+          <div class="order-item-price-edit">
+            <span class="price-label">Rp</span>
+            <input 
+              type="number" 
+              value="${item.harga}" 
+              min="0"
+              title="Klik untuk ubah harga"
+              onchange="updateOrderItemHarga(${idx},this.value)"
+              oninput="updateOrderItemHarga(${idx},this.value)"
+            >
+            <span class="price-label">×${item.qty}</span>
+          </div>
+        </div>
+        <div class="order-item-right">
+          <div class="order-qty">
+            <button class="qty-btn" onclick="changeQty('${item.produkId}','${item.varianId||''}', -1)">−</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.produkId}','${item.varianId||''}',1)">+</button>
+          </div>
+          <div class="order-item-subtotal">${rp(item.harga*item.qty)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+ 
+  updateOrderCalc();
+}
+ 
+// ── Fungsi update harga item di order ────────────────────────
+function updateOrderItemHarga(idx, val){
+  const harga=parseFloat(val)||0;
+  if(idx>=0 && idx<order.length){
+    order[idx].harga=harga;
+    // Recalculate subtotal display tanpa re-render full (hindari lose focus)
+    const subtotal=order.reduce((s,x)=>s+x.harga*x.qty,0);
+    document.getElementById('order-total').textContent=rp(subtotal);
+    updateOrderCalc();
+    // Update subtotal di baris yang bersangkutan
+    const rows=document.querySelectorAll('.order-item');
+    if(rows[idx]){
+      const subEl=rows[idx].querySelector('.order-item-subtotal');
+      if(subEl) subEl.textContent=rp(harga*order[idx].qty);
+    }
+  }
+}
+ 
 </script>
 </body>
 </html>
