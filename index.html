@@ -3816,8 +3816,7 @@ function closeSyncModal() { const el = document.getElementById('sync-modal'); if
 ['product-modal','receipt-modal','import-modal','batch-modal','sync-modal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
-checkAutopull();
-
+checkAutoPull();
 // ============================================================
 // PLUGINS
 // ============================================================
