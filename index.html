@@ -3154,6 +3154,12 @@ function bayar(){
   if(currentOrderPelangganId){
     const plgIdx=pelanggan.findIndex(x=>x.id===currentOrderPelangganId);
     if(plgIdx>=0){
+      // Kurangi poin yang ditukar (pendingPoinDeduct)
+      const poinDitukar = pelanggan[plgIdx]._pendingPoinDeduct || 0;
+      if(poinDitukar > 0){
+        pelanggan[plgIdx].poin = Math.max(0, (pelanggan[plgIdx].poin||0) - poinDitukar);
+        delete pelanggan[plgIdx]._pendingPoinDeduct;
+      }
       const poinDidapat=Math.floor(total/poinConfig.rupiah);
       pelanggan[plgIdx].poin=(pelanggan[plgIdx].poin||0)+poinDidapat;
       pelanggan[plgIdx].totalBelanja=(pelanggan[plgIdx].totalBelanja||0)+total;
@@ -5016,7 +5022,9 @@ window.addEventListener('hashchange',()=>{ if(window.location.hash.startsWith('#
 
 // ── CSS tambahan untuk UI perbaikan ──────────────────────────
 (function injectPatch03CSS(){
+  if(document.getElementById('patch03-css')) return; // guard duplikat
   const style=document.createElement('style');
+  style.id='patch03-css';
   style.textContent=`
     /* Order item redesign */
     .order-item {
