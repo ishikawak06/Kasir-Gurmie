@@ -2258,10 +2258,13 @@ function renderLapPenjualan(){
     </td>
   </tr>`).join(''):`<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada transaksi</td></tr>`;
  
-  // Tambahkan header kolom Aksi jika belum ada
+  // Tambahkan header kolom Aksi jika belum ada (idempotent check)
   const thead=document.querySelector('#lap-pjl-table')?.closest('table')?.querySelector('thead tr');
-  if(thead&&thead.cells.length<11){
-    const th=document.createElement('th'); th.textContent='Aksi'; thead.appendChild(th);
+  if(thead && thead.cells.length < 11 && !thead.querySelector('th[data-aksi]')){
+    const th=document.createElement('th');
+    th.textContent='Aksi';
+    th.setAttribute('data-aksi','1');
+    thead.appendChild(th);
   }
 }
  
