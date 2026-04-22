@@ -2906,8 +2906,8 @@ function calcHPP(prodId,qty,overrideMetode){
   if(awal>0) batches.push({qty:awal,hargaBeli:p.hargaBeli||0,tanggal:0});
   stokBatch.filter(b=>b.produkId===prodId).sort((a,b)=>a.tanggal-b.tanggal).forEach(b=>batches.push({...b}));
   if(m==='Average'){ const tQ=batches.reduce((s,b)=>s+b.qty,0),tV=batches.reduce((s,b)=>s+b.qty*b.hargaBeli,0); return (tQ?tV/tQ:0)*qty; }
-  if(m==='FIFO'){ let rem=qty,cost=0; for(const b of batches){if(!rem)break;const u=Math.min(rem,b.qty);cost+=u*b.hargaBeli;rem-=u;} return cost; }
-  if(m==='LIFO'){ let rem=qty,cost=0; for(let i=batches.length-1;i>=0;i--){if(!rem)break;const u=Math.min(rem,batches[i].qty);cost+=u*batches[i].hargaBeli;rem-=u;} return cost; }
+  if(m==='FIFO'){ let rem=qty,cost=0; for(const b of batches){if(!rem)break;const u=Math.min(rem,b.qty);cost+=u*b.hargaBeli;rem-=u;} if(rem>0){const lastHarga=batches.length?batches[batches.length-1].hargaBeli:(p.hargaBeli||0);cost+=rem*lastHarga;} return cost; }
+  if(m==='LIFO'){ let rem=qty,cost=0; for(let i=batches.length-1;i>=0;i--){if(!rem)break;const u=Math.min(rem,batches[i].qty);cost+=u*batches[i].hargaBeli;rem-=u;} if(rem>0){const firstHarga=batches.length?batches[0].hargaBeli:(p.hargaBeli||0);cost+=rem*firstHarga;} return cost; }
   return (p.hargaBeli||0)*qty;
 }
 
