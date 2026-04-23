@@ -4925,6 +4925,7 @@
       renderLapPenjualan();
       renderDashboard();
       toast('Transaksi dihapus ✓', 'success');
+      autoSyncIfEnabled();
     }
 
     // ── 3. Modal Edit Transaksi ──
@@ -5051,6 +5052,7 @@
       renderLapPenjualan();
       renderDashboard();
       toast('Transaksi diperbarui ✓', 'success');
+      autoSyncIfEnabled();
     }
 
     // Auto-inject modal on page load
@@ -5133,12 +5135,12 @@
       // Also add to stokBatch
       stokBatch.push({ id: genId(), produkId: pid, qty, hargaBeli, tanggal: entry.tanggal, metode: settingMetode, supplier });
       saveBatches();
-      ['beli-qty','beli-harga','beli-supplier','beli-catatan'].forEach(id=>document.getElementById(id).value='');
-document.getElementById('beli-tgl').value=todayISO();
-toast('Pembelian disimpan ✓','success');
-renderLapPembelian(); updateStokBadge();
-autoSyncIfEnabled();
-}
+      ['beli-qty', 'beli-harga', 'beli-supplier', 'beli-catatan'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('beli-tgl').value = todayISO();
+      toast('Pembelian disimpan ✓', 'success');
+      renderLapPembelian(); updateStokBadge();
+      autoSyncIfEnabled();
+    }
 
     // ===== 3. LAPORAN PENGUNJUNG =====
     function renderLapPengunjung() {
@@ -5592,7 +5594,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       saveProducts(); closeProductModal(); renderProductTable(); updateStokBadge();
       toast(editingProductId ? 'Produk diperbarui ✓' : 'Produk ditambahkan ✓', 'success');
     }
-    function deleteProduct(id) { if (!confirm('Hapus produk ini?')) return; products = products.filter(p => p.id !== id); saveProducts(); renderProductTable(); updateStokBadge(); toast('Produk dihapus'); }
+    function deleteProduct(id) { if (!confirm('Hapus produk ini?')) return; products = products.filter(p => p.id !== id); saveProducts(); renderProductTable(); updateStokBadge(); toast('Produk dihapus'); autoSyncIfEnabled(); }
 
     // ===== PRODUCT TABLE =====
     function renderProductTable() {
@@ -5946,6 +5948,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       saveOpnameData();
       toast('Opname selesai! ' + items.length + ' produk diperbarui. Riwayat batch tetap tersimpan ✓', 'success');
       renderOpname(); updateStokBadge();
+      autoSyncIfEnabled();
     }
     function renderRiwayatOpname() {
       const el = document.getElementById('riwayat-opname-list');
@@ -6014,6 +6017,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       if (hargaBeli > 0) pembelian.push({ id: genId(), produkId: pid, qty, hargaBeli, supplier, catatan: '', tanggal: ts, metode: settingMetode });
       saveBatches(); savePembelianData(); closeBatchModal(); renderBatchTable(); updateStokBadge();
       toast('Stok masuk disimpan ✓', 'success');
+      autoSyncIfEnabled();
     }
     function renderBatchTable() {
       const tbody = document.getElementById('batch-table-body'); if (!tbody) return;
@@ -6849,6 +6853,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       else ingredients.push({ id: genId(), ...data });
       saveIngredients(); closeIngredientModal(); renderIngredientTable(); renderHPPTable();
       toast(editIngredientId ? 'Bahan diperbarui ✓' : 'Bahan ditambahkan ✓', 'success');
+      autoSyncIfEnabled();
     }
 
     function deleteIngredient(id) { if (!confirm('Hapus bahan ini?')) return; ingredients = ingredients.filter(x => x.id !== id); saveIngredients(); renderIngredientTable(); renderHPPTable(); }
@@ -7208,7 +7213,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       const data = { nama, jabatan: document.getElementById('kryw-jabatan').value, gaji: parseFloat(document.getElementById('kryw-gaji').value) || 0, jamKerja: parseInt(document.getElementById('kryw-jam').value) || 8, foto: krywCurrentFoto || (editKaryawanId ? (karyawan.find(x => x.id === editKaryawanId) || {}).foto : null) || null, status: 'aktif' };
       if (editKaryawanId) { const idx = karyawan.findIndex(x => x.id === editKaryawanId); if (idx >= 0) karyawan[idx] = { ...karyawan[idx], ...data }; }
       else karyawan.push({ id: genId(), ...data });
-      saveKaryawanData(); closeKaryawanModal(); renderKaryawanTable(); toast(editKaryawanId ? 'Karyawan diperbarui ✓' : 'Karyawan ditambahkan ✓', 'success');
+      saveKaryawanData(); closeKaryawanModal(); renderKaryawanTable(); toast(editKaryawanId ? 'Karyawan diperbarui ✓' : 'Karyawan ditambahkan ✓', 'success') autoSyncIfEnabled();;
     }
 
     function deleteKaryawan(id) { if (!confirm('Hapus karyawan ini?')) return; karyawan = karyawan.filter(x => x.id !== id); saveKaryawanData(); renderKaryawanTable(); }
@@ -7413,6 +7418,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       else pelanggan.push({ id: genId(), ...data, tglDaftar: Date.now(), totalBelanja: 0, jumlahTrx: 0, poin: 0, trxIds: [] });
       savePelangganData(); document.getElementById('edit-pelanggan-modal').classList.remove('open'); renderPelangganTable(); renderPelangganKPI();
       toast(_editPelangganId ? 'Pelanggan diperbarui ✓' : 'Pelanggan ditambahkan ✓', 'success');
+      autoSyncIfEnabled();
     }
     function deletePelanggan(id) { if (!confirm('Hapus pelanggan ini?')) return; pelanggan = pelanggan.filter(x => x.id !== id); savePelangganData(); renderPelangganTable(); }
 
@@ -7574,6 +7580,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       else bundles.push({ id: genId(), ...data });
       saveBundlesData(); closeBundleModal(); renderBundleTable();
       toast(editBundleId ? 'Bundle diperbarui ✓' : 'Bundle dibuat ✓', 'success');
+      autoSyncIfEnabled();
     }
     function renderBundleTable() {
       const body = document.getElementById('bundle-table-body'); if (!body) return;
@@ -7688,6 +7695,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       toast('Pengeluaran disimpan ✓', 'success');
       renderLapPengeluaran();
       updateReimburseBadge();
+      autoSyncIfEnabled();
     }
     function previewFotoStruk(id) {
       const p = pengeluaran.find(x => x.id === id); if (!p || !p.fotoStruk) return;
@@ -7790,7 +7798,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       }
       updateReimburseBadge();
     }
-    function deletePengeluaran(id) { if (!confirm('Hapus pengeluaran ini?')) return; pengeluaran = pengeluaran.filter(x => x.id !== id); savePengeluaranData(); renderLapPengeluaran(); }
+    function deletePengeluaran(id) { if (!confirm('Hapus pengeluaran ini?')) return; pengeluaran = pengeluaran.filter(x => x.id !== id); savePengeluaranData(); renderLapPengeluaran(); autoSyncIfEnabled(); }
 
     // ─── VARIAN di PRODUCT FORM ────────────────────────────────
     function renderVarianList(prodId) {
@@ -7816,6 +7824,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       saveProducts(); renderVarianList(editingProductId);
       document.getElementById('new-varian-nama').value = ''; document.getElementById('new-varian-harga').value = '';
       toast('Varian ' + nama + ' ditambahkan ✓', 'success');
+      autoSyncIfEnabled()
     }
     function removeVarianFromForm(idx) {
       if (!editingProductId) return;
