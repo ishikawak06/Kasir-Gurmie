@@ -1559,6 +1559,373 @@
 
     /* RESPONSIVE */
     @media(max-width:768px) {
+
+      /* ── PRODUK GRID MOBILE ── */
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding-bottom: 120px !important;
+      }
+
+      .product-card-img,
+      .product-card-no-img {
+        height: 90px !important;
+      }
+
+      .product-card-body {
+        padding: 6px 8px !important;
+      }
+
+      .product-card-name {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+      }
+
+      .product-card-price {
+        font-size: 12px !important;
+        font-weight: 800 !important;
+      }
+
+      /* ── ORDER PANEL MOBILE ── */
+      .order-panel {
+        bottom: 0 !important;
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 80vh !important;
+        z-index: 200 !important;
+      }
+
+      .order-footer {
+        padding-bottom: env(safe-area-inset-bottom, 16px) !important;
+      }
+
+      .order-items {
+        max-height: 35vh !important;
+        overflow-y: auto !important;
+      }
+
+      /* ── MOBILE CART BAR ── */
+      .mobile-cart-bar {
+        bottom: 58px !important;
+        padding: 14px 18px !important;
+        font-size: 14px !important;
+        z-index: 150 !important;
+      }
+
+      /* ── BOTTOM NAV ── */
+      .bottom-nav-inner {
+        height: 58px !important;
+        align-items: center !important;
+      }
+
+      .bottom-nav-item {
+        min-height: 58px !important;
+        padding: 6px 2px 4px !important;
+        gap: 2px !important;
+      }
+
+      .bottom-nav-icon {
+        font-size: 22px !important;
+      }
+
+      .bottom-nav-item span:last-child {
+        font-size: 9px !important;
+        letter-spacing: -0.3px;
+      }
+
+      /* ── PAGE HEADER MOBILE ── */
+      .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+      }
+
+      .page-title {
+        font-size: 17px !important;
+      }
+
+      .page-header>div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
+
+      .page-header .btn {
+        flex: 1 !important;
+        justify-content: center !important;
+        min-width: 80px !important;
+      }
+
+      /* ── STATS GRID MOBILE ── */
+      .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+      }
+
+      .stat-card {
+        padding: 10px 12px !important;
+      }
+
+      .stat-value {
+        font-size: 15px !important;
+      }
+
+      .stat-icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 13px !important;
+      }
+
+      /* ── KPI GRID MOBILE ── */
+      .kpi-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+      }
+
+      .kpi-val {
+        font-size: 16px !important;
+      }
+
+      .kpi-card {
+        padding: 12px !important;
+      }
+
+      /* ── FORM CONTROLS MOBILE ── */
+      .form-control {
+        min-height: 46px !important;
+        font-size: 16px !important;
+      }
+
+      select.form-control {
+        min-height: 46px !important;
+      }
+
+      textarea.form-control {
+        min-height: 80px !important;
+      }
+
+      /* ── BUTTONS MOBILE ── */
+      .btn {
+        min-height: 44px !important;
+      }
+
+      .btn-sm {
+        min-height: 40px !important;
+        font-size: 13px !important;
+      }
+
+      .btn-xs {
+        min-height: 36px !important;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+      }
+
+      /* ── QTY BUTTONS MOBILE ── */
+      .qty-btn {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 20px !important;
+        border-radius: 8px !important;
+        border: 1.5px solid var(--gray-300) !important;
+      }
+
+      .qty-val {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        min-width: 24px !important;
+      }
+
+      /* ── MODAL MOBILE ── */
+      .modal-overlay.open {
+        align-items: flex-end !important;
+        padding: 0 !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+      }
+
+      .modal {
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 90vh !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .modal-lg,
+      .modal-xl {
+        max-width: 100% !important;
+      }
+
+      .modal-header {
+        padding: 16px 18px 12px !important;
+        border-radius: 20px 20px 0 0 !important;
+      }
+
+      .modal-title {
+        font-size: 15px !important;
+      }
+
+      .modal-footer {
+        padding: 12px 18px !important;
+        padding-bottom: env(safe-area-inset-bottom, 16px) !important;
+        gap: 8px !important;
+      }
+
+      /* ── TABLE MOBILE ── */
+      .table-wrap {
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      td,
+      th {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+      }
+
+      /* ── CARD MOBILE ── */
+      .card {
+        border-radius: 12px !important;
+      }
+
+      .card-header {
+        padding: 10px 14px !important;
+      }
+
+      .card-body {
+        padding: 12px 14px !important;
+      }
+
+      /* ── KASIR LAYOUT MOBILE ── */
+      .kasir-layout {
+        gap: 0 !important;
+      }
+
+      /* ── FILTER BAR MOBILE ── */
+      .filter-bar {
+        gap: 6px !important;
+      }
+
+      .filter-btn {
+        min-height: 36px !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+      }
+
+      /* ── ORDER PANEL OVERLAY ── */
+      #order-panel-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 199;
+      }
+
+      #order-panel-overlay.show {
+        display: block;
+      }
+
+      /* ── TWO COL / THREE COL ── */
+      .two-col,
+      .three-col {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+
+      /* ── INPUT SEARCH KASIR ── */
+      #search-product {
+        width: 100% !important;
+        min-height: 44px !important;
+      }
+
+      #filter-cat {
+        width: 100% !important;
+      }
+
+      /* ── PAGE PADDING BOTTOM ── */
+      .page {
+        padding-bottom: 80px !important;
+      }
+
+      #page-transaksi {
+        padding-bottom: 0 !important;
+      }
+
+      /* ── SCROLL SMOOTH ── */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .order-items,
+      .table-wrap,
+      .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* ── TOAST MOBILE ── */
+      .toast-wrap {
+        bottom: 75px !important;
+        left: 12px !important;
+        right: 12px !important;
+      }
+
+      .toast {
+        font-size: 13px !important;
+        padding: 10px 16px !important;
+        border-radius: 12px !important;
+      }
+
+      /* ── METODE BAYAR MOBILE ── */
+      .metode-bayar-btns {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+      }
+
+      .mbtn {
+        min-height: 44px !important;
+        font-size: 12px !important;
+      }
+
+      /* ── ORDER TOTAL ── */
+      #order-total-final {
+        font-size: 20px !important;
+      }
+
+      .order-total-val {
+        font-size: 20px !important;
+      }
+
+      /* ── PLUGIN GRID MOBILE ── */
+      #plugin-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* ── SHORTCUT GRID MOBILE ── */
+      .shortcut-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+      }
+
+      .shortcut-card {
+        padding: 16px 10px !important;
+      }
+
+      .shortcut-icon {
+        font-size: 28px !important;
+      }
+
+      /* ── BEST SELLER ── */
+      .best-seller-item {
+        padding: 8px 0 !important;
+      }
+
+      .best-seller-name {
+        font-size: 12px !important;
+      }
+
+      #mobile-sync-fab {
+        display: flex !important;
+      }
+
       .sidebar {
         transform: translateX(-100%)
       }
@@ -1928,15 +2295,25 @@
           <div class="page-subtitle" id="trx-metode-label"></div>
         </div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
-          <input class="form-control" id="search-product" placeholder="🔍 Cari produk..." style="width:155px;"
+          <input class="form-control" id="search-product" placeholder="🔍 Cari produk..." <div
+            style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;width:100%;">
+          <input class="form-control" id="search-product" placeholder="🔍 Cari produk..."
+            style="flex:2;min-width:140px;" oninput="renderKasirProducts()">
+          <select class="form-control" id="filter-cat" onchange="renderKasirProducts()"
+            style="flex:1;min-width:110px;">"
             oninput="renderKasirProducts()">
-          <select class="form-control" id="filter-cat" onchange="renderKasirProducts()" style="width:120px;">
-            <option value="">Semua Kategori</option>
-            <option>Produksi</option>
-            <option>Non-Produksi</option>
-            <option>Penjualan</option>
-            <option>Lainnya</option>
-          </select>
+            <select class="form-control" id="filter-cat" onchange="renderKasirProducts()" <div
+              style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;width:100%;">
+              <input class="form-control" id="search-product" placeholder="🔍 Cari produk..."
+                style="flex:2;min-width:140px;" oninput="renderKasirProducts()">
+              <select class="form-control" id="filter-cat" onchange="renderKasirProducts()"
+                style="flex:1;min-width:110px;">>
+                <option value="">Semua Kategori</option>
+                <option>Produksi</option>
+                <option>Non-Produksi</option>
+                <option>Penjualan</option>
+                <option>Lainnya</option>
+              </select>
         </div>
       </div>
       <div style="margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -3562,7 +3939,15 @@
           class="bottom-nav-icon">⚙️</span><span>Setting</span></button>
     </div>
   </nav>
-
+  <!-- MOBILE SYNC FAB -->
+  <button id="mobile-sync-fab" onclick="openSyncModal()" title="Sync ke Google Spreadsheet" style="display:none;position:fixed;bottom:70px;right:14px;z-index:110;
+    width:48px;height:48px;border-radius:50%;border:none;
+    background:var(--primary);color:white;font-size:20px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(26,86,219,.45);align-items:center;justify-content:center;">
+    ☁️
+  </button>
+  <!-- ORDER PANEL OVERLAY (mobile) -->
+  <div id="order-panel-overlay" onclick="closeMobileOrder()"></div>
   <!-- MOBILE CART BAR -->
   <div class="mobile-cart-bar" id="mobile-cart-bar" style="display:none;" onclick="toggleMobileOrder()">
     <span>🛒 <span id="mobile-cart-count">0 item</span></span>
@@ -3981,7 +4366,7 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">🌾 Bahan Mentah (Porsi Pakai)</span>
-          <button class="btn btn-sm btn-success" onclick="openBahanMentahModal()">➕ Tambah</button>
+          <button class="btn btn-sm btn-success" onclick="openBahanMentahModalNew()">➕ Tambah</button>
         </div>
         <div style="padding:0;"><div class="table-wrap">
           <table><thead><tr>
@@ -4024,44 +4409,10 @@
           <span class="modal-title" id="bm-modal-title">Tambah Bahan Mentah</span>
           <button class="modal-close" onclick="document.getElementById('bahan-mentah-modal').classList.remove('open')">✕</button>
         </div>
-        <div class="modal-body">
-          <div class="alert alert-info" style="font-size:11px;">
-            💡 Bahan mentah adalah <strong>porsi</strong> yang dipakai dari bahan baku.
-            Contoh: Bahan baku = Terigu 1kg (Rp10.000). 
-            Bahan mentah = 100 gram terigu (Rp1.000).
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nama Bahan Mentah *</label>
-            <input class="form-control" id="bm-nama" placeholder="Misal: Terigu 100gr">
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Satuan Pakai</label>
-              <select class="form-control" id="bm-satuan">
-                <option>gram</option><option>ml</option><option>pcs</option>
-                <option>sdm</option><option>sdt</option><option>lembar</option><option>buah</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Qty per 1 Satuan Pakai</label>
-              <input class="form-control" id="bm-qty-per-satuan" type="number" step="0.01" placeholder="Misal: 100 (gram)">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Dari Bahan Baku</label>
-            <select class="form-control" id="bm-bahan-baku-sel" onchange="calcHargaMentah()">
-              <option value="">-- Pilih Bahan Baku --</option>
-            </select>
-          </div>
-          <div id="bm-harga-preview" style="display:none;padding:8px;background:var(--primary-light);border-radius:7px;font-size:12px;margin-bottom:8px;"></div>
-          <div class="form-group">
-            <label class="form-label">Harga per Satuan Pakai (Rp) <span style="color:var(--gray-400);font-size:10px;">(otomatis / bisa diubah)</span></label>
-            <input class="form-control" id="bm-harga" type="number" placeholder="0" step="0.01">
-          </div>
-        </div>
+        
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="document.getElementById('bahan-mentah-modal').classList.remove('open')">Batal</button>
-          <button class="btn btn-primary" onclick="saveBahanMentahItem()">💾 Simpan</button>
+          <button class="btn btn-primary" onclick="saveBahanMentahItemNew()">💾 Simpan</button>
         </div>
       </div>
     </div>
@@ -4074,63 +4425,48 @@
           <button class="modal-close" onclick="document.getElementById('bahan-produk-modal').classList.remove('open')">✕</button>
         </div>
         <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label">Nama Bahan Produk *</label>
-            <input class="form-control" id="bp-nama" placeholder="Misal: Mie Rebus Porsi">
+          <div class="alert alert-info" style="font-size:11px;">
+            💡 Satu bahan mentah bisa berasal dari <strong>beberapa bahan baku</strong>.
+            Contoh: "Bumbu Kuning" = 50gr Kunyit + 30gr Bawang + 20gr Jahe.
           </div>
           <div class="form-group">
-            <label class="form-label">Komposisi</label>
-            <!-- Tab switch -->
-            <div style="display:flex;gap:3px;background:var(--gray-200);border-radius:8px;padding:2px;margin-bottom:8px;">
-              <button class="kasir-tab active" id="bptab-mentah" onclick="switchBpTab('mentah')">🌾 Bahan Mentah</button>
-              <button class="kasir-tab" id="bptab-bb" onclick="switchBpTab('bb')">📦 Bahan Baku</button>
-              <button class="kasir-tab" id="bptab-bp" onclick="switchBpTab('bp')">🏭 Bahan Produk</button>
-            </div>
-            <div id="bp-items-list" style="margin-bottom:8px;min-height:30px;border:1px solid var(--gray-200);border-radius:7px;padding:6px;"></div>
-            <!-- Tab: Bahan Mentah -->
-            <div id="bptab-panel-mentah">
-              <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
-                <div style="flex:1;min-width:120px;">
-                  <select class="form-control" id="bp-mentah-sel"><option value="">Pilih bahan mentah...</option></select>
-                </div>
-                <div style="width:80px;">
-                  <input class="form-control" id="bp-mentah-qty" type="number" step="0.01" value="1" placeholder="Qty">
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="addBahanProdukItem()">+ Add</button>
-              </div>
-            </div>
-            <!-- Tab: Bahan Baku Langsung -->
-            <div id="bptab-panel-bb" style="display:none;">
-              <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
-                <div style="flex:1;min-width:140px;">
-                  <select class="form-control" id="bp-bb-langsung-sel"><option value="">Pilih bahan baku...</option></select>
-                </div>
-                <div style="width:80px;">
-                  <input class="form-control" id="bp-bb-qty" type="number" step="0.01" value="1" placeholder="Qty">
-                </div>
-                <div style="width:90px;">
-                  <input class="form-control" id="bp-bb-harga-override" type="number" placeholder="Harga (opt)">
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="addBahanBakuLangsung()">+ Add</button>
-              </div>
-            </div>
-            <!-- Tab: Bahan Produk Lain -->
-            <div id="bptab-panel-bp" style="display:none;">
-              <div class="alert alert-info" style="font-size:11px;padding:6px 10px;">
-                💡 Gunakan bahan produk lain sebagai komponen (nested/sub-resep).
-              </div>
-              <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
-                <div style="flex:1;min-width:140px;">
-                  <select class="form-control" id="bp-bp-nested-sel"><option value="">Pilih bahan produk...</option></select>
-                </div>
-                <div style="width:80px;">
-                  <input class="form-control" id="bp-bp-nested-qty" type="number" step="0.01" value="1" placeholder="Qty">
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="addBahanProdukNested()">+ Add</button>
-              </div>
-            </div>
+            <label class="form-label">Nama Bahan Mentah *</label>
+            <input class="form-control" id="bm-nama" placeholder="Misal: Bumbu Kuning, Mie 100gr">
           </div>
-          <div id="bp-hpp-preview" style="padding:8px;background:var(--success-light);border-radius:7px;font-size:12px;margin-top:8px;display:none;"></div>
+          <div class="form-group">
+            <label class="form-label">Satuan Pakai</label>
+            <select class="form-control" id="bm-satuan">
+              <option>gram</option><option>ml</option><option>pcs</option>
+              <option>sdm</option><option>sdt</option><option>lembar</option><option>buah</option><option>porsi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Harga per 1 Satuan (Rp) *</label>
+            <input class="form-control" id="bm-harga" type="text" inputmode="numeric" placeholder="Total harga 1 satuan" oninput="formatBmHarga(this)">
+          </div>
+
+          <div style="background:var(--gray-50);border-radius:10px;padding:12px;margin-top:8px;">
+            <div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:8px;">
+              📦 Sumber dari Bahan Baku (opsional, bisa lebih dari 1)
+            </div>
+            <div id="bm-bb-list" style="margin-bottom:8px;min-height:20px;"></div>
+            <div style="display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;">
+              <div style="flex:2;min-width:120px;">
+                <label style="font-size:10px;color:var(--gray-500);">Pilih Bahan Baku</label>
+                <select class="form-control" id="bm-bb-add-sel" onchange="previewBmBB()">
+                  <option value="">-- Pilih --</option>
+                </select>
+              </div>
+              <div style="width:70px;">
+                <label style="font-size:10px;color:var(--gray-500);">Qty Pakai</label>
+                <input class="form-control" id="bm-bb-add-qty" type="number" step="0.01" value="1" placeholder="Qty" oninput="previewBmBB()">
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addBmBBItem()" style="margin-top:auto;">+ Add</button>
+            </div>
+            <div id="bm-bb-preview" style="font-size:11px;color:var(--success);margin-top:4px;"></div>
+          </div>
+
+          <div id="bm-total-preview" style="margin-top:8px;padding:8px;background:var(--primary-light);border-radius:7px;font-size:12px;display:none;"></div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="document.getElementById('bahan-produk-modal').classList.remove('open')">Batal</button>
@@ -4230,17 +4566,142 @@
   `;
       document.getElementById('bm-harga').value = Math.round(hargaPerUnit);
     }
+    // ── BAHAN MENTAH MULTI-BB SYSTEM ──────────────────────────
+    var _bmBBItems = []; // [{bahanBakuId, qty, nama, satuan, harga}]
+
+    function openBahanMentahModalNew(id) {
+      _editBahanMentahId = id || null;
+      _bmBBItems = [];
+      document.getElementById('bm-modal-title').textContent = id ? 'Edit Bahan Mentah' : 'Tambah Bahan Mentah';
+      ['bm-nama', 'bm-harga'].forEach(function (i) { var el = document.getElementById(i); if (el) el.value = ''; });
+      document.getElementById('bm-satuan').value = 'gram';
+
+      // Populate bahan baku select
+      var sel = document.getElementById('bm-bb-add-sel');
+      if (sel) sel.innerHTML = '<option value="">-- Pilih --</option>' +
+        ingredients.map(function (i) { return '<option value="' + i.id + '">' + i.nama + ' (Rp' + i.harga.toLocaleString('id-ID') + '/' + i.satuan + ')</option>'; }).join('');
+
+      if (id) {
+        var bm = bahanMentah.find(function (x) { return x.id === id; });
+        if (bm) {
+          document.getElementById('bm-nama').value = bm.nama || '';
+          document.getElementById('bm-satuan').value = bm.satuanMentah || 'gram';
+          document.getElementById('bm-harga').value = (bm.hargaPerSatuan || 0).toLocaleString('id-ID');
+          _bmBBItems = bm.bahanBakuSources ? JSON.parse(JSON.stringify(bm.bahanBakuSources)) : [];
+        }
+      }
+      renderBmBBList();
+      document.getElementById('bahan-mentah-modal').classList.add('open');
+    }
+
+    function formatBmHarga(el) {
+      var raw = el.value.replace(/\D/g, '');
+      el.dataset.rawValue = raw;
+      if (raw) el.value = parseInt(raw).toLocaleString('id-ID');
+    }
+
+    function previewBmBB() {
+      var bbId = (document.getElementById('bm-bb-add-sel') || {}).value;
+      var qty = parseFloat((document.getElementById('bm-bb-add-qty') || {}).value) || 1;
+      var prev = document.getElementById('bm-bb-preview');
+      if (!bbId || !prev) { if (prev) prev.textContent = ''; return; }
+      var bb = ingredients.find(function (x) { return x.id === bbId; });
+      if (!bb) { prev.textContent = ''; return; }
+      var cost = bb.harga * qty;
+      prev.textContent = qty + ' ' + bb.satuan + ' ' + bb.nama + ' = ' + rp(cost);
+      // Auto-update harga bm jika belum diisi manual
+      var hargaEl = document.getElementById('bm-harga');
+      if (hargaEl && (!hargaEl.value || hargaEl.value === '0')) {
+        hargaEl.value = Math.round(cost).toLocaleString('id-ID');
+        hargaEl.dataset.rawValue = Math.round(cost);
+      }
+    }
+
+    function addBmBBItem() {
+      var bbId = (document.getElementById('bm-bb-add-sel') || {}).value;
+      var qty = parseFloat((document.getElementById('bm-bb-add-qty') || {}).value) || 1;
+      if (!bbId) { toast('Pilih bahan baku dulu', 'danger'); return; }
+      var bb = ingredients.find(function (x) { return x.id === bbId; });
+      if (!bb) return;
+      var ex = _bmBBItems.findIndex(function (x) { return x.bahanBakuId === bbId; });
+      if (ex >= 0) { _bmBBItems[ex].qty += qty; }
+      else { _bmBBItems.push({ bahanBakuId: bbId, qty: qty, namaBB: bb.nama, satuanBB: bb.satuan, hargaBB: bb.harga }); }
+      // Auto-calculate total harga
+      var totalCost = _bmBBItems.reduce(function (s, bi) { return s + bi.hargaBB * bi.qty; }, 0);
+      var hargaEl = document.getElementById('bm-harga');
+      if (hargaEl) { hargaEl.value = Math.round(totalCost).toLocaleString('id-ID'); hargaEl.dataset.rawValue = Math.round(totalCost); }
+      renderBmBBList();
+      // Reset
+      document.getElementById('bm-bb-add-sel').value = '';
+      document.getElementById('bm-bb-add-qty').value = '1';
+      document.getElementById('bm-bb-preview').textContent = '';
+    }
+
+    function removeBmBBItem(idx) {
+      _bmBBItems.splice(idx, 1);
+      var totalCost = _bmBBItems.reduce(function (s, bi) { return s + bi.hargaBB * bi.qty; }, 0);
+      if (_bmBBItems.length > 0) {
+        var hargaEl = document.getElementById('bm-harga');
+        if (hargaEl) { hargaEl.value = Math.round(totalCost).toLocaleString('id-ID'); hargaEl.dataset.rawValue = Math.round(totalCost); }
+      }
+      renderBmBBList();
+    }
+
+    function renderBmBBList() {
+      var el = document.getElementById('bm-bb-list'); if (!el) return;
+      if (!_bmBBItems.length) { el.innerHTML = '<div style="color:var(--gray-400);font-size:11px;padding:4px 0;">Belum ada sumber bahan baku (opsional)</div>'; return; }
+      var totalCost = _bmBBItems.reduce(function (s, bi) { return s + bi.hargaBB * bi.qty; }, 0);
+      el.innerHTML = _bmBBItems.map(function (bi, i) {
+        return '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--gray-100);font-size:12px;">' +
+          '<span style="flex:1;">📦 ' + bi.namaBB + '</span>' +
+          '<span style="color:var(--gray-500);">' + bi.qty + ' ' + bi.satuanBB + '</span>' +
+          '<span style="color:var(--warning);min-width:60px;text-align:right;">' + rp(bi.hargaBB * bi.qty) + '</span>' +
+          '<button onclick="removeBmBBItem(' + i + ')" style="border:none;background:none;color:var(--danger);cursor:pointer;font-size:14px;padding:0 2px;">✕</button>' +
+          '</div>';
+      }).join('') + '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;font-weight:700;"><span>Total dari BB</span><span style="color:var(--success);">' + rp(totalCost) + '</span></div>';
+    }
+
+    // Override saveBahanMentahItem untuk support multi-BB
+    function saveBahanMentahItemNew() {
+      var nama = (document.getElementById('bm-nama') || {}).value || '';
+      nama = nama.trim();
+      if (!nama) { toast('Nama bahan mentah wajib diisi', 'danger'); return; }
+      var hargaEl = document.getElementById('bm-harga');
+      var hargaRaw = hargaEl ? (hargaEl.dataset.rawValue || hargaEl.value.replace(/\./g, '')) : '0';
+      var data = {
+        nama: nama,
+        satuanMentah: document.getElementById('bm-satuan').value,
+        hargaPerSatuan: parseFloat(hargaRaw) || 0,
+        bahanBakuId: _bmBBItems.length === 1 ? _bmBBItems[0].bahanBakuId : null, // backward compat
+        bahanBakuSources: JSON.parse(JSON.stringify(_bmBBItems)), // multi BB
+        qtyPerSatuan: 1,
+        stok: 0
+      };
+      if (_editBahanMentahId) {
+        var idx = bahanMentah.findIndex(function (x) { return x.id === _editBahanMentahId; });
+        if (idx >= 0) bahanMentah[idx] = Object.assign(bahanMentah[idx], data);
+      } else {
+        bahanMentah.push(Object.assign({ id: genId() }, data));
+      }
+      saveBahanMentah();
+      document.getElementById('bahan-mentah-modal').classList.remove('open');
+      renderBahanMentahTable();
+      toast(_editBahanMentahId ? 'Bahan mentah diperbarui ✓' : 'Bahan mentah ditambahkan ✓', 'success');
+    }
+
+    // Patch: ubah pemanggilan fungsi lama ke baru
+    // Ganti onclick di tombol Tambah Bahan Mentah dan tombol Simpan modal
 
     function saveBahanMentahItem() {
       const nama = document.getElementById('bm-nama').value.trim();
       if (!nama) { toast('Nama bahan mentah wajib diisi', 'danger'); return; }
-      const data = {
-        nama,
-        satuanMentah: document.getElementById('bm-satuan').value,
-        qtyPerSatuan: parseFloat(document.getElementById('bm-qty-per-satuan').value) || 1,
-        bahanBakuId: document.getElementById('bm-bahan-baku-sel').value || null,
-        hargaPerSatuan: parseFloat(document.getElementById('bm-harga').value) || 0,
-        stok: 0 // bahan mentah tidak punya stok sendiri, diturunkan dari bahan baku
+      var ingHargaEl = document.getElementById('ing-harga');
+      var hargaRaw = ingHargaEl ? ingHargaEl.value.replace(/\./g, '').replace(',', '.') : '0';
+      var data = {
+        nama: nama,
+        satuan: document.getElementById('ing-satuan').value,
+        harga: parseFloat(hargaRaw) || 0,
+        stok: parseFloat((document.getElementById('ing-stok').value || '0').replace(/\./g, '')) || 0
       };
 
       if (_editBahanMentahId) {
@@ -4270,7 +4731,7 @@
       <td>${bm.qtyPerSatuan} ${bb ? bb.satuan : ''}</td>
       <td style="font-weight:600;color:var(--primary);">${rp(bm.hargaPerSatuan)}</td>
       <td style="white-space:nowrap;">
-        <button class="btn btn-xs btn-outline" onclick="openBahanMentahModal('${bm.id}')" style="margin-right:2px;">✏️</button>
+        <button class="btn btn-xs btn-outline" onclick="openBahanMentahModalNew('${bm.id}')" style="margin-right:2px;">✏️</button>
         <button class="btn btn-xs btn-danger" onclick="deleteBahanMentah('${bm.id}')">🗑️</button>
       </td>
     </tr>`;
@@ -4706,7 +5167,16 @@
       const pg = document.getElementById('page-' + name); if (pg) pg.classList.add('active');
       document.querySelectorAll('[data-page="' + name + '"]').forEach(n => n.classList.add('active'));
       const bn = document.getElementById('bnav-' + name); if (bn) bn.classList.add('active');
-      if (name === 'transaksi') { updateMobileCartBar(); } else { document.getElementById('mobile-cart-bar').style.display = 'none'; }
+      if (name === 'transaksi') {
+        updateMobileCartBar();
+      } else {
+        // Sembunyikan order panel dan cart bar di halaman lain
+        var cartBar = document.getElementById('mobile-cart-bar');
+        if (cartBar) cartBar.style.display = 'none';
+        var orderPanel = document.getElementById('order-panel');
+        if (orderPanel) orderPanel.classList.remove('mobile-show');
+        // Juga sembunyikan sync fab jika bukan transaksi - fab selalu tampil
+      }
       // Core page actions
       const coreActs = {
         dashboard: () => renderDashboard(),
@@ -5735,7 +6205,21 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       grid.innerHTML = list.map(p => {
         const ss = getStokSistem(p.id), habis = ss <= 0;
         return `<div class="product-card ${habis ? 'stok-nol' : ''}" onclick="${habis ? 'toast(\'Stok habis!\',\'danger\')' : 'addToOrder(\'' + p.id + '\')'}">
-      ${p.foto ? `<img class="product-card-img" src="${p.foto}" loading="lazy">` : `<div class="product-card-no-img">🛍️</div>`}
+      ${p.foto
+            ? `<img class="product-card-img" src="${p.foto}" loading="lazy">`
+            : `<div class="product-card-no-img" style="
+            background:linear-gradient(135deg,var(--primary-light),var(--purple-light));
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            padding:8px;text-align:center;height:96px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary-dark);
+              line-height:1.3;word-break:break-word;max-height:54px;overflow:hidden;">
+              ${p.nama}
+            </div>
+            <div style="font-size:11px;color:var(--primary);font-weight:600;margin-top:3px;">
+              ${rp(p.harga)}
+            </div>
+          </div>`
+          }
       <div class="product-card-body">
         <div class="product-card-name">${p.nama}</div>
         <div class="product-card-price">${rp(p.harga)}</div>
@@ -5864,7 +6348,18 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       document.getElementById('mobile-cart-total').textContent = rp(total);
       if (window.innerWidth <= 768) mbar.style.display = 'flex';
     }
-    function toggleMobileOrder() { document.getElementById('order-panel').classList.toggle('mobile-show'); }
+    function toggleMobileOrder() {
+      var panel = document.getElementById('order-panel');
+      var overlay = document.getElementById('order-panel-overlay');
+      panel.classList.toggle('mobile-show');
+      if (overlay) overlay.classList.toggle('show', panel.classList.contains('mobile-show'));
+    }
+    function closeMobileOrder() {
+      var panel = document.getElementById('order-panel');
+      var overlay = document.getElementById('order-panel-overlay');
+      if (panel) panel.classList.remove('mobile-show');
+      if (overlay) overlay.classList.remove('show');
+    }
     function generateNomorAntrian() {
       const today = todayISO();
       const key = 'kkNoAntrian_' + today;
@@ -6771,8 +7266,7 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
     let businessProfile = JSON.parse(localStorage.getItem('kkBizProfile') || '{}');
     let ingredients = JSON.parse(localStorage.getItem('kkIngredients') || '[]');
     let resepProduk = JSON.parse(localStorage.getItem('kkResep') || '{}');
-    let menuQRSettings = JSON.parse(localStorage.getItem('kkMenuQR') || '{\"aktif\":false,\"produkTampil\":[],\"tema\":0}');
-    let pesananQR = JSON.parse(localStorage.getItem('kkPesananQR') || '[]');
+    let menuQRSettings = JSON.parse(localStorage.getItem('kkMenuQR') || '{"aktif":true,"produkTampil":[],"tema":0}'); let pesananQR = JSON.parse(localStorage.getItem('kkPesananQR') || '[]');
     let karyawan = JSON.parse(localStorage.getItem('kkKaryawan') || '[]');
     let absensiData = JSON.parse(localStorage.getItem('kkAbsensi') || '[]');
     let dailyNotes = JSON.parse(localStorage.getItem('kkDailyNotes') || '[]');
@@ -7102,17 +7596,15 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
     function closeIngredientModal() { document.getElementById('ingredient-modal').classList.remove('open'); }
 
     function saveIngredient() {
-      const nama = document.getElementById('ing-nama').value.trim();
-      if (!nama) { toast('Nama bahan wajib diisi', 'danger'); return; }
-      var hargaRaw = (document.getElementById('ing-harga').value || '').replace(/\./g, '');
+      var ingHargaEl = document.getElementById('ing-harga');
+      var hargaRaw = ingHargaEl ? ingHargaEl.value.replace(/\./g, '').replace(',', '.') : '0';
       var data = {
         nama: nama,
         satuan: document.getElementById('ing-satuan').value,
         harga: parseFloat(hargaRaw) || 0,
-        hargaTotal: parseFloat((document.getElementById('ing-harga-total').value || '').replace(/\./g, '')) || 0,
-        qtyBeli: parseFloat(document.getElementById('ing-qty-beli').value) || 1,
-        stok: parseFloat(document.getElementById('ing-stok').value) || 0
+        stok: parseFloat((document.getElementById('ing-stok').value || '0').replace(/\./g, '')) || 0
       };
+
       if (editIngredientId) { const idx = ingredients.findIndex(x => x.id === editIngredientId); if (idx >= 0) ingredients[idx] = { ...ingredients[idx], ...data }; }
       else ingredients.push({ id: genId(), ...data });
       saveIngredients(); closeIngredientModal(); renderIngredientTable(); renderHPPTable();
@@ -8420,15 +8912,20 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
 
       const buildPage = () => {
         if (!menuQRSettings.aktif) {
-          wrap.innerHTML = `
-        <div class="cm-header">
-          <h1>🏪 ${businessProfile.nama || settingNamaToko}</h1>
-        </div>
-        <div style="text-align:center;padding:60px 20px;">
-          <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-          <h2 style="font-size:16px;color:#6b7280;">Menu sedang tidak tersedia</h2>
-          <p style="font-size:12px;color:#9ca3af;margin-top:8px;">Silakan hubungi kasir.</p>
-        </div>`;
+          wrap.innerHTML = '<div style="max-width:400px;margin:auto;min-height:100vh;background:#f9fafb;">' +
+            '<div style="background:' + tema.bg + ';color:' + tema.text + ';padding:20px;text-align:center;">' +
+            (businessProfile.logo ? '<img src="' + businessProfile.logo + '" style="height:45px;display:block;margin:0 auto 8px;border-radius:50%;">' : '') +
+            '<h1 style="font-size:18px;font-weight:800;">' + (businessProfile.nama || settingNamaToko) + '</h1>' +
+            '</div>' +
+            '<div style="text-align:center;padding:50px 24px;">' +
+            '<div style="font-size:56px;margin-bottom:16px;">🍽️</div>' +
+            '<h2 style="font-size:16px;font-weight:700;color:#1f2937;margin-bottom:8px;">Menu Sedang Disiapkan</h2>' +
+            '<p style="font-size:13px;color:#6b7280;line-height:1.6;">Kami sedang menyiapkan menu digital kami untuk Anda.<br>Silakan hubungi kasir untuk memesan.</p>' +
+            '<div style="margin-top:24px;padding:14px;background:#f3f4f6;border-radius:12px;font-size:12px;color:#9ca3af;">' +
+            '💡 Jika Anda kasir, aktifkan menu di:<br><strong>Plugin → Food Menu QR → Toggle Aktif</strong>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
           return;
         }
 
