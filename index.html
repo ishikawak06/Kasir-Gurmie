@@ -1980,9 +1980,10 @@
             <!-- DISKON -->
             <div class="diskon-row">
               <span style="font-size:10px;color:var(--gray-500);flex-shrink:0;">Diskon:</span>
-              <button class="diskon-toggle" id="diskon-mode-btn" onclick="toggleDiskonMode()">Rp</button>
-              <input class="form-control" id="order-diskon" type="number" min="0" placeholder="0"
-                style="flex:1;padding:4px 7px;font-size:11px;" oninput="updateOrderCalc()">
+              <button class="diskon-toggle" id="diskon-mode-btn" onclick="toggleDiskonMode()"
+                title="Klik untuk ganti mode Rp / %">Rp</button>
+              <input class="form-control" id="order-diskon" type="text" inputmode="numeric" placeholder="0"
+                style="flex:1;padding:4px 7px;font-size:11px;" oninput="onDiskonInput(this)" onfocus="this.select()">
               <span style="font-size:10px;color:var(--danger);font-weight:600;" id="order-diskon-display"></span>
             </div>
             <!-- TOTAL AKHIR -->
@@ -3388,14 +3389,32 @@
           <div class="form-grid">
             <div class="form-group"><label class="form-label">Satuan</label>
               <select class="form-control" id="ing-satuan">
-                <option>gram</option>
-                <option>kg</option>
-                <option>ml</option>
-                <option>liter</option>
-                <option>pcs</option>
-                <option>butir</option>
-                <option>sdm</option>
-                <option>sdt</option>
+                <div class="form-group"><label class="form-label">Satuan Beli</label>
+                  <div style="display:flex;gap:6px;align-items:center;">
+                    <input class="form-control" id="ing-qty-beli" type="text" inputmode="numeric"
+                      placeholder="Misal: 400" style="width:80px;" oninput="updateIngHargaPerUnit()">
+                    <select class="form-control" id="ing-satuan" style="width:80px;" onchange="updateIngHargaPerUnit()">
+                      <option>gr</option>
+                      <option>kg</option>
+                      <option>ml</option>
+                      <option>liter</option>
+                      <option>pcs</option>
+                      <option>butir</option>
+                      <option>sdm</option>
+                      <option>sdt</option>
+                      <option>lembar</option>
+                    </select>
+                    <span style="font-size:11px;color:var(--gray-500);">= Rp</span>
+                    <input class="form-control" id="ing-harga-total" type="text" inputmode="numeric"
+                      placeholder="Total harga" style="flex:1;" oninput="updateIngHargaPerUnit()">
+                  </div>
+                  <div id="ing-harga-preview"
+                    style="margin-top:4px;font-size:11px;color:var(--success);font-weight:600;"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Harga per 1 Satuan (Rp) — otomatis</label>
+                  <input class="form-control" id="ing-harga" type="text" inputmode="numeric"
+                    placeholder="Otomatis terhitung" readonly style="background:var(--gray-50);">
+                </div>
               </select>
             </div>
             <div class="form-group"><label class="form-label">Harga per Satuan (Rp)</label><input class="form-control"
@@ -3903,6 +3922,24 @@
 
   <div class="toast-wrap" id="toast-wrap"></div>
   <script>
+    function updateIngHargaPerUnit() {
+      var qty = parseFloat((document.getElementById('ing-qty-beli').value || '').replace(/\./g, '')) || 1;
+      var hargaTotal = parseFloat((document.getElementById('ing-harga-total').value || '').replace(/\./g, '')) || 0;
+      var satuan = document.getElementById('ing-satuan').value || 'gr';
+      var hargaPerSatuan = qty > 0 ? hargaTotal / qty : 0;
+      var el = document.getElementById('ing-harga');
+      var prev = document.getElementById('ing-harga-preview');
+      if (el) el.value = Math.round(hargaPerSatuan).toLocaleString('id-ID');
+      if (prev && hargaTotal > 0) {
+        prev.textContent = 'Harga per 1 ' + satuan + ' = ' + rp(Math.round(hargaPerSatuan));
+        // Format harga-total
+        var totalEl = document.getElementById('ing-harga-total');
+        if (totalEl && document.activeElement === totalEl) {
+          var raw = totalEl.value.replace(/\D/g, '');
+          if (raw) totalEl.value = parseInt(raw).toLocaleString('id-ID');
+        }
+      } else if (prev) { prev.textContent = ''; }
+    }
     // ===== DATA LAYER =====
     // ── DATA LAYER ──────────────────────────────────────────────
     let bahanMentah = JSON.parse(localStorage.getItem('kkBahanMentah') || '[]');
@@ -4093,13 +4130,6 @@
               </div>
             </div>
           </div>
-                <div style="width:90px;">
-                  <input class="form-control" id="bp-bb-harga-override" type="number" placeholder="Harga (opt)">
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="addBahanBakuLangsung()">+ Add</button>
-              </div>
-            </div>
-          </div>
           <div id="bp-hpp-preview" style="padding:8px;background:var(--success-light);border-radius:7px;font-size:12px;margin-top:8px;display:none;"></div>
         </div>
         <div class="modal-footer">
@@ -4259,6 +4289,11 @@
     function openBahanProdukModal(id = null) {
       _editBahanProdukId = id;
       _bpItemsTemp = [];
+      // Juga reset UI
+      var hppPrev = document.getElementById('bp-hpp-preview');
+      if (hppPrev) { hppPrev.style.display = 'none'; hppPrev.innerHTML = ''; }
+      var itemsList = document.getElementById('bp-items-list');
+      if (itemsList) itemsList.innerHTML = '<div style="color:var(--gray-400);font-size:11px;">Belum ada bahan</div>';
       document.getElementById('bp-modal-title').textContent = id ? 'Edit Bahan Produk' : 'Tambah Bahan Produk';
       document.getElementById('bp-nama').value = '';
       document.getElementById('bp-items-list').innerHTML = '';
@@ -5802,25 +5837,23 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
       if (btn) { btn.textContent = diskonMode; btn.className = 'diskon-toggle' + (diskonMode === '%' ? ' active' : ''); }
       updateOrderCalc();
     }
-    function renderOrder() {
-      const list = document.getElementById('order-items-list');
-      const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0);
-      const totalHPP = order.reduce((s, x) => s + calcHPP(x.produkId, x.qty, null), 0);
-      document.getElementById('order-total').textContent = rp(subtotal);
-      document.getElementById('order-hpp-info').textContent = order.length ? 'HPP: ' + rp(totalHPP) + ' | Laba est.: ' + rp(subtotal - totalHPP) : '';
-      if (!order.length) { list.innerHTML = `<div class="order-empty"><div class="order-empty-icon">🛒</div><div style="font-size:11px;color:var(--gray-400);">Belum ada item</div></div>`; }
-      else {
-        list.innerHTML = order.map(item => `<div class="order-item">
-      <div style="flex:1;min-width:0;">
-        <div class="order-item-name">${item.nama}${item.varianNama ? ' <span style="font-size:9px;color:var(--purple);">(' + item.varianNama + ')</span>' : ''}</div>
-        <div class="order-item-price">${rp(item.harga)} × ${item.qty}</div>
-      </div>
-      <div class="order-qty"><button class="qty-btn" onclick="changeQty('${item.produkId}','${item.varianId || ''}' ,-1)">−</button><span class="qty-val">${item.qty}</span><button class="qty-btn" onclick="changeQty('${item.produkId}','${item.varianId || ''}',1)">+</button></div>
-      <div class="order-subtotal">${rp(item.harga * item.qty)}</div>
-    </div>`).join('');
-      }
+    function onDiskonInput(el) {
+      // Hapus non-digit
+      var raw = el.value.replace(/\D/g, '');
+      el.dataset.rawValue = raw;
+      // Format IDR saat ketik
+      if (raw) el.value = parseInt(raw).toLocaleString('id-ID');
       updateOrderCalc();
     }
+
+    // Override getDiskonNominal untuk baca rawValue
+    function getDiskonNominal(subtotal) {
+      var el = document.getElementById('order-diskon');
+      var val = el ? (parseInt(el.dataset.rawValue || '0') || 0) : 0;
+      if (diskonMode === '%') return Math.round(subtotal * val / 100);
+      return Math.min(val, subtotal);
+    }
+
     function updateMobileCartBar() {
       const mbar = document.getElementById('mobile-cart-bar');
       const count = order.reduce((s, x) => s + x.qty, 0);
@@ -5952,21 +5985,73 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
 
     // ===== OPNAME =====
     function renderOpname() {
-      const tbody = document.getElementById('opname-table-body');
-      const aktif = products.filter(p => p.status !== 'nonaktif');
-      if (!aktif.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada produk aktif</td></tr>`; return; }
-      tbody.innerHTML = aktif.map(p => {
-        const ss = getStokSistem(p.id);
-        return `<tr>
-      <td style="font-weight:600;">${p.nama}</td>
-      <td style="font-size:10px;color:var(--gray-400);">${p.sku || '-'}</td>
-      <td>${p.satuan || 'pcs'}</td>
-      <td style="font-weight:600;color:var(--primary);">${ss}</td>
-      <td><input type="number" min="0" value="${ss}" id="opname-fisik-${p.id}" onchange="calcSelisih('${p.id}',${ss},this.value)"></td>
-      <td id="opname-selisih-${p.id}" class="selisih-zero">0</td>
-      <td><input type="text" placeholder="Keterangan..." id="opname-ket-${p.id}"></td>
-    </tr>`;
+      var tbody = document.getElementById('opname-table-body');
+      var aktif = products.filter(function (p) { return p.status !== 'nonaktif'; });
+
+      var rowsProduk = aktif.map(function (p) {
+        var ss = getStokSistem(p.id);
+        return '<tr style="background:var(--primary-light)10;">' +
+          '<td style="font-weight:600;">' + p.nama + '</td>' +
+          '<td style="font-size:10px;color:var(--gray-400);">' + (p.sku || '-') + '</td>' +
+          '<td>' + (p.satuan || 'pcs') + '</td>' +
+          '<td style="font-weight:600;color:var(--primary);">' + ss + '</td>' +
+          '<td><input type="number" min="0" value="' + ss + '" id="opname-fisik-' + p.id + '" onchange="calcSelisih(\'' + p.id + '\',' + ss + ',this.value)"></td>' +
+          '<td id="opname-selisih-' + p.id + '" class="selisih-zero">0</td>' +
+          '<td><input type="text" placeholder="Keterangan..." id="opname-ket-' + p.id + '"></td>' +
+          '</tr>';
       }).join('');
+
+      // Bahan baku (ingredients)
+      var rowsBB = ingredients.length ? ingredients.map(function (ing) {
+        var stok = ing.stok || 0;
+        var ingId = 'ing_' + ing.id;
+        return '<tr style="background:#fef3c710;">' +
+          '<td style="font-weight:600;color:var(--warning);">🌿 ' + ing.nama + '</td>' +
+          '<td style="font-size:10px;color:var(--gray-400);">BAHAN-BAKU</td>' +
+          '<td>' + ing.satuan + '</td>' +
+          '<td style="font-weight:600;color:var(--warning);">' + stok + '</td>' +
+          '<td><input type="number" min="0" step="0.01" value="' + stok + '" id="opname-fisik-' + ingId + '" onchange="calcSelisihBB(\'' + ing.id + '\',' + stok + ',this.value)"></td>' +
+          '<td id="opname-selisih-' + ingId + '" class="selisih-zero">0</td>' +
+          '<td><input type="text" placeholder="Keterangan..." id="opname-ket-' + ingId + '"></td>' +
+          '</tr>';
+      }).join('') : '';
+
+      // Bahan mentah
+      var rowsBM = bahanMentah.length ? bahanMentah.map(function (bm) {
+        var bmId = 'bm_' + bm.id;
+        return '<tr style="background:#f0fdf410;">' +
+          '<td style="font-weight:600;color:var(--success);">🌾 ' + bm.nama + '</td>' +
+          '<td style="font-size:10px;color:var(--gray-400);">BAHAN-MENTAH</td>' +
+          '<td>' + bm.satuanMentah + '</td>' +
+          '<td style="font-weight:600;color:var(--success);">-</td>' +
+          '<td><span style="font-size:10px;color:var(--gray-400);">Diturunkan dari bahan baku</span></td>' +
+          '<td>-</td>' +
+          '<td>-</td>' +
+          '</tr>';
+      }).join('') : '';
+
+      if (!aktif.length && !ingredients.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada produk atau bahan baku aktif</td></tr>';
+        return;
+      }
+
+      // Legend
+      var legend = '<tr style="background:var(--gray-100);"><td colspan="7" style="padding:6px 12px;font-size:10px;font-weight:600;color:var(--gray-500);">📦 PRODUK JUAL</td></tr>';
+      var legendBB = ingredients.length ? '<tr style="background:var(--gray-100);"><td colspan="7" style="padding:6px 12px;font-size:10px;font-weight:600;color:var(--warning);">🌿 BAHAN BAKU</td></tr>' : '';
+      var legendBM = bahanMentah.length ? '<tr style="background:var(--gray-100);"><td colspan="7" style="padding:6px 12px;font-size:10px;font-weight:600;color:var(--success);">🌾 BAHAN MENTAH (info saja)</td></tr>' : '';
+
+      tbody.innerHTML = legend + rowsProduk + legendBB + rowsBB + legendBM + rowsBM;
+    }
+
+    function calcSelisihBB(ingId, ss, fisikStr) {
+      var fisik = parseFloat(fisikStr) || 0;
+      var sel = fisik - ss;
+      var id = 'ing_' + ingId;
+      var el = document.getElementById('opname-selisih-' + id);
+      if (el) {
+        el.textContent = (sel > 0 ? '+' : '') + sel.toFixed(2);
+        el.className = sel > 0 ? 'selisih-pos' : sel < 0 ? 'selisih-neg' : 'selisih-zero';
+      }
     }
     function calcSelisih(pid, ss, fisikStr) {
       const fisik = parseInt(fisikStr) || 0, sel = fisik - ss;
@@ -5995,6 +6080,19 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
         // Add opname marker entry to stokBatch for movement history
         stokBatch.push({ id: genId(), produkId: p.id, qty: selisih, hargaBeli: p.hargaBeli || 0, tanggal: now, metode: 'Opname', jenisOpname: true, stokFisik: fisik, stokSistem: ss, ket });
       });
+      // Selesaikan opname bahan baku juga
+      ingredients.forEach(function (ing) {
+        var ingId = 'ing_' + ing.id;
+        var el = document.getElementById('opname-fisik-' + ingId);
+        if (!el) return;
+        var fisik = parseFloat(el.value) || 0;
+        var ket = (document.getElementById('opname-ket-' + ingId) || {}).value || '';
+        var selisih = fisik - (ing.stok || 0);
+        items.push({ produkId: 'ING_' + ing.id, nama: '🌿 ' + ing.nama, sku: 'BAHAN-BAKU', stokSistem: ing.stok || 0, stokFisik: fisik, selisih: selisih, ket: ket });
+        var idx = ingredients.findIndex(function (x) { return x.id === ing.id; });
+        if (idx >= 0) ingredients[idx].stok = fisik;
+      });
+      saveIngredients();
       saveProducts(); saveBatches();
       riwayatOpname.push({ id: genId(), tanggal: now, items });
       saveOpnameData();
@@ -6299,19 +6397,118 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
     }
 
     function renderKasTunaiHistory() {
-      const el = document.getElementById('kas-tunai-history'); if (!el) return;
-      const entries = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const key = 'kkKasTunai_' + d.toISOString().split('T')[0];
-        const data = JSON.parse(localStorage.getItem(key) || 'null');
-        if (data) entries.push({ tanggal: d.toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short' }), total: data._total || 0 });
+      var el = document.getElementById('kas-tunai-history'); if (!el) return;
+      var entries = [];
+      var KAS_DENS = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
+      for (var i = 0; i < 30; i++) {
+        var d = new Date(); d.setDate(d.getDate() - i);
+        var isoDate = d.toISOString().split('T')[0];
+        var key = 'kkKasTunai_' + isoDate;
+        var data = JSON.parse(localStorage.getItem(key) || 'null');
+        if (data) entries.push({
+          isoDate: isoDate,
+          tanggal: d.toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
+          total: data._total || 0,
+          data: data
+        });
       }
-      if (!entries.length) return;
-      el.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">📅 Riwayat 7 Hari Terakhir</span></div>
-    <div style="padding:0;"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Total Kas</th></tr></thead><tbody>
-    ${entries.map(e => `<tr><td>${e.tanggal}</td><td style="font-weight:600;color:var(--primary);">${rp(e.total)}</td></tr>`).join('')}
-    </tbody></table></div></div></div>`;
+      if (!entries.length) { el.innerHTML = ''; return; }
+
+      el.innerHTML = '<div class="card"><div class="card-header">' +
+        '<span class="card-title">📅 Riwayat 30 Hari Terakhir</span>' +
+        '<button class="btn btn-sm btn-success" onclick="exportKasTunaiExcel()">📊 Export Excel</button>' +
+        '</div>' +
+        '<div style="padding:0;"><div class="table-wrap"><table>' +
+        '<thead><tr><th>Tanggal</th><th>Total Kas</th><th>Aksi</th></tr></thead><tbody>' +
+        entries.map(function (e) {
+          return '<tr>' +
+            '<td>' + e.tanggal + '</td>' +
+            '<td style="font-weight:600;color:var(--primary);">' + rp(e.total) + '</td>' +
+            '<td><button class="btn btn-xs btn-outline" onclick="showKasTunaiDetail(\'' + e.isoDate + '\')">🔍 Detail</button></td>' +
+            '</tr>';
+        }).join('') +
+        '</tbody></table></div></div></div>';
+    }
+
+    function showKasTunaiDetail(isoDate) {
+      var KAS_DENS = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
+      var data = JSON.parse(localStorage.getItem('kkKasTunai_' + isoDate) || '{}');
+      if (!Object.keys(data).length) { toast('Tidak ada data untuk tanggal ini', 'warning'); return; }
+
+      var rows = KAS_DENS.filter(function (d) { return data[d] > 0; }).map(function (d) {
+        return '<tr>' +
+          '<td>' + rp(d) + '</td>' +
+          '<td style="text-align:center;font-weight:600;">' + data[d] + ' lembar/koin</td>' +
+          '<td style="text-align:right;font-weight:700;color:var(--primary);">' + rp(d * data[d]) + '</td>' +
+          '</tr>';
+      });
+
+      var jam = data._savedAt ? new Date(data._savedAt).toLocaleTimeString('id-ID') : '-';
+
+      // Inject modal detail jika belum ada
+      if (!document.getElementById('kas-detail-modal')) {
+        document.body.insertAdjacentHTML('beforeend',
+          '<div class="modal-overlay" id="kas-detail-modal">' +
+          '<div class="modal" style="max-width:400px;">' +
+          '<div class="modal-header">' +
+          '<span class="modal-title" id="kas-detail-title">Detail Kas Tunai</span>' +
+          '<button class="modal-close" onclick="document.getElementById(\'kas-detail-modal\').classList.remove(\'open\')">✕</button>' +
+          '</div>' +
+          '<div class="modal-body" id="kas-detail-body"></div>' +
+          '<div class="modal-footer">' +
+          '<button class="btn btn-outline" onclick="document.getElementById(\'kas-detail-modal\').classList.remove(\'open\')">Tutup</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>'
+        );
+      }
+
+      var d = new Date(isoDate);
+      document.getElementById('kas-detail-title').textContent = '💴 Detail Kas ' + d.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+      document.getElementById('kas-detail-body').innerHTML =
+        '<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Disimpan pukul: ' + jam + '</div>' +
+        '<table style="width:100%;font-size:13px;"><thead>' +
+        '<tr><th style="text-align:left;">Nominal</th><th style="text-align:center;">Jumlah</th><th style="text-align:right;">Subtotal</th></tr>' +
+        '</thead><tbody>' + rows.join('') + '</tbody>' +
+        '<tfoot><tr>' +
+        '<td colspan="2" style="padding-top:12px;font-weight:700;">TOTAL</td>' +
+        '<td style="padding-top:12px;font-weight:800;color:var(--primary);text-align:right;">' + rp(data._total || 0) + '</td>' +
+        '</tr></tfoot></table>';
+
+      document.getElementById('kas-detail-modal').classList.add('open');
+    }
+
+    function exportKasTunaiExcel() {
+      if (typeof XLSX === 'undefined') { toast('Library XLSX belum dimuat', 'danger'); return; }
+      var KAS_DENS = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
+      var rows = [['Tanggal', 'Hari'].concat(KAS_DENS.map(function (d) { return 'Rp ' + d.toLocaleString('id-ID'); })).concat(['Total Kas'])];
+
+      for (var i = 0; i < 30; i++) {
+        var d = new Date(); d.setDate(d.getDate() - i);
+        var isoDate = d.toISOString().split('T')[0];
+        var data = JSON.parse(localStorage.getItem('kkKasTunai_' + isoDate) || 'null');
+        if (!data) continue;
+        var row = [
+          d.toLocaleDateString('id-ID'),
+          ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()]
+        ];
+        KAS_DENS.forEach(function (den) { row.push(data[den] || 0); });
+        row.push(data._total || 0);
+        rows.push(row);
+      }
+
+      var ws = XLSX.utils.aoa_to_sheet(rows);
+      // Format kolom total sebagai currency
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Kas Tunai');
+
+      // Sheet ringkasan
+      var summary = [['Laporan Kas Tunai', settingNamaToko], ['Dibuat', new Date().toLocaleString('id-ID')], []].concat(rows);
+      var ws2 = XLSX.utils.aoa_to_sheet(summary);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Ringkasan');
+
+      XLSX.writeFile(wb, 'kas_tunai_' + new Date().toISOString().split('T')[0] + '.xlsx');
+      toast('Excel kas tunai berhasil diexport ✓', 'success');
     }
 
     function initKasTunaiReset() {
@@ -6907,7 +7104,15 @@ Tanggal: ${now.toLocaleDateString('id-ID')}
     function saveIngredient() {
       const nama = document.getElementById('ing-nama').value.trim();
       if (!nama) { toast('Nama bahan wajib diisi', 'danger'); return; }
-      const data = { nama, satuan: document.getElementById('ing-satuan').value, harga: parseFloat(document.getElementById('ing-harga').value) || 0, stok: parseFloat(document.getElementById('ing-stok').value) || 0 };
+      var hargaRaw = (document.getElementById('ing-harga').value || '').replace(/\./g, '');
+      var data = {
+        nama: nama,
+        satuan: document.getElementById('ing-satuan').value,
+        harga: parseFloat(hargaRaw) || 0,
+        hargaTotal: parseFloat((document.getElementById('ing-harga-total').value || '').replace(/\./g, '')) || 0,
+        qtyBeli: parseFloat(document.getElementById('ing-qty-beli').value) || 1,
+        stok: parseFloat(document.getElementById('ing-stok').value) || 0
+      };
       if (editIngredientId) { const idx = ingredients.findIndex(x => x.id === editIngredientId); if (idx >= 0) ingredients[idx] = { ...ingredients[idx], ...data }; }
       else ingredients.push({ id: genId(), ...data });
       saveIngredients(); closeIngredientModal(); renderIngredientTable(); renderHPPTable();
