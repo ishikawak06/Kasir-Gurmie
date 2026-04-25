@@ -24,11 +24,15 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-100); color: var(--gray-800); min-height: 100vh; }
     
     /* Layout */
+    .mobile-header { display: none; background: var(--gray-900); color: var(--white); padding: 12px 16px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 90; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .hamburger { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;}
+    
     .sidebar { width: 228px; background: var(--gray-900); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform .3s; }
-    .sidebar-brand { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sidebar-brand { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; justify-content: space-between; align-items: center;}
     .sidebar-brand h1 { color: var(--white); font-size: 15px; font-weight: 700; }
     .sidebar-brand p { color: var(--gray-400); font-size: 10px; margin-top: 2px; }
-    
+    .close-sidebar { display: none; background: none; border: none; color: white; font-size: 18px; cursor: pointer; }
+
     .sidebar-nav { flex: 1; padding: 10px 5px; overflow-y: auto; }
     .nav-section { font-size: 9px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: .6px; padding: 9px 11px 2px; margin-top: 10px; }
     .nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 7px; cursor: pointer; color: var(--gray-400); font-size: 12px; font-weight: 500; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
@@ -127,7 +131,10 @@
     .calculated-price-box { background: var(--teal-light); border: 1px solid var(--teal); padding: 10px; border-radius: 8px; color: var(--teal); font-weight: 700; font-size: 13px; text-align: center; margin-top: 5px; }
 
     @media (max-width: 768px) {
+      .mobile-header { display: flex; }
       .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .close-sidebar { display: block; }
       .main { margin-left: 0; }
       .resep-layout { grid-template-columns: 1fr; }
     }
@@ -141,10 +148,21 @@
   <div class="text" id="loader-text">Menyinkronkan dengan Kasir...</div>
 </div>
 
+<!-- MOBILE HEADER (Muncul hanya di HP) -->
+<div class="mobile-header">
+  <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px;">
+    <span style="font-size:20px;">🍲</span> Gurmie BOM
+  </div>
+  <button class="hamburger" onclick="toggleSidebar()">☰ Menu</button>
+</div>
+
 <div class="sidebar">
   <div class="sidebar-brand">
-    <h1>Gurmie BOM</h1>
-    <p>Manajemen Bahan & Resep</p>
+    <div>
+      <h1>Gurmie BOM</h1>
+      <p>Manajemen Bahan & Resep</p>
+    </div>
+    <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
   </div>
   <nav class="sidebar-nav">
     <a href="index.html" class="nav-item back-btn" style="text-decoration:none; display:flex;">⬅️ Kembali ke Kasir</a>
@@ -196,7 +214,7 @@
             
             <input type="hidden" id="bb-id">
             <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Air Mineral Galon"></div>
-            <div class="form-group"><label class="form-label">Satuan *</label>
+            <div class="form-group"><label class="form-label">Satuan Dasar *</label>
               <select id="bb-satuan" class="form-control" onchange="updateSatuanBB()">
                 <option value="gram">Gram (gr)</option>
                 <option value="kg">Kilogram (kg)</option>
@@ -208,7 +226,7 @@
             
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Total Isi / Kapasitas (<span id="lbl-satuan-bb">gram</span>) *</label>
+                    <label class="form-label">Total Kapasitas / Isi (<span id="lbl-satuan-bb">gram</span>) *</label>
                     <input type="number" id="bb-qty-beli" class="form-control" placeholder="Misal: 19" oninput="hitungPreviewHargaSatuan()">
                 </div>
                 <div class="form-group">
@@ -269,12 +287,16 @@
                 
                 <div class="form-grid" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--gray-300);">
                     <div>
+                        <label class="form-label">Bahan Dasar</label>
                         <select id="bm-bahan-sel" class="form-control" onchange="updateLabelSatuanMentah()"></select>
                     </div>
-                    <div style="display:flex; gap:6px;">
-                        <input type="number" id="bm-qty" class="form-control" placeholder="Qty">
-                        <span id="lbl-satuan-mentah" style="font-size:11px; line-height:34px; color:var(--gray-600); width:40px;">unit</span>
-                        <button class="btn btn-primary" onclick="addBahanKeMentah()">+ Add</button>
+                    <div>
+                        <label class="form-label">Kapasitas yg dipakai</label>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <input type="number" id="bm-qty" class="form-control" placeholder="Misal: 2">
+                            <span id="lbl-satuan-mentah" style="font-size:11px; font-weight:600; color:var(--gray-600); width:40px;">unit</span>
+                            <button class="btn btn-primary" onclick="addBahanKeMentah()">+ Add</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -324,9 +346,10 @@
                   <select id="rs-bahan" class="form-control" onchange="updateLabelSatuanResep()"></select>
                 </div>
                 <div>
-                  <label class="form-label">Qty Pemakaian (<span id="lbl-satuan-resep">unit</span>)</label>
-                  <div style="display:flex; gap:6px;">
-                    <input type="number" id="rs-qty" class="form-control" placeholder="0">
+                  <label class="form-label">Kapasitas yg dipakai</label>
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="number" id="rs-qty" class="form-control" placeholder="Misal: 1">
+                    <span id="lbl-satuan-resep" style="font-size:11px; font-weight:600; color:var(--gray-600); width:40px;">unit</span>
                     <button class="btn btn-primary" onclick="addBahanKeResep()">+ Add</button>
                   </div>
                 </div>
@@ -408,7 +431,7 @@
 <!-- MODAL: SYNC SHEETS -->
 <div class="modal-overlay" id="sync-modal">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">☁️ Sync ke Google Spreadsheet</span><button class="modal-close" onclick="closeSyncModal()">✕</button></div>
+    <div class="modal-header"><span class="modal-title">☁️ Sync ke Google Spreadsheet</span><button class="modal-close" onclick="closeSyncModal()" style="background:none;border:none;font-size:16px;cursor:pointer;">✕</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Web App URL (Sama dengan Kasir) *</label><input class="form-control" id="sync-url-input" placeholder="https://script.google.com/macros/s/..."></div>
       <div class="form-group" style="display:flex;align-items:center;gap:8px;">
@@ -462,6 +485,11 @@
     const el = document.createElement('div'); el.className = 'toast ' + type; el.textContent = msg;
     document.getElementById('toast-wrap').appendChild(el);
     setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2800);
+  }
+
+  // --- MENU MOBILE ---
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
   }
 
   // --- SYNC ENGINE ---
@@ -606,6 +634,11 @@
     document.getElementById('page-' + pageId).classList.add('active');
     document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
     
+    // Otomatis tutup sidebar di HP setelah pindah halaman
+    if(window.innerWidth <= 768) {
+        document.querySelector('.sidebar').classList.remove('open');
+    }
+
     if(pageId === 'bahan') { renderBahanBaku(); renderBahanMentah(); initBahanMentahBuilder(); }
     if(pageId === 'resep') initResepPage();
     if(pageId === 'laporan') generateStokReport();
@@ -679,7 +712,7 @@
     const totalHarga = parseFloat(document.getElementById('bb-total-harga').value) || 0;
     const stokAwal = parseFloat(document.getElementById('bb-stok').value) || 0;
 
-    if(!nama || qtyBeli <= 0 || totalHarga <= 0) return toast('Nama, Kuantitas Total, dan Harga wajib diisi!', 'danger');
+    if(!nama || qtyBeli <= 0 || totalHarga <= 0) return toast('Nama, Kapasitas Total, dan Harga wajib diisi!', 'danger');
 
     const hargaSatuan = totalHarga / qtyBeli;
 
@@ -763,14 +796,14 @@
   function updateLabelSatuanMentah() {
     const opt = document.getElementById('bm-bahan-sel').selectedOptions[0];
     if(opt && opt.value) document.getElementById('lbl-satuan-mentah').textContent = opt.dataset.sat;
-    else document.getElementById('lbl-satuan-mentah').textContent = 'unit';
+    else document.getElementById('lbl-satuan-mentah').textContent = '-';
   }
 
   function addBahanKeMentah() {
     const bahanId = document.getElementById('bm-bahan-sel').value;
     const qty = parseFloat(document.getElementById('bm-qty').value);
     
-    if(!bahanId || !qty || qty <= 0) return toast('Pilih bahan dasar dan masukkan jumlah!', 'danger');
+    if(!bahanId || !qty || qty <= 0) return toast('Pilih bahan dasar dan masukkan kapasitas dipakai!', 'danger');
     
     const exists = currentKomposisiMentah.findIndex(x => x.bahanId === bahanId);
     if(exists > -1) currentKomposisiMentah[exists].qty += qty;
@@ -802,7 +835,7 @@
           <div class="resep-item" style="padding:6px 10px;">
             <div>
               <div style="font-size:12px; font-weight:600;">${b.nama}</div>
-              <div style="font-size:10px; color:var(--gray-500);">${k.qty} ${b.satuan} × ${rp(b.hargaSatuan)} = <strong>${rp(biaya)}</strong></div>
+              <div style="font-size:10px; color:var(--gray-500);">Terpakai: ${k.qty} ${b.satuan} × ${rp(b.hargaSatuan)} = <strong>${rp(biaya)}</strong></div>
             </div>
             <button class="btn btn-xs btn-outline" style="color:var(--danger); border-color:var(--danger-light); padding:2px 6px;" onclick="hapusBahanDariMentah(${i})">✕</button>
           </div>
@@ -887,15 +920,36 @@
     sel.innerHTML = '<option value="">-- Pilih Produk Akhir --</option>' + products.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
     if(currentProdukId) sel.value = currentProdukId; 
 
-    // Isi Dropdown Resep dari 2 sumber: Bahan Baku Dasar ATAU Bahan Mentah
-    const bSel = document.getElementById('rs-bahan');
+    loadResepForProduk();
+  }
+
+  function updateLabelSatuanResep() {
+    const opt = document.getElementById('rs-bahan').selectedOptions[0];
+    if(opt && opt.value) document.getElementById('lbl-satuan-resep').textContent = opt.dataset.sat;
+    else document.getElementById('lbl-satuan-resep').textContent = '-';
+  }
+
+  function loadResepForProduk() {
+    currentProdukId = document.getElementById('rs-produk').value;
     
+    // Refresh Dropdown Bahan (Sekarang termasuk Produk)
+    const bSel = document.getElementById('rs-bahan');
     let optionsHTML = `<option value="">-- Pilih Bahan --</option>`;
     
     if(bahanMentah.length > 0) {
         optionsHTML += `<optgroup label="Bahan Mentah (Olahan)">`;
         optionsHTML += bahanMentah.map(bm => `<option value="mentah_${bm.id}" data-sat="${bm.satuan}">[Olahan] ${bm.nama} (${bm.satuan} - ${rp(bm.hpp)})</option>`).join('');
         optionsHTML += `</optgroup>`;
+    }
+
+    if(products.length > 0) {
+        // Filter agar produk tidak bisa menjadi bahan untuk dirinya sendiri
+        const otherProducts = products.filter(p => p.id !== currentProdukId);
+        if(otherProducts.length > 0) {
+            optionsHTML += `<optgroup label="Produk Lainnya">`;
+            optionsHTML += otherProducts.map(p => `<option value="produk_${p.id}" data-sat="${p.satuan || 'pcs'}">[Produk] ${p.nama} (${p.satuan || 'pcs'} - ${rp(p.hargaBeli)})</option>`).join('');
+            optionsHTML += `</optgroup>`;
+        }
     }
     
     if(bahanBaku.length > 0) {
@@ -906,16 +960,7 @@
 
     bSel.innerHTML = optionsHTML;
     updateLabelSatuanResep();
-  }
 
-  function updateLabelSatuanResep() {
-    const opt = document.getElementById('rs-bahan').selectedOptions[0];
-    if(opt && opt.value) document.getElementById('lbl-satuan-resep').textContent = opt.dataset.sat;
-    else document.getElementById('lbl-satuan-resep').textContent = 'unit';
-  }
-
-  function loadResepForProduk() {
-    currentProdukId = document.getElementById('rs-produk').value;
     if(!currentProdukId) {
       document.getElementById('resep-builder').style.display = 'none';
       document.getElementById('margin-box').style.display = 'none';
@@ -942,6 +987,9 @@
         if (k.tipe === 'mentah') {
             const bm = bahanMentah.find(x => x.id === k.bahanId);
             if(bm) { nNama = bm.nama; nSatuan = bm.satuan; nHpp = bm.hpp; nBadge = `<span class="badge badge-purple">Olahan</span>`; }
+        } else if (k.tipe === 'produk') {
+            const p = products.find(x => x.id === k.bahanId);
+            if(p) { nNama = p.nama; nSatuan = p.satuan || 'pcs'; nHpp = p.hargaBeli || 0; nBadge = `<span class="badge badge-blue">Produk</span>`; }
         } else {
             const b = bahanBaku.find(x => x.id === k.bahanId);
             if(b) { nNama = b.nama; nSatuan = b.satuan; nHpp = b.hargaSatuan; nBadge = `<span class="badge badge-gray">Dasar</span>`; }
@@ -954,7 +1002,7 @@
           <div class="resep-item">
             <div>
               <div style="font-size:13px; font-weight:600;">${nBadge} ${nNama}</div>
-              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">${k.qty} ${nSatuan} × ${rp(nHpp)} = <strong style="color:var(--gray-800);">${rp(biaya)}</strong></div>
+              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">Terpakai: ${k.qty} ${nSatuan} × ${rp(nHpp)} = <strong style="color:var(--gray-800);">${rp(biaya)}</strong></div>
             </div>
             <button class="btn btn-xs btn-outline" style="color:var(--danger); border-color:var(--danger-light);" onclick="hapusKomposisiResep(${i})">✕</button>
           </div>
@@ -968,7 +1016,7 @@
     const val = document.getElementById('rs-bahan').value;
     const qty = parseFloat(document.getElementById('rs-qty').value);
     
-    if(!val || !qty || qty <= 0) return toast('Pilih bahan dan masukkan jumlah!', 'danger');
+    if(!val || !qty || qty <= 0) return toast('Pilih bahan dan masukkan kapasitas dipakai!', 'danger');
     
     const parts = val.split('_'); // "baku_xyz" atau "mentah_abc"
     const tipe = parts[0];
@@ -1025,6 +1073,9 @@
         if (k.tipe === 'mentah') {
             const bm = bahanMentah.find(x => x.id === k.bahanId);
             if(bm) totalHpp += bm.hpp * k.qty;
+        } else if (k.tipe === 'produk') {
+            const p = products.find(x => x.id === k.bahanId);
+            if(p) totalHpp += (p.hargaBeli || 0) * k.qty;
         } else {
             const b = bahanBaku.find(x => x.id === k.bahanId);
             if(b) totalHpp += b.hargaSatuan * k.qty;
@@ -1044,8 +1095,10 @@
   // PAGE 3: LAPORAN STOK & HPP
   // ==========================================
   
-  // FUNGSI REKURSIF: Membedah Bahan Mentah menjadi Bahan Baku Dasar
-  function extractBasicUsage(bahanId, tipe, qtyMultiplier, outputObj) {
+  // FUNGSI REKURSIF: Membedah Bahan Mentah & Produk menjadi Bahan Baku Dasar
+  function extractBasicUsage(bahanId, tipe, qtyMultiplier, outputObj, depth = 0) {
+      if (depth > 15) return; // Mencegah infinite loop jika resep saling bertabrakan
+
       if (tipe === 'baku') {
           if(!outputObj[bahanId]) outputObj[bahanId] = 0;
           outputObj[bahanId] += qtyMultiplier;
@@ -1054,7 +1107,14 @@
           if (bm && bm.hasilJadi > 0) {
               bm.komposisi.forEach(k => {
                   const qtyDibutuhkan = (k.qty / bm.hasilJadi) * qtyMultiplier;
-                  extractBasicUsage(k.bahanId, 'baku', qtyDibutuhkan, outputObj);
+                  extractBasicUsage(k.bahanId, 'baku', qtyDibutuhkan, outputObj, depth + 1);
+              });
+          }
+      } else if (tipe === 'produk') {
+          const r = resep.find(x => x.produkId === bahanId);
+          if (r) {
+              r.komposisi.forEach(k => {
+                  extractBasicUsage(k.bahanId, k.tipe || 'baku', k.qty * qtyMultiplier, outputObj, depth + 1);
               });
           }
       }
