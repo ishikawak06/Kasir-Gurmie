@@ -85,6 +85,7 @@
     .badge-amber { background: var(--warning-light); color: var(--warning); }
     .badge-purple { background: var(--purple-light); color: var(--purple); }
     .badge-blue { background: var(--primary-light); color: var(--primary); }
+    .badge-gray { background: var(--gray-200); color: var(--gray-700); }
     
     /* Resep UI */
     .resep-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
@@ -209,17 +210,21 @@
           <div class="card-header"><span class="card-title" id="form-title-bahan">Tambah Bahan Dasar</span></div>
           <div class="card-body">
             <div class="alert-margin" style="background:var(--primary-light); color:var(--primary-dark); border-color:var(--primary); margin-bottom:12px;">
-                💡 <b>Cara Input:</b> Masukkan Total Isi Kapasitas (misal: 19) dan Harga Total (misal: 5000). Sistem otomatis membagi nilainya per satuan.
+                💡 <b>Cara Input:</b> Masukkan Total Isi Kapasitas (misal: 19 Liter, 20 Potong, atau 1 Ikat) dan Harga Total belinya (misal: 5000). Sistem otomatis menghitung harga per satuan.
             </div>
             
             <input type="hidden" id="bb-id">
-            <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Air Mineral Galon"></div>
+            <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Air Mineral Galon / Sawi / Mie"></div>
             <div class="form-group"><label class="form-label">Satuan Dasar *</label>
               <select id="bb-satuan" class="form-control" onchange="updateSatuanBB()">
-                <option value="gram">Gram (gr)</option>
+                <option value="gram">Gram (g)</option>
                 <option value="kg">Kilogram (kg)</option>
                 <option value="ml">Mililiter (ml)</option>
                 <option value="liter">Liter (L)</option>
+                <option value="potong">Potong</option>
+                <option value="lembar">Lembar</option>
+                <option value="ikat">Ikat</option>
+                <option value="bungkus">Bungkus</option>
                 <option value="pcs">Pcs</option>
               </select>
             </div>
@@ -267,17 +272,24 @@
           <div class="card-body">
             <input type="hidden" id="bm-id">
             <div class="form-grid">
-                <div class="form-group"><label class="form-label">Nama Bahan Olahan *</label><input type="text" id="bm-nama" class="form-control" placeholder="Contoh: Bumbu Marinasi Ayam"></div>
+                <div class="form-group"><label class="form-label">Nama Bahan Olahan *</label><input type="text" id="bm-nama" class="form-control" placeholder="Contoh: Sawi Potong / Bumbu Ayam"></div>
                 <div class="form-group"><label class="form-label">Satuan Hasil (Output) *</label>
                 <select id="bm-satuan" class="form-control">
-                    <option value="porsi">Porsi</option><option value="gram">Gram</option><option value="ml">Mililiter</option><option value="liter">Liter</option><option value="pcs">Pcs</option>
+                    <option value="porsi">Porsi</option>
+                    <option value="potong">Potong</option>
+                    <option value="lembar">Lembar</option>
+                    <option value="gram">Gram</option>
+                    <option value="kg">Kilogram</option>
+                    <option value="ml">Mililiter</option>
+                    <option value="liter">Liter</option>
+                    <option value="pcs">Pcs</option>
                 </select>
                 </div>
             </div>
             <div class="form-group">
                 <label class="form-label">Kuantitas Hasil Jadi (Yield) *</label>
                 <input type="number" id="bm-hasil-jadi" class="form-control" placeholder="Berapa banyak hasil jadinya?" value="1" oninput="kalkulasiHppMentah()">
-                <div style="font-size:10px; color:var(--gray-500); margin-top:2px;">Contoh: 1 kali masak resep ini menghasilkan 10 Porsi.</div>
+                <div style="font-size:10px; color:var(--gray-500); margin-top:2px;">Contoh: 1 Ikat sawi menghasilkan 20 Potong.</div>
             </div>
 
             <!-- Builder Komposisi Mentah -->
@@ -293,8 +305,8 @@
                     <div>
                         <label class="form-label">Kapasitas yg dipakai</label>
                         <div style="display:flex; gap:6px; align-items:center;">
-                            <input type="number" id="bm-qty" class="form-control" placeholder="Misal: 2">
-                            <span id="lbl-satuan-mentah" style="font-size:11px; font-weight:600; color:var(--gray-600); width:40px;">unit</span>
+                            <input type="number" id="bm-qty" class="form-control" placeholder="Misal: 150">
+                            <select id="bm-satuan-pakai" class="form-control" style="width:90px; padding:8px 4px; font-size:12px;"></select>
                             <button class="btn btn-primary" onclick="addBahanKeMentah()">+ Add</button>
                         </div>
                     </div>
@@ -342,14 +354,14 @@
             <div style="background:var(--gray-50); padding:12px; border-radius:8px; margin-top:12px; border:1px dashed var(--gray-300);">
               <div class="form-grid">
                 <div>
-                  <label class="form-label">Pilih Bahan Baku / Mentah</label>
+                  <label class="form-label">Pilih Bahan/Mentah/Produk</label>
                   <select id="rs-bahan" class="form-control" onchange="updateLabelSatuanResep()"></select>
                 </div>
                 <div>
                   <label class="form-label">Kapasitas yg dipakai</label>
                   <div style="display:flex; gap:6px; align-items:center;">
-                    <input type="number" id="rs-qty" class="form-control" placeholder="Misal: 1">
-                    <span id="lbl-satuan-resep" style="font-size:11px; font-weight:600; color:var(--gray-600); width:40px;">unit</span>
+                    <input type="number" id="rs-qty" class="form-control" placeholder="Misal: 3">
+                    <select id="rs-satuan-pakai" class="form-control" style="width:90px; padding:8px 4px; font-size:12px;"></select>
                     <button class="btn btn-primary" onclick="addBahanKeResep()">+ Add</button>
                   </div>
                 </div>
@@ -485,6 +497,47 @@
     const el = document.createElement('div'); el.className = 'toast ' + type; el.textContent = msg;
     document.getElementById('toast-wrap').appendChild(el);
     setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2800);
+  }
+
+  // LOGIKA KONVERSI SATUAN
+  function populateSatuanOptions(masterSat, selectId) {
+      const sel = document.getElementById(selectId);
+      sel.innerHTML = '';
+      if(!masterSat) {
+          sel.innerHTML = '<option value="">-</option>';
+          return;
+      }
+      const m = masterSat.toLowerCase();
+      
+      // Capitalize first letter for display
+      const displayM = m.charAt(0).toUpperCase() + m.slice(1);
+      sel.innerHTML += `<option value="${m}">${displayM} (Asli)</option>`;
+
+      // Beri opsi konversi silang
+      if (m === 'liter' || m === 'l') {
+          sel.innerHTML += `<option value="ml">Mililiter (ml)</option>`;
+      } else if (m === 'ml') {
+          sel.innerHTML += `<option value="liter">Liter (L)</option>`;
+      } else if (m === 'kg' || m === 'kilogram') {
+          sel.innerHTML += `<option value="gram">Gram (g)</option>`;
+      } else if (m === 'gram' || m === 'gr') {
+          sel.innerHTML += `<option value="kg">Kilogram (kg)</option>`;
+      }
+  }
+
+  function getConvertedQty(inputQty, satuanPakai, masterSat) {
+      const pak = satuanPakai.toLowerCase();
+      const mas = masterSat.toLowerCase();
+
+      // Liter <-> ml
+      if ((mas === 'liter' || mas === 'l') && pak === 'ml') return inputQty / 1000;
+      if (mas === 'ml' && (pak === 'liter' || pak === 'l')) return inputQty * 1000;
+      
+      // Kg <-> Gram
+      if ((mas === 'kg' || mas === 'kilogram') && pak === 'gram') return inputQty / 1000;
+      if ((mas === 'gram' || mas === 'gr') && (pak === 'kg' || pak === 'kilogram')) return inputQty * 1000;
+
+      return inputQty; // Jika sama / custom, tidak ada konversi numerik (1:1)
   }
 
   // --- MENU MOBILE ---
@@ -665,7 +718,8 @@
   
   function updateSatuanBB() {
       const sat = document.getElementById('bb-satuan').value;
-      document.getElementById('lbl-satuan-bb').textContent = sat;
+      // Capitalize for display label
+      document.getElementById('lbl-satuan-bb').textContent = sat.charAt(0).toUpperCase() + sat.slice(1);
       hitungPreviewHargaSatuan();
   }
 
@@ -788,26 +842,42 @@
   function initBahanMentahBuilder() {
     const sel = document.getElementById('bm-bahan-sel');
     sel.innerHTML = '<option value="">-- Pilih Bahan Baku Dasar --</option>' + 
-                    bahanBaku.map(b => `<option value="${b.id}" data-sat="${b.satuan}">${b.nama} (${b.satuan} - ${rp(b.hargaSatuan)})</option>`).join('');
+                    bahanBaku.map(b => `<option value="${b.id}" data-sat="${b.satuan}">${b.nama} (Stok: ${b.satuan} - ${rp(b.hargaSatuan)})</option>`).join('');
     updateLabelSatuanMentah();
     kalkulasiHppMentah();
   }
 
   function updateLabelSatuanMentah() {
     const opt = document.getElementById('bm-bahan-sel').selectedOptions[0];
-    if(opt && opt.value) document.getElementById('lbl-satuan-mentah').textContent = opt.dataset.sat;
-    else document.getElementById('lbl-satuan-mentah').textContent = '-';
+    const masterSat = (opt && opt.value) ? opt.dataset.sat : '';
+    populateSatuanOptions(masterSat, 'bm-satuan-pakai');
   }
 
   function addBahanKeMentah() {
     const bahanId = document.getElementById('bm-bahan-sel').value;
-    const qty = parseFloat(document.getElementById('bm-qty').value);
+    const inputQty = parseFloat(document.getElementById('bm-qty').value);
+    const satuanPakai = document.getElementById('bm-satuan-pakai').value;
     
-    if(!bahanId || !qty || qty <= 0) return toast('Pilih bahan dasar dan masukkan kapasitas dipakai!', 'danger');
+    if(!bahanId || !inputQty || inputQty <= 0) return toast('Pilih bahan dasar dan masukkan kapasitas dipakai!', 'danger');
     
+    const opt = document.getElementById('bm-bahan-sel').selectedOptions[0];
+    const masterSat = opt.dataset.sat;
+    
+    // Konversi nilai inputan ke satuan master (Misal: 150 ml -> 0.15 Liter)
+    const qtyMaster = getConvertedQty(inputQty, satuanPakai, masterSat);
+
     const exists = currentKomposisiMentah.findIndex(x => x.bahanId === bahanId);
-    if(exists > -1) currentKomposisiMentah[exists].qty += qty;
-    else currentKomposisiMentah.push({ bahanId, qty });
+    if(exists > -1) {
+        currentKomposisiMentah[exists].qty += qtyMaster;
+        currentKomposisiMentah[exists].displayQty = null; // Reset ke format master jika di-tumpuk
+    } else {
+        currentKomposisiMentah.push({ 
+            bahanId: bahanId, 
+            qty: qtyMaster, 
+            displayQty: inputQty, 
+            displaySatuan: satuanPakai 
+        });
+    }
     
     document.getElementById('bm-qty').value = '';
     kalkulasiHppMentah();
@@ -831,11 +901,18 @@
         if(!b) return '';
         const biaya = b.hargaSatuan * k.qty;
         totalModal += biaya;
+
+        // Teks Format Cantik (Misal: "150 ml (0.15 Liter)")
+        let textQty = `${k.qty} ${b.satuan}`;
+        if (k.displayQty && k.displaySatuan && k.displaySatuan.toLowerCase() !== b.satuan.toLowerCase()) {
+            textQty = `${k.displayQty} ${k.displaySatuan} <span style="color:#aaa;">(${k.qty} ${b.satuan})</span>`;
+        }
+
         return `
           <div class="resep-item" style="padding:6px 10px;">
             <div>
               <div style="font-size:12px; font-weight:600;">${b.nama}</div>
-              <div style="font-size:10px; color:var(--gray-500);">Terpakai: ${k.qty} ${b.satuan} × ${rp(b.hargaSatuan)} = <strong>${rp(biaya)}</strong></div>
+              <div style="font-size:10px; color:var(--gray-500);">Terpakai: ${textQty} × ${rp(b.hargaSatuan)} = <strong>${rp(biaya)}</strong></div>
             </div>
             <button class="btn btn-xs btn-outline" style="color:var(--danger); border-color:var(--danger-light); padding:2px 6px;" onclick="hapusBahanDariMentah(${i})">✕</button>
           </div>
@@ -925,8 +1002,8 @@
 
   function updateLabelSatuanResep() {
     const opt = document.getElementById('rs-bahan').selectedOptions[0];
-    if(opt && opt.value) document.getElementById('lbl-satuan-resep').textContent = opt.dataset.sat;
-    else document.getElementById('lbl-satuan-resep').textContent = '-';
+    const masterSat = (opt && opt.value) ? opt.dataset.sat : '';
+    populateSatuanOptions(masterSat, 'rs-satuan-pakai');
   }
 
   function loadResepForProduk() {
@@ -998,11 +1075,17 @@
         const biaya = nHpp * k.qty;
         totalHpp += biaya;
 
+        // Teks Format Cantik (Misal: "150 ml (0.15 Liter)")
+        let textQty = `${k.qty} ${nSatuan}`;
+        if (k.displayQty && k.displaySatuan && k.displaySatuan.toLowerCase() !== nSatuan.toLowerCase()) {
+            textQty = `${k.displayQty} ${k.displaySatuan} <span style="color:#aaa;">(${k.qty} ${nSatuan})</span>`;
+        }
+
         return `
           <div class="resep-item">
             <div>
               <div style="font-size:13px; font-weight:600;">${nBadge} ${nNama}</div>
-              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">Terpakai: ${k.qty} ${nSatuan} × ${rp(nHpp)} = <strong style="color:var(--gray-800);">${rp(biaya)}</strong></div>
+              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">Terpakai: ${textQty} × ${rp(nHpp)} = <strong style="color:var(--gray-800);">${rp(biaya)}</strong></div>
             </div>
             <button class="btn btn-xs btn-outline" style="color:var(--danger); border-color:var(--danger-light);" onclick="hapusKomposisiResep(${i})">✕</button>
           </div>
@@ -1014,17 +1097,34 @@
 
   function addBahanKeResep() {
     const val = document.getElementById('rs-bahan').value;
-    const qty = parseFloat(document.getElementById('rs-qty').value);
+    const inputQty = parseFloat(document.getElementById('rs-qty').value);
+    const satuanPakai = document.getElementById('rs-satuan-pakai').value;
     
-    if(!val || !qty || qty <= 0) return toast('Pilih bahan dan masukkan kapasitas dipakai!', 'danger');
+    if(!val || !inputQty || inputQty <= 0) return toast('Pilih bahan dan masukkan kapasitas dipakai!', 'danger');
     
-    const parts = val.split('_'); // "baku_xyz" atau "mentah_abc"
+    const parts = val.split('_'); // "baku_xyz", "mentah_abc", atau "produk_123"
     const tipe = parts[0];
     const bahanId = parts[1];
 
+    const opt = document.getElementById('rs-bahan').selectedOptions[0];
+    const masterSat = opt.dataset.sat;
+    
+    // Konversi nilai inputan ke satuan master (Misal: 150 ml -> 0.15 Liter)
+    const qtyMaster = getConvertedQty(inputQty, satuanPakai, masterSat);
+
     const exists = currentKomposisi.findIndex(x => x.bahanId === bahanId && x.tipe === tipe);
-    if(exists > -1) currentKomposisi[exists].qty += qty;
-    else currentKomposisi.push({ bahanId, tipe, qty });
+    if(exists > -1) {
+        currentKomposisi[exists].qty += qtyMaster;
+        currentKomposisi[exists].displayQty = null;
+    } else {
+        currentKomposisi.push({ 
+            bahanId: bahanId, 
+            tipe: tipe, 
+            qty: qtyMaster, 
+            displayQty: inputQty, 
+            displaySatuan: satuanPakai 
+        });
+    }
     
     document.getElementById('rs-qty').value = '';
     renderKomposisi();
