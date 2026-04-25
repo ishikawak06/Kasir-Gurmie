@@ -288,6 +288,8 @@
     <button class="nav-item" data-page="transaksi" onclick="showPage('transaksi')"><span class="nav-icon">🛒</span>Transaksi</button>
     <div class="nav-section">Katalog</div>
     <button class="nav-item" data-page="produk" onclick="showPage('produk')"><span class="nav-icon">📦</span>Produk & Paket</button>
+    <!-- LINK KE MANAJEMEN BAHAN BAKU DITAMBAHKAN DI SINI -->
+    <a href="bahan_baku.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">🥩</span>Bahan Baku & Resep</a>
     <div class="nav-section">Laporan Usaha</div>
     <button class="nav-item" onclick="showPage('laporan');showLapTab('penjualan')"><span class="nav-icon">📈</span>Penjualan</button>
     <button class="nav-item" onclick="showPage('laporan');showLapTab('pembelian')"><span class="nav-icon">🛒</span>Pembelian</button>
@@ -320,7 +322,8 @@
       <div class="card-body">
         <div class="shortcut-grid">
           <div class="shortcut-card" onclick="showPage('transaksi')"><div class="shortcut-icon">🛒</div><div class="shortcut-label">Transaksi Baru</div></div>
-          <div class="shortcut-card" onclick="showPage('produk')"><div class="shortcut-icon">📦</div><div class="shortcut-label">Tambah Produk</div></div>
+          <!-- SHORTCUT KE BAHAN BAKU DITAMBAHKAN DI SINI -->
+          <div class="shortcut-card" onclick="window.location.href='bahan_baku.html'"><div class="shortcut-icon">🥩</div><div class="shortcut-label">Resep & Bahan</div></div>
           <div class="shortcut-card" onclick="showPage('laporan');showLapTab('penjualan')"><div class="shortcut-icon">📊</div><div class="shortcut-label">Lihat Laporan</div></div>
           <div class="shortcut-card" onclick="showPage('laporan');showLapTab('pengeluaran')"><div class="shortcut-icon">💸</div><div class="shortcut-label">Pengeluaran</div></div>
         </div>
@@ -1543,7 +1546,6 @@ async function pullFromSpreadsheet() {
   }
   hideGlobalLoader();
 }
-
 
 window.addEventListener('DOMContentLoaded', async () => {
   renderDashboard();
