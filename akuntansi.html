@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akuntansi Pintar — Gurmie Ayam</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f1a; --bg2: #111827; --bg3: #1a2235;
+      --card: #151d2e; --card2: #1e2a40;
+      --border: rgba(255,255,255,.07); --border2: rgba(255,255,255,.12);
+      --primary: #3b82f6; --primary-glow: rgba(59,130,246,.25);
+      --accent: #06b6d4; --accent2: #8b5cf6;
+      --green: #10b981; --green-dim: rgba(16,185,129,.15);
+      --red: #f43f5e; --red-dim: rgba(244,63,94,.15);
+      --amber: #f59e0b; --amber-dim: rgba(245,158,11,.15);
+      --purple: #8b5cf6; --purple-dim: rgba(139,92,246,.15);
+      --cyan: #06b6d4; --cyan-dim: rgba(6,182,212,.15);
+      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Sora', sans-serif;
+      --r: 12px; --r2: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: 240px; background: var(--card); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent), var(--accent2)); }
+    .sidebar-brand { padding: 20px 18px 14px; border-bottom: 1px solid var(--border); }
+    .sidebar-brand-name { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .sidebar-brand-name img { height: 26px; object-fit: contain; filter: brightness(1.2); }
+    .sidebar-brand-sub { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: var(--mono); }
+    .sidebar-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, var(--primary), var(--accent2)); color: white; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 99px; margin-top: 6px; letter-spacing: .5px; }
+    .sidebar-nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+    .nav-sect { font-size: 9px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; padding: 10px 10px 4px; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--text2); font-size: 12px; font-weight: 500; transition: all .15s; border: none; background: none; width: 100%; text-align: left; text-decoration: none; margin-bottom: 1px; }
+    .nav-item:hover { background: var(--bg3); color: var(--text); }
+    .nav-item.active { background: linear-gradient(135deg, rgba(59,130,246,.2), rgba(139,92,246,.1)); color: var(--primary); border: 1px solid rgba(59,130,246,.2); }
+    .nav-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+    .nav-pill { margin-left: auto; background: var(--primary); color: white; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 99px; }
+    .sidebar-footer { padding: 10px 12px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+
+    /* ── MAIN ── */
+    .main { margin-left: 240px; min-height: 100vh; }
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(11,15,26,.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-size: 17px; font-weight: 700; color: var(--text); }
+    .topbar-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+    .topbar-actions { display: flex; gap: 8px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; font-family: var(--sans); white-space: nowrap; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent2)); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--primary-glow); }
+    .btn-ghost { background: var(--card2); color: var(--text2); border: 1px solid var(--border2); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--primary); }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .btn-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,.25); }
+    .btn-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(244,63,94,.25); }
+
+    /* ── PAGE CONTENT ── */
+    .page { display: none; padding: 24px; }
+    .page.active { display: block; }
+
+    /* ── MODULE TABS ── */
+    .mod-tabs { display: flex; gap: 3px; background: var(--card); border-radius: 12px; padding: 4px; margin-bottom: 22px; border: 1px solid var(--border); }
+    .mod-tab { flex: 1; padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text3); transition: all .2s; text-align: center; font-family: var(--sans); display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .mod-tab:hover { color: var(--text2); background: var(--bg3); }
+    .mod-tab.active { background: linear-gradient(135deg, var(--primary), var(--accent2)); color: white; box-shadow: 0 3px 10px var(--primary-glow); }
+    .mod-panel { display: none; }
+    .mod-panel.active { display: block; }
+
+    /* ── KPI GRID ── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; margin-bottom: 22px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 18px 20px; position: relative; overflow: hidden; transition: transform .2s; }
+    .kpi-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .kpi-card.blue::before { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+    .kpi-card.green::before { background: var(--green); }
+    .kpi-card.red::before { background: var(--red); }
+    .kpi-card.purple::before { background: var(--accent2); }
+    .kpi-card.amber::before { background: var(--amber); }
+    .kpi-card.cyan::before { background: var(--cyan); }
+    .kpi-label { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .kpi-val { font-size: 22px; font-weight: 800; color: var(--text); margin-top: 6px; line-height: 1.1; font-family: var(--mono); }
+    .kpi-sub { font-size: 10px; color: var(--text3); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+    .kpi-icon { position: absolute; top: 16px; right: 16px; font-size: 20px; opacity: .4; }
+
+    /* ── CARDS ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; margin-bottom: 18px; }
+    .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 7px; }
+    .card-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 6px var(--primary); }
+    .card-body { padding: 18px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th { padding: 10px 14px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; text-align: left; }
+    td { padding: 10px 14px; color: var(--text2); border-bottom: 1px solid var(--border); }
+    tr:hover td { background: var(--bg3); color: var(--text); }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+    .form-control { width: 100%; padding: 9px 12px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-size: 12px; font-family: var(--sans); outline: none; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── OCR ── */
+    .ocr-drop-zone { border: 2px dashed var(--border2); border-radius: var(--r2); padding: 32px; text-align: center; cursor: pointer; transition: all .2s; background: var(--bg3); }
+    .ocr-drop-zone:hover, .ocr-drop-zone.drag-over { border-color: var(--primary); background: rgba(59,130,246,.05); }
+    .ocr-icon { font-size: 36px; margin-bottom: 10px; }
+    .ocr-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .ocr-sub { font-size: 11px; color: var(--text3); }
+
+    /* ── MODAL & TOAST ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); border: 1px solid var(--border2); border-radius: var(--r2); max-width: 560px; width: 100%; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; position: sticky; top: 0; background: var(--card); z-index: 1; }
+    .modal-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+    
+    .toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 6px; }
+    .toast { background: var(--card2); border: 1px solid var(--border2); color: var(--text); padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 500; animation: slideInRight .3s ease; }
+    .toast.success { border-color: rgba(16,185,129,.4); background: rgba(16,185,129,.1); color: var(--green); }
+    .toast.danger { border-color: rgba(244,63,94,.4); background: rgba(244,63,94,.1); color: var(--red); }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ── LOADER ── */
+    #global-loader { position: fixed; inset: 0; background: rgba(11,15,26,.85); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+    #global-loader .spinner { width: 44px; height: 44px; border: 3px solid var(--border2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #global-loader .text { font-size: 13px; font-weight: 600; color: var(--text2); }
+  </style>
+</head>
+<body>
+
+<div id="global-loader"><div class="spinner"></div><div class="text" id="loader-text">Menyinkronkan Data Cloud...</div></div>
+
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">
+      <img src="https://raw.githubusercontent.com/ishikawak06/keuangan-gurmie/refs/heads/main/Desain%20tanpa%20judul222.png" alt="Logo">
+      Gurmie Ayam
+    </div>
+    <div class="sidebar-brand-sub">Sistem Keuangan Digital</div>
+    <span class="sidebar-badge">✦ AKUNTANSI AI</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-sect">Akses Utama</div>
+    <a href="index.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">🛒</span>Kasir / POS</a>
+    <a href="bahan_baku.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">🥩</span>Resep & Bahan</a>
+    
+    <div class="nav-sect">Akuntansi</div>
+    <button class="nav-item active" onclick="showMod('transaksi-bayar')"><span class="nav-icon">💳</span>Transaksi & Tagihan<span class="nav-pill" id="pill-trx">0</span></button>
+    <button class="nav-item" onclick="showMod('pembukuan')"><span class="nav-icon">📒</span>Pembukuan</button>
+    <button class="nav-item" onclick="showMod('biaya')"><span class="nav-icon">💸</span>Biaya & Pengeluaran</button>
+    <button class="nav-item" onclick="showMod('anggaran')"><span class="nav-icon">📊</span>Anggaran</button>
+    <button class="nav-item" onclick="showMod('rekonsiliasi')"><span class="nav-icon">🤖</span>Rekonsiliasi AI</button>
+    <button class="nav-item" onclick="showMod('laporan-ai')"><span class="nav-icon">📈</span>Laporan AI</button>
+    <button class="nav-item" onclick="showMod('aset')"><span class="nav-icon">🏗️</span>Aset</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-dot" id="sync-status-dot"></div>
+    Sistem Aktif
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title" id="page-title-main">Transaksi & Tagihan</div>
+        <div class="topbar-sub" id="page-sub-main">Dokumentasi & pembayaran terpadu</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="ai-tag" style="background:linear-gradient(135deg, var(--primary), var(--accent));color:white;padding:4px 8px;border-radius:8px;font-size:10px;font-weight:700;">✦ AI POWERED</span>
+      <button class="btn btn-ghost btn-sm" onclick="syncFromKasirLokal()">🔄 Sync Lokal</button>
+      <button class="btn btn-primary btn-sm" onclick="syncCloudRealtime()">☁️ Tarik Cloud Data</button>
+    </div>
+  </div>
+
+  <div class="page active" id="page-akuntansi">
+    <div class="mod-tabs" id="mod-tabs">
+      <button class="mod-tab active" onclick="showMod('transaksi-bayar',this)">💳 Transaksi</button>
+      <button class="mod-tab" onclick="showMod('pembukuan',this)">📒 Pembukuan</button>
+      <button class="mod-tab" onclick="showMod('biaya',this)">💸 Biaya</button>
+      <button class="mod-tab" onclick="showMod('anggaran',this)">📊 Anggaran</button>
+      <button class="mod-tab" onclick="showMod('rekonsiliasi',this)">🤖 Rekon</button>
+      <button class="mod-tab" onclick="showMod('laporan-ai',this)">📈 Laporan</button>
+      <button class="mod-tab" onclick="showMod('aset',this)">🏗️ Aset</button>
+    </div>
+
+    <div class="mod-panel active" id="panel-transaksi-bayar">
+      <div class="kpi-grid" id="kpi-trx"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Buat Invoice / Tagihan</span></div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>No Invoice</th><th>Pelanggan</th><th>Nominal</th><th>Status</th></tr></thead>
+                <tbody id="invoice-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Hutang / Tagihan Supplier (PO)</span></div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>No PO / Ref</th><th>Supplier</th><th>Nominal</th><th>Tanggal</th></tr></thead>
+                <tbody id="po-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod-panel" id="panel-pembukuan">
+      <div class="kpi-grid" id="kpi-buku"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Jurnal Umum</span></div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Debit</th><th>Kredit</th><th>Akun</th></tr></thead>
+                <tbody id="jurnal-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Neraca Saldo Sederhana</span></div>
+          <div class="card-body" id="neraca-body"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">📷 Ekstrak AI: OCR Kwitansi / Invoice</span></div>
+        <div class="card-body">
+          <div class="ocr-drop-zone" id="ocr-zone" onclick="triggerOCR()">
+            <input type="file" id="ocr-file" accept="image/*,application/pdf" style="display:none;" onchange="processOCR(event)">
+            <div class="ocr-icon">📷</div>
+            <div class="ocr-title">Upload Foto Kwitansi / Invoice (Maks. 100MB)</div>
+            <div class="ocr-sub">Foto atau drag & drop didukung. Data otomatis diekstrak menjadi pengeluaran via AI.</div>
+          </div>
+          <div id="ocr-result" style="display:none;margin-top:14px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod-panel" id="panel-biaya">
+      <div class="kpi-grid" id="kpi-biaya"></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Riwayat Pengeluaran (Tersinkron)</span></div>
+        <div class="table-wrap" style="padding:18px;">
+          <table><thead><tr><th>Tanggal</th><th>Kategori</th><th>Dept.</th><th>Keterangan</th><th>Nominal</th><th>PIC</th></tr></thead>
+          <tbody id="biaya-table"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod-panel" id="panel-aset">
+      <div class="card"><div class="card-body" style="text-align:center;color:var(--text3);">Modul Manajemen Aset sedang dalam pengembangan...</div></div>
+    </div>
+    <div class="mod-panel" id="panel-anggaran">
+      <div class="card"><div class="card-body" style="text-align:center;color:var(--text3);">Modul Anggaran sedang dalam pengembangan...</div></div>
+    </div>
+    <div class="mod-panel" id="panel-rekonsiliasi">
+      <div class="card"><div class="card-body" style="text-align:center;color:var(--text3);">Modul Rekonsiliasi sedang dalam pengembangan...</div></div>
+    </div>
+    <div class="mod-panel" id="panel-laporan-ai">
+      <div class="card"><div class="card-body" style="text-align:center;color:var(--text3);">Modul Insight AI sedang dalam pengembangan...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ===== DATA LAYER & SYNC INTEGRATION =====
+let syncConfig = JSON.parse(localStorage.getItem('kkSyncConfig') || '{}');
+
+// Kasir Master Data
+let kasirTrx     = JSON.parse(localStorage.getItem('kkTransaksi')    || '[]');
+let kasirProduk  = JSON.parse(localStorage.getItem('kkProduk')       || '[]');
+let kasirPgl     = JSON.parse(localStorage.getItem('kkPengeluaran')  || '[]');
+let kasirBeli    = JSON.parse(localStorage.getItem('kkPembelian')    || '[]');
+let settingNama  = localStorage.getItem('kkNamaToko') || 'Gurmie Ayam';
+
+// Akuntansi Dedicated Data
+let invoices     = JSON.parse(localStorage.getItem('akInvoices')   || '[]');
+let purchaseOrders = JSON.parse(localStorage.getItem('akPO')       || '[]');
+let jurnal       = JSON.parse(localStorage.getItem('akJurnal')     || '[]');
+let biaya        = JSON.parse(localStorage.getItem('akBiaya')      || '[]');
+let aset         = JSON.parse(localStorage.getItem('akAset')       || '[]');
+
+function saveJurnalData(){ localStorage.setItem('akJurnal', JSON.stringify(jurnal)); }
+function saveBiayaData(){ localStorage.setItem('akBiaya', JSON.stringify(biaya)); }
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function rp(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+function rpShort(n){ n=Number(n||0); if(n>=1e9)return 'Rp '+(n/1e9).toFixed(1)+'M'; if(n>=1e6)return 'Rp '+(n/1e6).toFixed(1)+'jt'; return rp(n); }
+function toast(msg, type=''){ const el=document.createElement('div'); el.className='toast '+(type||''); el.textContent=msg; document.getElementById('toast-wrap').appendChild(el); setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},2800); }
+
+// UI TOGGLE
+function showMod(mod, tabBtn) {
+  document.querySelectorAll('.mod-panel').forEach(p=>p.classList.remove('active'));
+  const panel = document.getElementById('panel-'+mod); if(panel) panel.classList.add('active');
+  document.querySelectorAll('.mod-tab').forEach(t=>t.classList.remove('active'));
+  if(tabBtn) tabBtn.classList.add('active');
+  
+  if(mod === 'transaksi-bayar') renderTrxBayar();
+  if(mod === 'pembukuan') renderPembukuan();
+  if(mod === 'biaya') renderBiayaPanel();
+}
+
+// SYNC LOKAL & JURNAL GENERATOR
+function syncFromKasirLokal() {
+  kasirTrx = JSON.parse(localStorage.getItem('kkTransaksi') || '[]');
+  kasirPgl = JSON.parse(localStorage.getItem('kkPengeluaran') || '[]');
+  kasirBeli = JSON.parse(localStorage.getItem('kkPembelian') || '[]');
+  settingNama = localStorage.getItem('kkNamaToko') || 'Gurmie Ayam';
+
+  let newJurnal = 0;
+
+  // 1. Sinkron Penjualan (Debit Kas, Kredit Pendapatan)
+  kasirTrx.forEach(t => {
+    if(!jurnal.find(j => j.ref === 'KAS-'+t.id)) {
+      jurnal.push({id:genId(), tgl:new Date(t.tanggal).toISOString().split('T')[0], ref:'KAS-'+t.id, ket:'Penjualan: '+t.items.slice(0,2).map(i=>i.nama).join(', '), debitAkun:'Kas', kreditAkun:'Pendapatan Penjualan', debit:t.total, kredit:t.total, createdAt:t.tanggal});
+      newJurnal++;
+    }
+  });
+
+  // 2. Sinkron Pengeluaran Operasional (Debit Beban, Kredit Kas)
+  kasirPgl.forEach(p => {
+    if(!biaya.find(b => b.ref === 'KAS-PGL-'+p.id)) {
+      biaya.push({id:genId(), ref:'KAS-PGL-'+p.id, tgl:p.tanggal, kategori:p.kategori, departemen:'Operasional', keterangan:p.keterangan, nominal:p.nominal, pic:p.pencatat||'-', createdAt:new Date(p.tanggal).getTime()});
+    }
+    if(!jurnal.find(j => j.ref === 'KAS-PGL-'+p.id)) {
+      jurnal.push({id:genId(), tgl:p.tanggal, ref:'KAS-PGL-'+p.id, ket:'Biaya: '+p.keterangan, debitAkun:'Beban Operasional', kreditAkun:'Kas', debit:p.nominal, kredit:p.nominal, createdAt:new Date(p.tanggal).getTime()});
+      newJurnal++;
+    }
+  });
+
+  // 3. Sinkron Pembelian Stok/Bahan (Debit Persediaan, Kredit Kas)
+  kasirBeli.forEach(b => {
+    if(!jurnal.find(j => j.ref === 'KAS-BELI-'+b.id)) {
+      let totalValue = b.qty * b.hargaBeli;
+      jurnal.push({id:genId(), tgl:new Date(b.tanggal).toISOString().split('T')[0], ref:'KAS-BELI-'+b.id, ket:'Restok Pembelian: '+ (b.supplier||''), debitAkun:'Persediaan', kreditAkun:'Kas', debit:totalValue, kredit:totalValue, createdAt:b.tanggal});
+      newJurnal++;
+    }
+  });
+
+  saveJurnalData();
+  saveBiayaData();
+  
+  toast(`Sinkronisasi lokal selesai. ${newJurnal} entri jurnal baru.`, 'success');
+  renderTrxBayar();
+  renderPembukuan();
+  renderBiayaPanel();
+}
+
+// CLOUD SYNC
+async function syncCloudRealtime() {
+  if(!syncConfig.webAppUrl) { toast('URL Sync Sheet belum dikonfigurasi di Kasir.', 'danger'); return; }
+  document.getElementById('loader-text').textContent = 'Menarik data dari Google Sheets...';
+  document.getElementById('global-loader').style.display = 'flex';
+  
+  try {
+    const res = await fetch(`${syncConfig.webAppUrl}?action=pullAll`, { cache: 'no-store' });
+    const text = await res.text(); const result = JSON.parse(text);
+    if (!result.ok) throw new Error(result.error);
+    
+    // Apply cross-module data
+    if(result.data.transactions) { localStorage.setItem('kkTransaksi', JSON.stringify(result.data.transactions)); }
+    if(result.data.pembelian) { localStorage.setItem('kkPembelian', JSON.stringify(result.data.pembelian)); }
+    if(result.data.pengeluaran) { localStorage.setItem('kkPengeluaran', JSON.stringify(result.data.pengeluaran)); }
+    
+    document.getElementById('sync-status-dot').style.background = 'var(--green)';
+    syncFromKasirLokal(); // Process newly downloaded data into Accounting layer
+    toast('Data Cloud tersinkronisasi ✓', 'success');
+  } catch(e) {
+    toast('Gagal menarik data cloud: ' + e.message, 'danger');
+  }
+  document.getElementById('global-loader').style.display = 'none';
+}
+
+
+// RENDER TRANSAKSI (Accounts Receivable / Payable mapping)
+function renderTrxBayar() {
+  const totalPend = kasirTrx.reduce((s,t)=>s+t.total,0);
+  const totalBeli = kasirBeli.reduce((s,b)=>s+(b.qty*b.hargaBeli),0);
+  
+  document.getElementById('kpi-trx').innerHTML=`
+    <div class="kpi-card blue"><div class="kpi-label">Pendapatan Penjualan (Kasir)</div><div class="kpi-val text-mono">${rpShort(totalPend)}</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Total Nilai Pembelian (Stok)</div><div class="kpi-val text-mono">${rpShort(totalBeli)}</div></div>
+  `;
+  
+  document.getElementById('po-table').innerHTML = kasirBeli.length ? kasirBeli.slice(-10).reverse().map(b=>`
+    <tr>
+      <td style="color:var(--amber);font-family:var(--mono);font-size:11px;">#BELI-${b.id.slice(-5).toUpperCase()}</td>
+      <td>${b.supplier||'Tanpa Nama'}</td>
+      <td style="font-weight:700;">${rp(b.qty * b.hargaBeli)}</td>
+      <td style="font-size:11px;color:var(--text3);">${new Date(b.tanggal).toLocaleDateString('id-ID')}</td>
+    </tr>`).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--text3);">Belum ada riwayat pembelian</td></tr>`;
+}
+
+// RENDER PEMBUKUAN
+function renderPembukuan() {
+  const totalDebit = jurnal.reduce((s,j)=>s+j.debit,0);
+  const totalKredit = jurnal.reduce((s,j)=>s+j.kredit,0);
+  
+  document.getElementById('kpi-buku').innerHTML=`
+    <div class="kpi-card blue"><div class="kpi-label">Entri Jurnal</div><div class="kpi-val text-mono">${jurnal.length}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Total Debit</div><div class="kpi-val text-mono">${rpShort(totalDebit)}</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Total Kredit</div><div class="kpi-val text-mono">${rpShort(totalKredit)}</div></div>
+  `;
+
+  document.getElementById('jurnal-table').innerHTML = jurnal.length ? [...jurnal].reverse().slice(0,25).map(j=>`
+    <tr>
+      <td style="font-size:10px;color:var(--text3);">${j.tgl}</td>
+      <td style="font-size:11px;">${j.ket}</td>
+      <td style="color:var(--green);font-family:var(--mono);font-weight:600;">${j.debit?rp(j.debit):'-'}</td>
+      <td style="color:var(--red);font-family:var(--mono);font-weight:600;">${j.kredit?rp(j.kredit):'-'}</td>
+      <td style="font-size:10px;"><span style="color:var(--primary);">${j.debitAkun}</span> / <span style="color:var(--accent2);">${j.kreditAkun}</span></td>
+    </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text3);">Tidak ada entri jurnal</td></tr>`;
+    
+  // Neraca
+  const kas = kasirTrx.reduce((s,t)=>s+t.total,0) - kasirPgl.reduce((s,p)=>s+p.nominal,0) - kasirBeli.reduce((s,b)=>s+(b.qty*b.hargaBeli),0);
+  const piutang = invoices.filter(i=>i.status==='Belum Lunas').reduce((s,i)=>s+i.total,0);
+  const totalAset = kasirBeli.reduce((s,b)=>s+(b.qty*b.hargaBeli),0); // Simplified Persediaan
+  const totalBiaya = kasirPgl.reduce((s,p)=>s+p.nominal,0);
+  const modal = kas + piutang + totalAset - totalBiaya;
+
+  document.getElementById('neraca-body').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text2);font-size:12px;">Kas Berjalan (Estimasi)</span><span class="text-mono text-green fw-bold" style="font-size:13px;">${rp(kas)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text2);font-size:12px;">Nilai Persediaan (Stok)</span><span class="text-mono text-primary fw-bold" style="font-size:13px;">${rp(totalAset)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text2);font-size:12px;">Total Beban / Pengeluaran</span><span class="text-mono text-red fw-bold" style="font-size:13px;">${rp(totalBiaya)}</span></div>
+  `;
+}
+
+// RENDER BIAYA
+function renderBiayaPanel() {
+  const total = biaya.reduce((s,b)=>s+b.nominal,0);
+  document.getElementById('kpi-biaya').innerHTML=`<div class="kpi-card red"><div class="kpi-label">Total Pengeluaran</div><div class="kpi-val text-mono">${rpShort(total)}</div></div>`;
+  document.getElementById('biaya-table').innerHTML = biaya.length ? [...biaya].reverse().slice(0,30).map(b=>`
+    <tr>
+      <td style="font-size:10px;color:var(--text3);">${b.tgl}</td>
+      <td><span style="background:var(--red-dim);color:var(--red);padding:2px 6px;border-radius:4px;font-size:10px;">${b.kategori}</span></td>
+      <td style="font-size:11px;">${b.departemen}</td>
+      <td style="font-size:11px;">${b.keterangan}</td>
+      <td style="color:var(--red);font-family:var(--mono);font-weight:600;">${rp(b.nominal)}</td>
+      <td style="font-size:10px;color:var(--text3);">${b.pic}</td>
+    </tr>`).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--text3);">Belum ada pengeluaran dicatat</td></tr>`;
+}
+
+// ===== OCR FITUR DENGAN ATURAN VALIDASI KHUSUS =====
+function triggerOCR(){ document.getElementById('ocr-file').click(); }
+function processOCR(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+
+  // ATURAN VALIDASI FILE (Maks 100MB berdasarkan User Correction Ledger)
+  const maxSize = 100 * 1024 * 1024; 
+  if(file.size > maxSize) {
+    toast('Gagal: Ukuran file melebihi batas maksimal 100MB!', 'danger');
+    return;
+  }
+
+  document.getElementById('loader-text').textContent='AI mengekstrak dokumen...';
+  document.getElementById('global-loader').style.display='flex';
+  
+  // Dummy delay for AI processing
+  setTimeout(() => {
+    document.getElementById('global-loader').style.display='none';
+    document.getElementById('ocr-result').style.display='block';
+    document.getElementById('ocr-result').innerHTML=`
+      <div style="background:var(--green-dim);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;">✅ OCR Berhasil — Data Disimulasikan</div>
+        <div style="font-size:11px;color:var(--text2);">Catatan: Koneksi API eksternal dinonaktifkan dalam mode ini, namun file berukuran hingga 100MB telah lolos validasi lokal.</div>
+      </div>`;
+    toast('File berhasil diverifikasi dan diproses', 'success');
+  }, 1500);
+}
+
+// INIT
+window.addEventListener('DOMContentLoaded', () => {
+  syncFromKasirLokal();
+  renderTrxBayar();
+});
+</script>
+</body>
+</html>
