@@ -191,13 +191,13 @@
           <div class="card-header"><span class="card-title" id="form-title-bahan">Tambah Bahan Dasar</span></div>
           <div class="card-body">
             <div class="alert-margin" style="background:var(--primary-light); color:var(--primary-dark); border-color:var(--primary); margin-bottom:12px;">
-                💡 <b>Cara Input:</b> Masukkan kuantitas dan total harga beli. Sistem akan otomatis menghitung Harga per Satuannya.
+                💡 <b>Cara Input:</b> Masukkan Total Isi Kapasitas (misal: 19) dan Harga Total (misal: 5000). Sistem otomatis membagi nilainya per satuan.
             </div>
             
             <input type="hidden" id="bb-id">
-            <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Daging Ayam Fillet"></div>
+            <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Air Mineral Galon"></div>
             <div class="form-group"><label class="form-label">Satuan *</label>
-              <select id="bb-satuan" class="form-control">
+              <select id="bb-satuan" class="form-control" onchange="updateSatuanBB()">
                 <option value="gram">Gram (gr)</option>
                 <option value="kg">Kilogram (kg)</option>
                 <option value="ml">Mililiter (ml)</option>
@@ -208,12 +208,12 @@
             
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Kuantitas Pembelian *</label>
-                    <input type="number" id="bb-qty-beli" class="form-control" placeholder="Contoh: 400" oninput="hitungPreviewHargaSatuan()">
+                    <label class="form-label">Total Isi / Kapasitas (<span id="lbl-satuan-bb">gram</span>) *</label>
+                    <input type="number" id="bb-qty-beli" class="form-control" placeholder="Misal: 19" oninput="hitungPreviewHargaSatuan()">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Total Harga (Rp) *</label>
-                    <input type="number" id="bb-total-harga" class="form-control" placeholder="Contoh: 20000" oninput="hitungPreviewHargaSatuan()">
+                    <label class="form-label">Harga Total Pembelian (Rp) *</label>
+                    <input type="number" id="bb-total-harga" class="form-control" placeholder="Misal: 5000" oninput="hitungPreviewHargaSatuan()">
                 </div>
             </div>
             
@@ -629,6 +629,13 @@
   // ==========================================
   // PAGE 1A: BAHAN BAKU DASAR
   // ==========================================
+  
+  function updateSatuanBB() {
+      const sat = document.getElementById('bb-satuan').value;
+      document.getElementById('lbl-satuan-bb').textContent = sat;
+      hitungPreviewHargaSatuan();
+  }
+
   function renderBahanBaku() {
     const tbody = document.getElementById('tbl-bahan');
     if(!bahanBaku.length) {
@@ -658,7 +665,10 @@
         hargaSatuan = totalHarga / qty;
     }
     
-    document.getElementById('preview-harga-satuan').textContent = `Harga Satuan: ${rp(hargaSatuan)} / ${satuan}`;
+    // Check if the number has decimals, limit to 2 for display
+    const hargaSatuanFormatted = hargaSatuan % 1 !== 0 ? hargaSatuan.toFixed(2) : hargaSatuan;
+    
+    document.getElementById('preview-harga-satuan').textContent = `Harga Satuan: Rp ${hargaSatuanFormatted} / ${satuan}`;
   }
 
   function saveBahanBaku() {
@@ -669,7 +679,7 @@
     const totalHarga = parseFloat(document.getElementById('bb-total-harga').value) || 0;
     const stokAwal = parseFloat(document.getElementById('bb-stok').value) || 0;
 
-    if(!nama || qtyBeli <= 0 || totalHarga <= 0) return toast('Nama, Kuantitas, dan Total Harga wajib diisi!', 'danger');
+    if(!nama || qtyBeli <= 0 || totalHarga <= 0) return toast('Nama, Kuantitas Total, dan Harga wajib diisi!', 'danger');
 
     const hargaSatuan = totalHarga / qtyBeli;
 
@@ -697,7 +707,7 @@
     document.getElementById('bb-qty-beli').value = b.qtyBeli || 1;
     document.getElementById('bb-total-harga').value = b.totalHarga || b.hargaSatuan;
     document.getElementById('bb-stok').value = b.stokAwal;
-    hitungPreviewHargaSatuan();
+    updateSatuanBB();
   }
 
   function hapusBahan(id) {
@@ -716,7 +726,7 @@
     document.getElementById('bb-qty-beli').value = '';
     document.getElementById('bb-total-harga').value = '';
     document.getElementById('bb-stok').value = '';
-    hitungPreviewHargaSatuan();
+    updateSatuanBB();
   }
 
   // ==========================================
@@ -1042,11 +1052,8 @@
       } else if (tipe === 'mentah') {
           const bm = bahanMentah.find(x => x.id === bahanId);
           if (bm && bm.hasilJadi > 0) {
-              // Untuk membuat 1 porsi Bahan Mentah, dibutuhkan (komposisi / hasilJadi) Bahan Dasar.
               bm.komposisi.forEach(k => {
                   const qtyDibutuhkan = (k.qty / bm.hasilJadi) * qtyMultiplier;
-                  // Asumsi di dalam Bahan Mentah isinya pasti Bahan Baku Dasar (tipe=baku)
-                  // Jika berlapis (Mentah di dalam Mentah), tambahkan tipe di komposisiMentah
                   extractBasicUsage(k.bahanId, 'baku', qtyDibutuhkan, outputObj);
               });
           }
@@ -1062,7 +1069,6 @@
             const r = resep.find(x => x.produkId === item.produkId);
             if(r) {
               r.komposisi.forEach(k => {
-                  // k.tipe = 'baku' atau 'mentah'
                   extractBasicUsage(k.bahanId, k.tipe || 'baku', k.qty * item.qty, terpakaiDasar);
               });
             }
@@ -1169,6 +1175,7 @@
 
   // MULAI KONEKSI KE CLOUD SAAT HALAMAN DIBUKA
   window.addEventListener('DOMContentLoaded', () => {
+    updateSatuanBB();
     if(syncConfig.webAppUrl) {
        updateSidebarSyncDot(true);
        if(syncConfig.autoSync) { pullFromSpreadsheet(); }
