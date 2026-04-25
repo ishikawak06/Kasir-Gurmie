@@ -26,21 +26,24 @@
     /* Layout */
     .sidebar { width: 228px; background: var(--gray-900); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform .3s; }
     .sidebar-brand { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
-    .sidebar-brand h1 { color: var(--white); font-size: 15px; font-weight: 700; }
+    .sidebar-brand h1 { color: var(--white); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: space-between;}
     .sidebar-brand p { color: var(--gray-400); font-size: 10px; margin-top: 2px; }
+    
+    /* Sync Indicator */
+    .sync-badge { background: rgba(5, 150, 105, 0.2); border: 1px solid var(--success); color: var(--success-light); font-size: 9px; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
     .sidebar-nav { flex: 1; padding: 10px 5px; overflow-y: auto; }
     .nav-section { font-size: 9px; color: var(--gray-600); font-weight: 600; text-transform: uppercase; letter-spacing: .6px; padding: 9px 11px 2px; margin-top: 10px; }
     .nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 7px; cursor: pointer; color: var(--gray-400); font-size: 12px; font-weight: 500; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
     .nav-item:hover { background: rgba(255,255,255,.06); color: var(--white); }
     .nav-item.active { background: var(--teal); color: var(--white); }
-    .nav-item.back-btn { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: var(--white); margin-bottom: 15px; justify-content: center; font-weight: 600; }
-    .nav-item.back-btn:hover { background: var(--primary); border-color: var(--primary); }
     
     .main { margin-left: 228px; min-height: 100vh; padding: 18px; }
     .page { display: none; }
     .page.active { display: block; }
     
-    .page-header { margin-bottom: 16px; }
+    .page-header { margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
     .page-title { font-size: 20px; font-weight: 700; color: var(--gray-900); }
     .page-subtitle { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
     
@@ -63,7 +66,6 @@
     .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 13px; outline: none; transition: .2s; }
     .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-light); }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     thead { background: var(--gray-50); }
@@ -75,7 +77,6 @@
     .badge-green { background: var(--success-light); color: var(--success); }
     .badge-red { background: var(--danger-light); color: var(--danger); }
     .badge-amber { background: var(--warning-light); color: var(--warning); }
-    .badge-blue { background: var(--primary-light); color: var(--primary); }
     
     /* Resep UI */
     .resep-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
@@ -89,7 +90,7 @@
     .good-margin { background: var(--success-light); border: 1px solid #6ee7b7; color: #065f46; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     
     .toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
-    .toast { background: var(--gray-900); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; animation: slideIn .3s; box-shadow: var(--shadow-md); }
+    .toast { background: var(--gray-900); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; animation: slideIn .3s; box-shadow: var(--shadow); }
     .toast.success { border-left: 4px solid var(--success); }
     .toast.danger { border-left: 4px solid var(--danger); }
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -100,7 +101,7 @@
 
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
     .kpi-card { background: var(--white); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); border-left: 4px solid var(--gray-300); }
-    .kpi-card.red { border-color: var(--danger); } .kpi-card.green { border-color: var(--success); } .kpi-card.teal { border-color: var(--teal); }
+    .kpi-card.red { border-color: var(--danger); } .kpi-card.teal { border-color: var(--teal); }
     .kpi-title { font-size: 10px; color: var(--gray-500); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
     .kpi-val { font-size: 20px; font-weight: 800; color: var(--gray-900); }
 
@@ -115,12 +116,16 @@
 
 <div class="sidebar">
   <div class="sidebar-brand">
-    <h1>Gurmie BOM</h1>
-    <p>Manajemen Bahan & Resep</p>
+    <div>
+        <h1>Gurmie BOM</h1>
+        <p>Manajemen Bahan & Resep</p>
+    </div>
   </div>
   <nav class="sidebar-nav">
-    <a href="index.html" class="nav-item back-btn" style="text-decoration:none; display:flex;">⬅️ Kembali ke Kasir</a>
-    <div class="nav-section">Menu Module</div>
+    <div class="nav-section" style="display:flex; justify-content:space-between; align-items:center;">
+        Status Cloud <span class="sync-badge" id="sync-indicator">⏳ Menghubungkan</span>
+    </div>
+    <div class="nav-section" style="margin-top: 20px;">Menu Module</div>
     <button class="nav-item active" data-page="bahan" onclick="showPage('bahan')">📦 Setup Bahan Baku</button>
     <button class="nav-item" data-page="resep" onclick="showPage('resep')">🍲 Resep & HPP Produk</button>
     <button class="nav-item" data-page="laporan" onclick="showPage('laporan')">📊 Laporan & Stok</button>
@@ -132,18 +137,22 @@
   <!-- PAGE: BAHAN BAKU -->
   <div id="page-bahan" class="page active">
     <div class="page-header">
-      <div class="page-title">Setup Bahan Baku</div>
-      <div class="page-subtitle">Kelola master data bahan baku, harga beli, dan stok awal</div>
+      <div>
+        <div class="page-title">Setup Bahan Baku</div>
+        <div class="page-subtitle">Kelola master data bahan baku (Auto-Sync Cloud)</div>
+      </div>
     </div>
     
     <div class="resep-layout">
       <!-- Tabel Bahan -->
       <div class="card">
-        <div class="card-header"><span class="card-title">Daftar Bahan Baku</span></div>
+        <div class="card-header"><span class="card-title">Daftar Bahan Baku Real-time</span></div>
         <div style="overflow-x:auto;">
           <table>
             <thead><tr><th>Nama Bahan</th><th>Satuan</th><th>Harga/Satuan</th><th>Stok Master</th><th>Aksi</th></tr></thead>
-            <tbody id="tbl-bahan"></tbody>
+            <tbody id="tbl-bahan">
+                <tr><td colspan="5" style="text-align:center;">Memuat data dari cloud...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -170,7 +179,7 @@
           <div class="form-group"><label class="form-label">Update Stok Fisik Saat Ini *</label><input type="number" id="bb-stok" class="form-control" placeholder="0"></div>
           
           <div style="display:flex; gap:8px; margin-top:16px;">
-            <button class="btn btn-primary btn-full" onclick="saveBahanBaku()">💾 Simpan Bahan</button>
+            <button class="btn btn-primary btn-full" onclick="saveBahanBaku()">☁️ Simpan (Cloud)</button>
             <button class="btn btn-outline" onclick="resetFormBahan()">Batal</button>
           </div>
         </div>
@@ -181,8 +190,10 @@
   <!-- PAGE: RESEP PRODUK -->
   <div id="page-resep" class="page">
     <div class="page-header">
-      <div class="page-title">Resep & Kalkulasi HPP</div>
-      <div class="page-subtitle">Tentukan komposisi bahan untuk setiap produk. HPP akan otomatis tersinkronisasi ke Kasir.</div>
+      <div>
+        <div class="page-title">Resep & Kalkulasi HPP</div>
+        <div class="page-subtitle">HPP akan tersinkronisasi otomatis ke seluruh perangkat.</div>
+      </div>
     </div>
 
     <div class="resep-layout">
@@ -193,7 +204,7 @@
           <div class="form-group">
             <label class="form-label">Pilih Produk *</label>
             <select id="rs-produk" class="form-control" onchange="loadResepForProduk()">
-              <option value="">-- Pilih Produk --</option>
+              <option value="">-- Memuat Produk --</option>
             </select>
           </div>
 
@@ -217,7 +228,7 @@
               </div>
             </div>
             
-            <button class="btn btn-success btn-full" style="margin-top:16px;" onclick="saveResep()">💾 Simpan Resep & Update HPP Produk</button>
+            <button class="btn btn-success btn-full" style="margin-top:16px;" onclick="saveResep()">☁️ Simpan Resep & Update HPP Cloud</button>
           </div>
         </div>
       </div>
@@ -239,8 +250,8 @@
   <!-- PAGE: LAPORAN -->
   <div id="page-laporan" class="page">
     <div class="page-header">
-      <div class="page-title">Laporan Inventori & Analisis</div>
-      <div class="page-subtitle">Pantau sisa stok riil berdasarkan estimasi pemakaian dari penjualan POS</div>
+      <div class="page-title">Laporan Inventori Real-time</div>
+      <div class="page-subtitle">Pantau sisa stok riil tersinkronisasi antar perangkat (POS & BOM)</div>
     </div>
 
     <div class="tabs">
@@ -255,7 +266,7 @@
         <div class="kpi-card red"><div class="kpi-title">Stok Menipis / Kritis</div><div class="kpi-val" id="kpi-stok-kritis">0</div></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">Sisa Stok Bahan Baku</span><button class="btn btn-sm btn-outline" onclick="generateStokReport()">🔄 Refresh Data</button></div>
+        <div class="card-header"><span class="card-title">Sisa Stok Bahan Baku</span><button class="btn btn-sm btn-outline" onclick="generateStokReport()">🔄 Auto-Refresh Aktif</button></div>
         <div style="overflow-x:auto;">
           <table>
             <thead><tr><th>Nama Bahan</th><th>Stok Master</th><th>Estimasi Terpakai (POS)</th><th>Sisa Riil</th><th>Status</th></tr></thead>
@@ -291,32 +302,102 @@
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script>
-  // --- DATA LAYER ---
-  // Kita hubungkan ke localStorage milik Kasir (Gurmie Ayam)
-  let products = JSON.parse(localStorage.getItem('kkProduk') || '[]');
-  let transactions = JSON.parse(localStorage.getItem('kkTransaksi') || '[]');
-  
-  // Storage khusus untuk manajemen bahan baku
-  let bahanBaku = JSON.parse(localStorage.getItem('kkBahanBaku') || '[]');
-  let resep = JSON.parse(localStorage.getItem('kkResep') || '[]'); // format: [{produkId, komposisi: [{bahanId, qty}] }]
+<!-- INTEGRASI CLOUD FIREBASE UNTUK AUTO-PULL -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  // Variables
+  // Konfigurasi Cloud Database (Otomatis disediakan oleh platform)
+  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'gurmie-bom-app';
+  
+  let currentUser = null;
+
+  // Variabel Global Data
+  window.products = [];
+  window.transactions = [];
+  window.bahanBaku = [];
+  window.resep = [];
+  
   let currentProdukId = null;
   let currentKomposisi = [];
   let chartInstance = null;
 
   // --- UTILS ---
-  function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
-  function rp(n) { return 'Rp ' + Number(n||0).toLocaleString('id-ID'); }
-  function toast(msg, type='success') {
+  window.genId = () => doc(collection(db, 'temp')).id;
+  window.rp = (n) => 'Rp ' + Number(n||0).toLocaleString('id-ID');
+  window.toast = (msg, type='success') => {
     const el = document.createElement('div'); el.className = 'toast ' + type; el.textContent = msg;
     document.getElementById('toast-wrap').appendChild(el);
     setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2800);
   }
 
+  // --- INISIALISASI CLOUD ---
+  async function initCloud() {
+    try {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+    } catch (e) {
+      console.error("Auth error:", e);
+      document.getElementById('sync-indicator').innerHTML = "❌ Gagal Terhubung";
+      document.getElementById('sync-indicator').style.color = "var(--danger)";
+    }
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('sync-indicator').innerHTML = "🟢 Terhubung (Real-time)";
+      setupRealtimeListeners(); // Memulai proses Auto-Pull!
+    }
+  });
+
+  // --- AUTO PULL (REAL-TIME LISTENERS) ---
+  function setupRealtimeListeners() {
+    // 1. Tarik Data Bahan Baku
+    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bahanBaku'), (snapshot) => {
+        window.bahanBaku = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if(document.getElementById('page-bahan').classList.contains('active')) renderBahanBaku();
+        if(document.getElementById('page-resep').classList.contains('active')) initResepPage();
+        generateStokReport();
+    }, (error) => console.error("Error Bahan:", error));
+
+    // 2. Tarik Data Resep
+    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'resep'), (snapshot) => {
+        window.resep = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if(document.getElementById('page-resep').classList.contains('active') && currentProdukId) {
+            loadResepForProduk();
+        }
+        generateStokReport();
+    }, (error) => console.error("Error Resep:", error));
+
+    // 3. Tarik Data Produk (Terhubung ke Kasir POS)
+    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'produk'), (snapshot) => {
+        window.products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if(document.getElementById('page-resep').classList.contains('active')) initResepPage();
+        if(document.getElementById('page-laporan').classList.contains('active') && document.getElementById('tab-hpp').style.display === 'block') {
+            renderLaporanHPP();
+        }
+    }, (error) => console.error("Error Produk:", error));
+
+    // 4. Tarik Data Transaksi Penjualan (Untuk hitung sisa stok)
+    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'transaksi'), (snapshot) => {
+        window.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if(document.getElementById('page-laporan').classList.contains('active')) {
+            generateStokReport();
+        }
+    }, (error) => console.error("Error Transaksi:", error));
+  }
+
   // --- NAVIGATION ---
-  function showPage(pageId) {
+  window.showPage = (pageId) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('page-' + pageId).classList.add('active');
@@ -327,7 +408,7 @@
     if(pageId === 'laporan') generateStokReport();
   }
 
-  function switchLapTab(tab, btn) {
+  window.switchLapTab = (tab, btn) => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-stok').style.display = tab === 'stok' ? 'block' : 'none';
@@ -340,11 +421,11 @@
   // ==========================================
   function renderBahanBaku() {
     const tbody = document.getElementById('tbl-bahan');
-    if(!bahanBaku.length) {
+    if(!window.bahanBaku.length) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada bahan baku terdaftar</td></tr>`;
       return;
     }
-    tbody.innerHTML = bahanBaku.map(b => `
+    tbody.innerHTML = window.bahanBaku.map(b => `
       <tr>
         <td style="font-weight:600;">${b.nama}</td>
         <td>${b.satuan}</td>
@@ -358,7 +439,7 @@
     `).join('');
   }
 
-  function hitungPreviewHarga() {
+  window.hitungPreviewHarga = () => {
     const h = parseFloat(document.getElementById('bb-harga').value) || 0;
     const s = document.getElementById('bb-satuan').value;
     let hint = '';
@@ -367,7 +448,9 @@
     document.getElementById('preview-harga').textContent = hint;
   }
 
-  function saveBahanBaku() {
+  window.saveBahanBaku = async () => {
+    if(!currentUser) return toast('Menunggu koneksi cloud...', 'danger');
+    
     const id = document.getElementById('bb-id').value;
     const nama = document.getElementById('bb-nama').value.trim();
     const satuan = document.getElementById('bb-satuan').value;
@@ -376,20 +459,18 @@
 
     if(!nama || hargaSatuan <= 0) return toast('Nama dan Harga wajib diisi valid!', 'danger');
 
-    if(id) {
-      const idx = bahanBaku.findIndex(x => x.id === id);
-      if(idx > -1) bahanBaku[idx] = { id, nama, satuan, hargaSatuan, stokAwal };
-    } else {
-      bahanBaku.push({ id: genId(), nama, satuan, hargaSatuan, stokAwal });
-    }
-    localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku));
-    toast('Data bahan baku disimpan!');
-    resetFormBahan();
-    renderBahanBaku();
+    // Proses Simpan ke Cloud (Otomatis nge-push ke HP Lain)
+    const finalId = id || window.genId();
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bahanBaku', finalId);
+    
+    await setDoc(docRef, { nama, satuan, hargaSatuan, stokAwal });
+    
+    toast('Data tersimpan & tersinkronisasi!');
+    window.resetFormBahan();
   }
 
-  function editBahan(id) {
-    const b = bahanBaku.find(x => x.id === id);
+  window.editBahan = (id) => {
+    const b = window.bahanBaku.find(x => x.id === id);
     if(!b) return;
     document.getElementById('form-title-bahan').textContent = 'Edit Bahan Baku';
     document.getElementById('bb-id').value = b.id;
@@ -397,18 +478,19 @@
     document.getElementById('bb-satuan').value = b.satuan;
     document.getElementById('bb-harga').value = b.hargaSatuan;
     document.getElementById('bb-stok').value = b.stokAwal;
-    hitungPreviewHarga();
+    window.hitungPreviewHarga();
   }
 
-  function hapusBahan(id) {
-    if(!confirm('Hapus bahan baku ini? Resep yang menggunakannya mungkin akan terpengaruh.')) return;
-    bahanBaku = bahanBaku.filter(x => x.id !== id);
-    localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku));
-    toast('Bahan dihapus');
-    renderBahanBaku();
+  window.hapusBahan = async (id) => {
+    if(!confirm('Hapus bahan baku ini dari server? HP lain juga akan kehilangan data ini.')) return;
+    if(!currentUser) return;
+    
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bahanBaku', id);
+    await deleteDoc(docRef);
+    toast('Bahan berhasil dihapus dari cloud');
   }
 
-  function resetFormBahan() {
+  window.resetFormBahan = () => {
     document.getElementById('form-title-bahan').textContent = 'Tambah Bahan Baku';
     document.getElementById('bb-id').value = '';
     document.getElementById('bb-nama').value = '';
@@ -417,27 +499,26 @@
     document.getElementById('preview-harga').textContent = '';
   }
 
-
   // ==========================================
   // PAGE 2: RESEP PRODUK
   // ==========================================
   function initResepPage() {
-    // Refresh produk dari Kasir
-    products = JSON.parse(localStorage.getItem('kkProduk') || '[]');
     const sel = document.getElementById('rs-produk');
-    sel.innerHTML = '<option value="">-- Pilih Produk --</option>' + products.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
+    sel.innerHTML = '<option value="">-- Pilih Produk --</option>' + window.products.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
     
+    if(currentProdukId) sel.value = currentProdukId; // Keep selection if auto-reloaded
+
     const bSel = document.getElementById('rs-bahan');
-    bSel.innerHTML = bahanBaku.map(b => `<option value="${b.id}" data-sat="${b.satuan}">${b.nama} (${b.satuan})</option>`).join('');
-    updateLabelSatuan();
+    bSel.innerHTML = window.bahanBaku.map(b => `<option value="${b.id}" data-sat="${b.satuan}">${b.nama} (${b.satuan})</option>`).join('');
+    window.updateLabelSatuan();
   }
 
-  function updateLabelSatuan() {
+  window.updateLabelSatuan = () => {
     const opt = document.getElementById('rs-bahan').selectedOptions[0];
     if(opt) document.getElementById('lbl-satuan').textContent = opt.dataset.sat;
   }
 
-  function loadResepForProduk() {
+  window.loadResepForProduk = () => {
     currentProdukId = document.getElementById('rs-produk').value;
     if(!currentProdukId) {
       document.getElementById('resep-builder').style.display = 'none';
@@ -447,11 +528,8 @@
     }
     
     document.getElementById('resep-builder').style.display = 'block';
-    
-    // Cek apakah sudah ada resep tersimpan
-    const r = resep.find(x => x.produkId === currentProdukId);
+    const r = window.resep.find(x => x.produkId === currentProdukId);
     currentKomposisi = r ? [...r.komposisi] : [];
-    
     renderKomposisi();
   }
 
@@ -460,10 +538,10 @@
     let totalHpp = 0;
     
     if(!currentKomposisi.length) {
-      list.innerHTML = `<div style="font-size:11px; color:var(--gray-400); font-style:italic;">Belum ada bahan ditambahkan. HPP produk saat ini bergantung pada input manual di Kasir.</div>`;
+      list.innerHTML = `<div style="font-size:11px; color:var(--gray-400); font-style:italic;">Belum ada bahan ditambahkan.</div>`;
     } else {
       list.innerHTML = currentKomposisi.map((k, i) => {
-        const b = bahanBaku.find(x => x.id === k.bahanId);
+        const b = window.bahanBaku.find(x => x.id === k.bahanId);
         if(!b) return '';
         const biaya = b.hargaSatuan * k.qty;
         totalHpp += biaya;
@@ -478,11 +556,10 @@
         `;
       }).join('');
     }
-    
     kalkulasiMargin(totalHpp);
   }
 
-  function addBahanKeResep() {
+  window.addBahanKeResep = () => {
     const bahanId = document.getElementById('rs-bahan').value;
     const qty = parseFloat(document.getElementById('rs-qty').value);
     if(!bahanId || !qty || qty <= 0) return toast('Pilih bahan dan masukkan jumlah!', 'danger');
@@ -495,14 +572,14 @@
     renderKomposisi();
   }
 
-  function hapusKomposisi(index) {
+  window.hapusKomposisi = (index) => {
     currentKomposisi.splice(index, 1);
     renderKomposisi();
   }
 
   function kalkulasiMargin(totalHpp) {
     if(!currentProdukId) return;
-    const p = products.find(x => x.id === currentProdukId);
+    const p = window.products.find(x => x.id === currentProdukId);
     if(!p) return;
     
     const hargaJual = p.harga || 0;
@@ -517,7 +594,7 @@
     
     const alertBox = document.getElementById('margin-alert');
     if(margin < 20) {
-      alertBox.innerHTML = `<div class="alert-margin">⚠️ Peringatan: Margin sangat tipis (< 20%). Pertimbangkan untuk menaikkan harga jual atau kurangi porsi bahan.</div>`;
+      alertBox.innerHTML = `<div class="alert-margin">⚠️ Peringatan: Margin tipis (< 20%).</div>`;
       document.getElementById('sum-margin').style.color = 'var(--danger)';
     } else {
       alertBox.innerHTML = `<div class="good-margin">✅ Profitabilitas Sehat (Margin >= 20%).</div>`;
@@ -525,73 +602,66 @@
     }
   }
 
-  function saveResep() {
-    if(!currentProdukId) return;
+  window.saveResep = async () => {
+    if(!currentProdukId || !currentUser) return;
     if(!currentKomposisi.length) {
       if(!confirm('Simpan resep kosong? (Ini akan mereset HPP produk jadi 0)')) return;
     }
     
-    // Simpan ke kkResep
-    const idx = resep.findIndex(x => x.produkId === currentProdukId);
-    if(idx > -1) resep[idx].komposisi = currentKomposisi;
-    else resep.push({ produkId: currentProdukId, komposisi: currentKomposisi });
-    localStorage.setItem('kkResep', JSON.stringify(resep));
+    // 1. Simpan Resep ke Cloud
+    const resepRef = doc(db, 'artifacts', appId, 'public', 'data', 'resep', currentProdukId);
+    await setDoc(resepRef, { produkId: currentProdukId, komposisi: currentKomposisi });
 
-    // Hitung ulang total HPP
+    // Hitung total HPP
     let totalHpp = 0;
     currentKomposisi.forEach(k => {
-      const b = bahanBaku.find(x => x.id === k.bahanId);
+      const b = window.bahanBaku.find(x => x.id === k.bahanId);
       if(b) totalHpp += b.hargaSatuan * k.qty;
     });
 
-    // Otomatis update hargaBeli (HPP) di kkProduk Kasir
-    const pIdx = products.findIndex(x => x.id === currentProdukId);
-    if(pIdx > -1) {
-      products[pIdx].hargaBeli = totalHpp;
-      localStorage.setItem('kkProduk', JSON.stringify(products));
+    // 2. Otomatis update hargaBeli (HPP) di Produk Kasir via Cloud!
+    const p = window.products.find(x => x.id === currentProdukId);
+    if(p) {
+      const prodRef = doc(db, 'artifacts', appId, 'public', 'data', 'produk', currentProdukId);
+      await setDoc(prodRef, { ...p, hargaBeli: totalHpp });
     }
     
-    toast('Resep & HPP Produk berhasil diupdate!', 'success');
+    toast('Resep & HPP tersinkronisasi ke seluruh perangkat!', 'success');
   }
-
 
   // ==========================================
   // PAGE 3: LAPORAN STOK & HPP
   // ==========================================
   function hitungPemakaianDariTransaksi() {
-    // Return object map: { bahanId: total_qty_terpakai }
     const terpakai = {};
-    transactions.forEach(trx => {
-      trx.items.forEach(item => {
-        // Cek resep produk ini
-        const r = resep.find(x => x.produkId === item.produkId);
-        if(r) {
-          r.komposisi.forEach(k => {
-            if(!terpakai[k.bahanId]) terpakai[k.bahanId] = 0;
-            terpakai[k.bahanId] += (k.qty * item.qty);
+    window.transactions.forEach(trx => {
+      if (trx.items) {
+          trx.items.forEach(item => {
+            const r = window.resep.find(x => x.produkId === item.produkId);
+            if(r) {
+              r.komposisi.forEach(k => {
+                if(!terpakai[k.bahanId]) terpakai[k.bahanId] = 0;
+                terpakai[k.bahanId] += (k.qty * item.qty);
+              });
+            }
           });
-        }
-      });
+      }
     });
     return terpakai;
   }
 
-  function generateStokReport() {
-    // Refresh transkasi in case ada penjualan baru
-    transactions = JSON.parse(localStorage.getItem('kkTransaksi') || '[]');
-    
+  window.generateStokReport = () => {
     const pemakaian = hitungPemakaianDariTransaksi();
     const tbody = document.getElementById('tbl-laporan-stok');
     
     let jenis = 0;
     let kritis = 0;
 
-    tbody.innerHTML = bahanBaku.map(b => {
+    tbody.innerHTML = window.bahanBaku.map(b => {
       jenis++;
       const pk = pemakaian[b.id] || 0;
       const sisa = b.stokAwal - pk;
       
-      // Logika menipis: Jika sisa < 20% dari stok master, atau <= 0
       let isKritis = false;
       let statusHtml = `<span class="badge badge-green">Aman</span>`;
       
@@ -624,7 +694,7 @@
     const tbody = document.getElementById('tbl-laporan-hpp');
     const chartData = { labels: [], margins: [] };
 
-    const rows = products.map(p => {
+    const rows = window.products.map(p => {
       const hpp = p.hargaBeli || 0;
       const jual = p.harga || 0;
       const profit = jual - hpp;
@@ -646,15 +716,12 @@
       `, margin };
     });
 
-    // Urutkan tabel dari margin tertinggi
     rows.sort((a,b) => b.margin - a.margin);
     tbody.innerHTML = rows.map(r => r.html).join('') || `<tr><td colspan="5" style="text-align:center;">Tidak ada produk</td></tr>`;
 
-    // Render Chart (Top 10 Margin)
     if(chartInstance) chartInstance.destroy();
     const ctx = document.getElementById('chart-margin');
     
-    // Sort array labels & data based on margin descending, ambil 10
     const sortedChart = chartData.labels.map((l, i) => ({l, m: parseFloat(chartData.margins[i])}))
                                         .sort((a,b) => b.m - a.m).slice(0,10);
 
@@ -669,16 +736,13 @@
           borderRadius: 4
         }]
       },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true, max: 100 } }
-      }
+      options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
     });
   }
 
-  // --- INIT ---
+  // MULAI KONEKSI KE CLOUD SAAT HALAMAN DIBUKA
   window.addEventListener('DOMContentLoaded', () => {
-    showPage('bahan');
+    initCloud();
   });
 
 </script>
