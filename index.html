@@ -315,7 +315,10 @@
     <button class="nav-item" onclick="showPage('laporan');showLapTab('pengeluaran')"><span class="nav-icon">💸</span>Pengeluaran</button>
     <button class="nav-item" onclick="showPage('laporan');showLapTab('labarugi')"><span class="nav-icon">💰</span>Laba Rugi</button>
     
-    <div class="nav-section">Sistem</div>
+    <div class="nav-section">Dokumen & Sistem</div>
+    <!-- LINK KE PUSAT INFORMASI DITAMBAHKAN DI SINI -->
+    <a href="pusat_informasi.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">📚</span>Pusat Info & SOP</a>
+    
     <button class="nav-item" onclick="openSyncModal()"><span class="nav-icon">☁️</span>Sync ke Sheets<span class="sync-status-dot" id="sidebar-sync-dot" style="margin-left:auto;"></span></button>
     <button class="nav-item" data-page="setting-global" onclick="showPage('setting-global')"><span class="nav-icon">⚙️</span>Pengaturan</button>
   </nav>
@@ -346,6 +349,8 @@
           <div class="shortcut-card" onclick="window.location.href='bahan_baku.html'"><div class="shortcut-icon">🥩</div><div class="shortcut-label">Bahan Baku</div></div>
           <div class="shortcut-card" onclick="window.location.href='akuntansi.html'"><div class="shortcut-icon">📒</div><div class="shortcut-label">Akuntansi</div></div>
           <div class="shortcut-card" onclick="showPage('laporan');showLapTab('penjualan')"><div class="shortcut-icon">📊</div><div class="shortcut-label">Laporan</div></div>
+          <!-- SHORTCUT PUSAT INFO DITAMBAHKAN DI SINI -->
+          <div class="shortcut-card" onclick="window.location.href='pusat_informasi.html'"><div class="shortcut-icon">📚</div><div class="shortcut-label">Pusat Info</div></div>
         </div>
       </div>
     </div>
@@ -706,6 +711,13 @@
           <div><div class="global-setting-label">Nama Toko</div></div>
           <input class="form-control" id="setting-nama-toko" style="width:140px;" placeholder="KasirKu" onchange="saveSettingNamaToko()">
         </div>
+        
+        <!-- FITUR DOWNLOAD APK -->
+        <div class="global-setting-row">
+          <div><div class="global-setting-label">Aplikasi Android</div><div class="global-setting-desc">Download file APK untuk di-install</div></div>
+          <button class="btn btn-sm btn-success" onclick="downloadAPK()">⬇️ Download APK</button>
+        </div>
+
         <div class="global-setting-row">
           <div><div class="global-setting-label">Export Backup</div><div class="global-setting-desc">Download semua data sebagai JSON</div></div>
           <button class="btn btn-sm btn-outline" onclick="exportAllData()">💾 Export</button>
@@ -972,6 +984,31 @@
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
+// ===== FITUR DOWNLOAD APK =====
+function downloadAPK() {
+  toast('Menyiapkan file APK...', 'info');
+  
+  // ⚠️ GANTI URL DI BAWAH INI DENGAN LINK DOWNLOAD APK ASLI ANDA
+  // (Bisa pakai link Google Drive / GitHub / Hosting pribadi)
+  const apkUrl = 'https://contoh-link-website.com/GurmieAyamKasir.apk'; 
+  
+  setTimeout(() => {
+    // Logika jika link APK belum diubah
+    if(apkUrl.includes('contoh-link-website.com')) {
+      toast('Link APK belum disematkan dalam kode.', 'warning');
+    } else {
+      // Membuat elemen <a> secara virtual untuk memicu download
+      const a = document.createElement('a');
+      a.href = apkUrl;
+      a.download = 'GurmieAyam.apk';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast('Mendownload APK...', 'success');
+    }
+  }, 1000);
+}
+
 // ===== FUNGSI UNTUK TOGGLE SIDEBAR DI MOBILE =====
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
