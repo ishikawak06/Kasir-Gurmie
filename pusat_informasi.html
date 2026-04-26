@@ -645,26 +645,49 @@ function fmtTime(ts) { return new Date(ts).toLocaleString('id-ID',{day:'numeric'
 function countWords(text) { return text.trim().split(/\s+/).filter(Boolean).length; }
 
 // ====== CLOUD SYNC FUNCTIONS ======
-async function pullFromCloud() {
+async function pullFromCloud(silent = false) {
   if (!SCRIPT_URL) return;
   try {
-    toast('Mendownload data dari server...', 'info');
+    if (!silent) toast('Mendownload data dari server...', 'info');
     const res = await fetch(SCRIPT_URL + '?action=pullAll');
     const json = await res.json();
+    
     if (json.ok && json.data && json.data.dokumen) {
-      notes = json.data.dokumen;
-      localStorage.setItem('gi_notes', JSON.stringify(notes));
-      renderSidebar();
-      if (currentNoteId && notes.find(n => n.id === currentNoteId)) {
-        openNote(currentNoteId);
+      const remoteNotesStr = JSON.stringify(json.data.dokumen);
+      const localNotesStr = JSON.stringify(notes);
+      
+      // Hanya perbarui UI jika ada perubahan data dari server
+      if (remoteNotesStr !== localNotesStr) {
+        notes = json.data.dokumen;
+        localStorage.setItem('gi_notes', JSON.stringify(notes));
+        renderSidebar();
+        
+        // Cek apakah user sedang membuka editor
+        const isEditorOpen = document.getElementById('editor-overlay').style.display !== 'none';
+        
+        if (isEditorOpen && currentNoteId) {
+          const n = notes.find(x => x.id === currentNoteId);
+          if (!n) {
+            closeEditor(); // Dokumen dihapus dari perangkat lain
+            toast('Dokumen telah dihapus dari perangkat lain', 'danger');
+          } else if (silent) {
+            // Jika silent pull, beritahu user tanpa mengganggu ketikan
+            toast('Ada pembaruan data dari perangkat lain 🔄', 'info');
+          } else {
+            openNote(currentNoteId);
+          }
+        } else {
+          showView(currentView);
+        }
+        
+        if (!silent) toast('Data tersinkronisasi ✓', 'success');
       } else {
-        showView(currentView);
+        if (!silent) toast('Data sudah paling baru ✓', 'success');
       }
-      toast('Data tersinkronisasi ✓', 'success');
     }
   } catch (e) {
     console.error('Pull error:', e);
-    toast('Gagal sinkronisasi data', 'danger');
+    if (!silent) toast('Gagal sinkronisasi data', 'danger');
   }
 }
 
@@ -1402,6 +1425,11 @@ function init() {
   
   // Menarik data cloud setiap kali halaman dibuka/direfresh
   pullFromCloud();
+  
+  // Auto-Pull (Background Sync) setiap 15 detik untuk update real-time antar perangkat
+  setInterval(() => {
+    pullFromCloud(true); // true = silent mode (tanpa popup loading yang mengganggu)
+  }, 15000);
 }
 
 window.addEventListener('DOMContentLoaded', init);
