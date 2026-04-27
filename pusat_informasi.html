@@ -277,7 +277,6 @@ select.form-control{cursor:pointer;}
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-brand">
     <a href="index.html">← Kasir</a>
@@ -292,10 +291,8 @@ select.form-control{cursor:pointer;}
   </div>
 </div>
 
-<!-- BODY -->
 <div class="app-body">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-search">
       <input id="sidebar-search-input" placeholder="🔍 Cari dokumen..." oninput="renderSidebar()">
@@ -323,9 +320,7 @@ select.form-control{cursor:pointer;}
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main" id="main-area">
-    <!-- FILTER BAR -->
     <div class="filter-bar" id="filter-bar-wrap">
       <button class="filter-chip active" onclick="setFilterStatus('',this)">Semua</button>
       <button class="filter-chip" onclick="setFilterStatus('draft',this)">Draft</button>
@@ -338,13 +333,10 @@ select.form-control{cursor:pointer;}
       </div>
     </div>
 
-    <!-- CONTENT AREA -->
     <div id="content-area" style="flex:1;overflow-y:auto;"></div>
   </div>
 
-  <!-- RIGHT PANEL -->
   <div class="right-panel" id="right-panel-wrap" style="display:none;">
-    <!-- DOCUMENT INFO -->
     <div class="rp-section">
       <div class="rp-title">ℹ️ Info Dokumen</div>
       <div class="field-row"><span class="field-label">Status</span>
@@ -380,21 +372,18 @@ select.form-control{cursor:pointer;}
       </div>
     </div>
 
-    <!-- TAGS -->
     <div class="rp-section">
       <div class="rp-title">🏷️ Tag</div>
       <div id="rp-tags-display" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px;"></div>
       <input class="field-input" style="width:100%;" id="rp-tag-input" placeholder="Tambah tag, tekan Enter..." onkeydown="addTagFromInput(event)">
     </div>
 
-    <!-- CUSTOM FIELDS -->
     <div class="rp-section">
       <div class="rp-title">🔧 Field Kustom</div>
       <div id="rp-custom-fields"></div>
       <button class="btn btn-sm btn-outline" style="width:100%;margin-top:6px;" onclick="addCustomField()">+ Tambah Field</button>
     </div>
 
-    <!-- EXPORT -->
     <div class="rp-section">
       <div class="rp-title">📤 Ekspor</div>
       <div class="export-row">
@@ -404,13 +393,11 @@ select.form-control{cursor:pointer;}
       </div>
     </div>
 
-    <!-- REVISIONS -->
     <div class="rp-section">
       <div class="rp-title">🕐 Riwayat Revisi</div>
       <div id="rp-revisions"></div>
     </div>
 
-    <!-- AI ASSISTANT -->
     <div class="rp-section" style="padding-bottom:0;">
       <div class="rp-title" style="padding:0 0 10px;">✨ Asisten AI</div>
     </div>
@@ -425,9 +412,7 @@ select.form-control{cursor:pointer;}
 
 </div>
 
-<!-- EDITOR (overlay) -->
 <div id="editor-overlay" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:150;display:none;flex-direction:column;">
-  <!-- EDITOR TOOLBAR -->
   <div class="editor-toolbar">
     <button class="tb-btn" onclick="closeEditor()" title="Kembali">←</button>
     <div class="tb-sep"></div>
@@ -456,7 +441,6 @@ select.form-control{cursor:pointer;}
       <button class="tb-btn" id="mode-view" onclick="setEditorMode('view')" title="Preview">👁</button>
     </div>
   </div>
-  <!-- NOTE META -->
   <div class="note-meta-bar">
     <input class="note-title-input" id="editor-title" placeholder="Judul dokumen..." oninput="autoSaveNote()">
     <span class="meta-chip chip-status" id="meta-status" onclick="cycleStatus()">● Draft</span>
@@ -467,7 +451,6 @@ select.form-control{cursor:pointer;}
     <button class="btn btn-sm" style="background:linear-gradient(135deg,var(--violet),var(--teal));color:#fff;" onclick="aiEnhanceDoc()">✨ Perbaiki</button>
     <button class="export-btn" onclick="exportCurrentPDF()">📄 PDF</button>
   </div>
-  <!-- EDITOR BODY -->
   <div style="display:flex;flex:1;overflow:hidden;">
     <div class="editor-area editor-mode" id="editor-area-wrap">
       <textarea class="editor-content" id="editor-content" placeholder="Mulai menulis... (mendukung Markdown)&#10;&#10;Coba: # Judul, ## Heading, **tebal**, *miring*, - daftar, - [ ] checklist" oninput="handleEditorInput()"></textarea>
@@ -521,7 +504,6 @@ select.form-control{cursor:pointer;}
   </div>
 </div>
 
-<!-- MODAL: AI FULL -->
 <div class="modal-overlay" id="ai-modal">
   <div class="modal modal-lg">
     <div class="modal-header">
@@ -546,7 +528,6 @@ select.form-control{cursor:pointer;}
   </div>
 </div>
 
-<!-- MODAL: EXPORT PDF -->
 <div class="modal-overlay" id="export-modal">
   <div class="modal modal-sm">
     <div class="modal-header"><span class="modal-title">📄 Ekspor PDF</span><button class="modal-close" onclick="document.getElementById('export-modal').classList.remove('open')">✕</button></div>
@@ -576,7 +557,6 @@ select.form-control{cursor:pointer;}
   </div>
 </div>
 
-<!-- MODAL: CUSTOM FIELD INLINE -->
 <div class="modal-overlay" id="cf-modal">
   <div class="modal modal-sm">
     <div class="modal-header"><span class="modal-title">🔧 Tambah Field Kustom</span><button class="modal-close" onclick="document.getElementById('cf-modal').classList.remove('open')">✕</button></div>
@@ -596,7 +576,6 @@ select.form-control{cursor:pointer;}
   </div>
 </div>
 
-<!-- MODAL: REVISION DETAIL -->
 <div class="modal-overlay" id="revision-modal">
   <div class="modal modal-lg">
     <div class="modal-header"><span class="modal-title">🕐 Tampilan Revisi</span><button class="modal-close" onclick="document.getElementById('revision-modal').classList.remove('open')">✕</button></div>
@@ -614,7 +593,7 @@ select.form-control{cursor:pointer;}
 
 <script>
 // ====== KONFIGURASI CLOUD SYNC ======
-const SCRIPT_URL = ''; // <-- WAJIB: MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
+const SCRIPT_URL = localStorage.getItem('KASIRKU_GAS_URL') || ''; // <-- Ambil otomatis dari konfigurasi aplikasi yang sudah di-set di Discuss/Dashboard
 
 // ====== DATA LAYER ======
 let notes = JSON.parse(localStorage.getItem('gi_notes') || '[]');
@@ -705,6 +684,7 @@ function pushToCloud() {
       const payload = { action: 'syncDokumen', data: notes };
       await fetch(SCRIPT_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
       });
       if(dot) { dot.classList.remove('saving'); st.textContent = 'Tersimpan di Cloud ☁️'; }
@@ -1413,13 +1393,6 @@ async function aiSummarizeDoc() {
 
 // ====== INIT ======
 function init() {
-  // Add sample notes if empty
-  if(!notes.length) {
-    notes = [
-      { id:genId(), title:'Panduan Penggunaan Pusat Informasi', content:`# Selamat Datang di Pusat Informasi Gurmie Ayam! 📚\n\n## Apa yang bisa kamu lakukan?\n\nPusat Informasi adalah tempat untuk menyimpan, mengelola, dan berbagi dokumen penting bisnis kamu.\n\n## Fitur Utama\n\n### ✍️ Editor Teks Powerful\n- Mendukung **format Markdown** lengkap\n- Mode edit, split (edit + preview), dan preview\n- Auto-save otomatis setiap perubahan\n\n### 🔧 Field Kustom\nTambahkan field sesuai kebutuhan:\n- Teks, angka, tanggal, atau pilihan\n- Tampil di info panel kanan\n\n### 📌 Organisasi Fleksibel\n- Kategori dan tag bebas\n- Status: Draft, Review, Selesai, Urgent\n- Prioritas: Rendah, Sedang, Tinggi\n- Filter dan tampilan grid/tabel\n\n### ✨ Asisten AI\n- Tanya AI di panel kanan\n- Buat dokumen otomatis dari perintah\n- Perbarui dokumen dengan "✨ Perbarui dengan AI"\n\n### 📄 Ekspor PDF\n- Ekspor satu dokumen atau semua\n- Termasuk metadata dan field kustom\n\n---\n\n> 💡 **Tips:** Gunakan template dari menu "🗂️ Template" untuk memulai lebih cepat!`, status:'done', priority:'rendah', category:'Panduan', author:'Admin', tags:['panduan','info'], customFields:[{id:'cf1',name:'Versi',type:'text',value:'1.0'},{id:'cf2',name:'Terakhir Diulas',type:'date',value:'2025-04-26'}], revisions:[], createdAt:Date.now()-86400000, updatedAt:Date.now(), pinned:true, deadline:'' },
-    ];
-    saveNotes(); // Ini otomatis akan menge-push data default ke Cloud jika URL valid
-  }
   showView('all');
   renderSidebar();
   
