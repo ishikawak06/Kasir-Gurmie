@@ -451,6 +451,7 @@
       </div>
       <div class="kasir-layout">
         <div id="kasir-product-grid" class="product-grid"></div>
+        <div id="order-panel-overlay" class="sidebar-overlay" onclick="closeMobileOrder()" style="z-index: 105;"></div>
         <div class="order-panel" id="order-panel">
           <div class="order-header">
             <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -495,6 +496,11 @@
             <button class="btn btn-success btn-full" onclick="bayar()" id="btn-bayar" disabled>✅ Bayar / Selesaikan</button>
           </div>
         </div>
+      </div>
+      <!-- Tombol keranjang melayang versi Mobile -->
+      <div id="mobile-cart-bar" class="mobile-cart-bar" onclick="toggleMobileOrder()" style="position:fixed; bottom:56px; z-index:100; border-radius: 12px 12px 0 0; margin:0 7px;">
+        <div style="font-size:14px; font-weight:600;">🛒 <span id="mobile-cart-count">0 item</span></div>
+        <div style="font-size:16px; font-weight:800;" id="mobile-cart-total">Rp 0</div>
       </div>
     </div>
 
@@ -607,9 +613,6 @@
       </div>
 
       <div class="lap-panel active" id="lpanel-penjualan">
-        <div style="margin-bottom:12px; text-align:right;">
-          <button class="btn btn-success btn-sm no-print" onclick="openWAModal('penjualan')">📱 Kirim Laporan Penjualan ke WA</button>
-        </div>
         <div class="kpi-grid" id="lap-pjl-kpi"></div>
         <div class="two-col">
           <div class="chart-wrap"><canvas id="chart-pjl-line"></canvas></div>
@@ -676,7 +679,6 @@
       </div>
 
       <div class="lap-panel" id="lpanel-pengunjung" style="display:none;">
-        <div style="margin-bottom:12px; text-align:right;"><button class="btn btn-success btn-sm no-print" onclick="openWAModal('pengunjung')">📱 Kirim Laporan Pengunjung ke WA</button></div>
         <div class="kpi-grid" id="lap-peng-kpi"></div>
         <div class="card">
           <div class="card-header"><span class="card-title">📋 Ringkasan Harian</span></div>
@@ -699,7 +701,6 @@
       <div class="lap-panel" id="lpanel-sedekah" style="display:none;">
         <div id="lap-sedekah-off" class="alert alert-warning" style="display:none;">Fitur sedekah belum diaktifkan.</div>
         <div id="lap-sedekah-on">
-          <div style="margin-bottom:12px; text-align:right;"><button class="btn btn-success btn-sm no-print" onclick="openWAModal('sedekah')">📱 Kirim Laporan Sedekah ke WA</button></div>
           <div class="kpi-grid" id="lap-sdk-kpi"></div>
           <div class="card" style="margin-bottom:14px;">
             <div class="card-header"><span class="card-title">📋 Riwayat Sedekah</span></div>
@@ -720,7 +721,6 @@
       </div>
 
       <div class="lap-panel" id="lpanel-labarugi" style="display:none;">
-        <div style="margin-bottom:12px; text-align:right;"><button class="btn btn-success btn-sm no-print" onclick="openWAModal('labarugi')">📱 Kirim Laporan Laba Rugi ke WA</button></div>
         <div class="kpi-grid" id="lap-lr-kpi"></div>
         <div class="card">
           <div class="card-header"><span class="card-title">📋 Laba Rugi Bulanan</span></div>
@@ -741,8 +741,7 @@
 
       <div class="lap-panel" id="lpanel-aruskas" style="display:none;">
         <div style="margin-bottom:12px; text-align:right;">
-          <button class="btn btn-outline btn-sm no-print" onclick="exportArusKasExcel()" style="margin-right:5px;">📊 Download Excel</button>
-          <button class="btn btn-success btn-sm no-print" onclick="openWAModal('aruskas')">📱 Kirim Laporan Arus Kas ke WA</button>
+          <button class="btn btn-outline btn-sm no-print" onclick="exportArusKasExcel()">📊 Download Excel</button>
         </div>
         <div class="kpi-grid" id="lap-ak-kpi"></div>
         <div class="card">
@@ -874,6 +873,41 @@
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeWAModal()">Batal</button>
         <button class="btn btn-success" onclick="executeSendWA()">Kirim Sekarang 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT PENGELUARAN -->
+  <div class="modal-overlay" id="edit-pgl-modal">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <span class="modal-title">✏️ Edit Pengeluaran</span>
+        <button class="modal-close" onclick="closeEditPglModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-pgl-id">
+        <div class="form-group">
+          <label class="form-label">Tanggal</label>
+          <input type="date" class="form-control" id="edit-pgl-tgl">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Keterangan</label>
+          <input type="text" class="form-control" id="edit-pgl-ket">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nominal (Rp)</label>
+          <input type="number" class="form-control" id="edit-pgl-nom" min="0">
+        </div>
+        <div class="form-group" id="edit-pgl-foto-container" style="display:none; margin-top:10px;">
+          <label class="form-label">Foto Struk / Bon</label>
+          <a id="edit-pgl-foto-link" href="#" download="Foto_Struk.png" class="btn btn-outline btn-sm btn-full" target="_blank" rel="noopener noreferrer">
+            ⬇️ Download Foto Bon
+          </a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeEditPglModal()">Batal</button>
+        <button class="btn btn-primary" onclick="saveEditPgl()">💾 Simpan Perubahan</button>
       </div>
     </div>
   </div>
@@ -1089,9 +1123,39 @@
     function updateKembalian() { const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0); let total = subtotal; const hargaCustomEl = document.getElementById('order-harga-custom'); if (hargaCustomEl && hargaCustomEl.value !== '') { const cp = parseFloat(hargaCustomEl.value); if (cp >= 0) total = cp; } const nominal = parseFloat(document.getElementById('order-nominal')?.value) || 0; const kembalian = nominal - total; const el = document.getElementById('order-kembalian'); if (el) { el.textContent = rp(Math.max(0, kembalian)); el.className = 'kembalian-val' + (kembalian < 0 ? ' kembalian-neg' : ''); } const nomWrap = document.getElementById('nominal-bayar-wrap'); if (nomWrap) nomWrap.style.display = currentMetodeBayar === 'Tunai' ? 'block' : 'none'; const btn = document.getElementById('btn-bayar'); if (btn) { const valid = order.length > 0 && (currentMetodeBayar !== 'Tunai' || nominal >= total); btn.disabled = !valid; } }
     function setUangPas() { const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0); const hargaCustomEl = document.getElementById('order-harga-custom'); let total = subtotal; if (hargaCustomEl && hargaCustomEl.value !== '') { const cp = parseFloat(hargaCustomEl.value); if (cp >= 0) total = cp; } document.getElementById('order-nominal').value = total; updateKembalian(); }
     function setMetodeBayar(m, btn) { currentMetodeBayar = m; document.querySelectorAll('.mbtn').forEach(b => b.classList.remove('active')); if (btn) btn.classList.add('active'); updateKembalian(); }
-    function updateMobileCartBar() { const mbar = document.getElementById('mobile-cart-bar'); const count = order.reduce((s, x) => s + x.qty, 0); const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0); let total = subtotal; const hcEl = document.getElementById('order-harga-custom'); if (hcEl && hcEl.value !== '') { const cp = parseFloat(hcEl.value); if (cp >= 0) total = cp; } document.getElementById('mobile-cart-count').textContent = count + ' item'; document.getElementById('mobile-cart-total').textContent = rp(total); if (window.innerWidth <= 768) mbar.style.display = 'flex'; }
-    function toggleMobileOrder() { var panel = document.getElementById('order-panel'); var overlay = document.getElementById('order-panel-overlay'); panel.classList.toggle('mobile-show'); if (overlay) overlay.classList.toggle('show', panel.classList.contains('mobile-show')); }
-    function closeMobileOrder() { var panel = document.getElementById('order-panel'); var overlay = document.getElementById('order-panel-overlay'); if (panel) panel.classList.remove('mobile-show'); if (overlay) overlay.classList.remove('show'); }
+    function updateMobileCartBar() { 
+        const mbar = document.getElementById('mobile-cart-bar'); 
+        const countEl = document.getElementById('mobile-cart-count');
+        const totalEl = document.getElementById('mobile-cart-total');
+
+        const count = order.reduce((s, x) => s + x.qty, 0); 
+        const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0); 
+        let total = subtotal; 
+        const hcEl = document.getElementById('order-harga-custom'); 
+        if (hcEl && hcEl.value !== '') { 
+            const cp = parseFloat(hcEl.value); 
+            if (cp >= 0) total = cp; 
+        } 
+        
+        if(countEl) countEl.textContent = count + ' item'; 
+        if(totalEl) totalEl.textContent = rp(total); 
+
+        if (mbar && window.innerWidth <= 768) {
+            mbar.style.display = count > 0 ? 'flex' : 'none'; 
+        }
+    }
+    function toggleMobileOrder() { 
+        var panel = document.getElementById('order-panel'); 
+        var overlay = document.getElementById('order-panel-overlay'); 
+        if(panel) panel.classList.toggle('mobile-show'); 
+        if(overlay) overlay.classList.toggle('show', panel.classList.contains('mobile-show')); 
+    }
+    function closeMobileOrder() { 
+        var panel = document.getElementById('order-panel'); 
+        var overlay = document.getElementById('order-panel-overlay'); 
+        if(panel) panel.classList.remove('mobile-show'); 
+        if(overlay) overlay.classList.remove('show'); 
+    }
     function updateOrderItemHarga(idx, val) { const harga = parseFloat(val) || 0; if (idx >= 0 && idx < order.length) { order[idx].harga = harga; const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0); document.getElementById('order-total').textContent = rp(subtotal); updateOrderCalc(); const rows = document.querySelectorAll('.order-item'); if (rows[idx]) { const subEl = rows[idx].querySelector('.order-item-subtotal'); if (subEl) subEl.textContent = rp(harga * order[idx].qty); } } }
     function renderOrder() { const list = document.getElementById('order-items-list'); const subtotal = order.reduce((s, x) => s + x.harga * x.qty, 0); const totalHPP = order.reduce((s, x) => s + calcHPP(x.isBundle ? '' : x.produkId, x.qty), 0); document.getElementById('order-total').textContent = rp(subtotal); document.getElementById('order-hpp-info').textContent = order.length ? `HPP: ${rp(totalHPP)} | Laba est.: ${rp(subtotal - totalHPP)}` : ''; if (!order.length) { list.innerHTML = '<div class="order-empty"><div class="order-empty-icon">🛒</div><div style="font-size:12px;color:var(--gray-400);font-weight:500;">Tap produk untuk menambahkan</div></div>'; } else { list.innerHTML = order.map((item, idx) => `<div class="order-item"><div class="order-item-left"><div class="order-item-name">${item.nama}${item.varianNama ? ` <span style="font-size:9px;color:var(--purple);">(${item.varianNama})</span>` : ''}</div><div class="order-item-price-edit"><span class="price-label">Rp</span><input type="number" value="${item.harga}" min="0" title="Klik untuk ubah harga" onchange="updateOrderItemHarga(${idx},this.value)" oninput="updateOrderItemHarga(${idx},this.value)"><span class="price-label">×${item.qty}</span></div></div><div class="order-item-right"><div class="order-qty"><button class="qty-btn" onclick="changeQty('${item.produkId}','${item.varianId || ''}',-1)">−</button><span class="qty-val">${item.qty}</span><button class="qty-btn" onclick="changeQty('${item.produkId}','${item.varianId || ''}',1)">+</button></div><div class="order-item-subtotal">${rp(item.harga * item.qty)}</div></div></div>`).join(''); } updateOrderCalc(); }
     function generateNomorAntrian() { const today = todayISO(); const key = 'kkNoAntrian_' + today; const last = parseInt(localStorage.getItem(key) || '0'); const next = last + 1; localStorage.setItem(key, next); return 'A' + String(next).padStart(3, '0'); }
@@ -1293,7 +1357,65 @@
       if (uangPribadi) { toast('Pengeluaran menunggu verifikasi Admin!', 'warning'); } else { toast('Pengeluaran disimpan ✓', 'success'); }
       document.getElementById('pgl-items-container').innerHTML = ''; addPglRow(); fileInput.value = ''; document.getElementById('pgl-uang-pribadi').checked = false; renderLapPengeluaran(); autoSyncIfEnabled();
     }
-    async function editPengeluaran(id) { const p = pengeluaran.find(x => x.id === id); if(!p) return; const newNominal = prompt("Edit Nominal Pengeluaran (Rp):", p.nominal); if(newNominal !== null && !isNaN(newNominal)) { p.nominal = parseFloat(newNominal); savePengeluaranData(); renderLapPengeluaran(); renderDashboard(); toast('Pengeluaran diupdate', 'success'); autoSyncIfEnabled(); } }
+    
+    // --- MODIFIKASI EDIT PENGELUARAN MENGGUNAKAN MODAL ---
+    function editPengeluaran(id) { 
+      const p = pengeluaran.find(x => x.id === id); 
+      if(!p) return; 
+
+      document.getElementById('edit-pgl-id').value = p.id;
+      document.getElementById('edit-pgl-tgl').value = p.tanggal || todayISO();
+      document.getElementById('edit-pgl-ket').value = p.keterangan || '';
+      document.getElementById('edit-pgl-nom').value = p.nominal || 0;
+
+      const fotoContainer = document.getElementById('edit-pgl-foto-container');
+      const fotoLink = document.getElementById('edit-pgl-foto-link');
+
+      if (p.fotoStruk) {
+        fotoContainer.style.display = 'block';
+        fotoLink.href = p.fotoStruk;
+        // Memberi nama default saat file di download
+        fotoLink.download = `Bon_Pengeluaran_${p.tanggal}.png`;
+      } else {
+        fotoContainer.style.display = 'none';
+        fotoLink.href = '#';
+      }
+
+      document.getElementById('edit-pgl-modal').classList.add('open');
+    }
+
+    function closeEditPglModal() {
+      document.getElementById('edit-pgl-modal').classList.remove('open');
+    }
+
+    async function saveEditPgl() {
+      const id = document.getElementById('edit-pgl-id').value;
+      const tgl = document.getElementById('edit-pgl-tgl').value;
+      const ket = document.getElementById('edit-pgl-ket').value.trim();
+      const nom = parseFloat(document.getElementById('edit-pgl-nom').value);
+
+      if(!tgl || !ket || isNaN(nom) || nom <= 0) {
+        toast('Lengkapi Tanggal, Keterangan, dan Nominal yang valid', 'danger');
+        return;
+      }
+
+      const pIndex = pengeluaran.findIndex(x => x.id === id);
+      if(pIndex > -1) {
+        await preActionSync();
+        pengeluaran[pIndex].tanggal = tgl;
+        pengeluaran[pIndex].keterangan = ket;
+        pengeluaran[pIndex].nominal = nom;
+
+        savePengeluaranData();
+        closeEditPglModal();
+        renderLapPengeluaran();
+        renderDashboard();
+        toast('Pengeluaran berhasil diupdate ✓', 'success');
+        autoSyncIfEnabled();
+      }
+    }
+    // --------------------------------------------------------
+
     async function deletePengeluaran(id) { if (!confirm('Yakin hapus riwayat pengeluaran ini?')) return; await preActionSync(); pengeluaran = pengeluaran.filter(x => x.id !== id); savePengeluaranData(); renderLapPengeluaran(); renderDashboard(); toast('Pengeluaran dihapus', 'success'); autoSyncIfEnabled(); }
 
     function renderLapPengeluaran() {
