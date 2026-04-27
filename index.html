@@ -2421,6 +2421,107 @@
 
   <div class="toast-wrap" id="toast-wrap"></div>
 
+  <style>
+    /* CSS UNTUK TEMPLATE STRUK THERMAL */
+    #hidden-receipt-wrapper {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      z-index: -1;
+    }
+
+    #thermal-receipt {
+      width: 320px;
+      background: #ffffff;
+      color: #000000;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      padding: 20px;
+      line-height: 1.4;
+      box-sizing: border-box;
+    }
+
+    .tr-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .tr-header h2 {
+      font-size: 18px;
+      margin: 0 0 4px 0;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .tr-header div {
+      font-size: 12px;
+    }
+
+    .tr-divider {
+      border-top: 1px dashed #000;
+      margin: 8px 0;
+    }
+
+    .tr-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .tr-th {
+      font-weight: bold;
+    }
+
+    .tr-total-row {
+      font-weight: bold;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .tr-footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 10px;
+    }
+
+    .tr-item-desc {
+      flex: 2;
+      padding-right: 10px;
+      word-break: break-word;
+    }
+
+    .tr-item-val {
+      flex: 1;
+      text-align: right;
+    }
+  </style>
+
+  <div id="hidden-receipt-wrapper">
+    <div id="thermal-receipt">
+      <div class="tr-header">
+        <h2 id="tr-store-name">GURMIE AYAM</h2>
+        <div id="tr-title">Laporan Transaksi</div>
+        <div id="tr-date">Tgl: -</div>
+      </div>
+      <div class="tr-divider"></div>
+      <div class="tr-row tr-th">
+        <span style="flex:2;">Deskripsi</span>
+        <span style="flex:1; text-align:right;">Nominal</span>
+      </div>
+      <div class="tr-divider"></div>
+      <div id="tr-items"></div>
+      <div class="tr-divider"></div>
+      <div class="tr-row tr-total-row">
+        <span>TOTAL</span>
+        <span id="tr-total">Rp 0</span>
+      </div>
+      <div class="tr-divider"></div>
+      <div class="tr-footer">
+        <div>Terima kasih atas kerja kerasnya!</div>
+        <div>Dibuat otomatis oleh Sistem Kasir</div>
+      </div>
+    </div>
+  </div>
   <script>
     // ===== FITUR DOWNLOAD APK & COPY PASTE URL =====
     function downloadAPK() {
@@ -2745,34 +2846,127 @@
         throw new Error("Library export tidak tersedia. Harap pastikan koneksi internet stabil.");
       }
 
-      // Tentukan target elemen untuk difoto
-      let targetId = `lpanel-${type}`;
-      if (type === 'gabungan') {
-        targetId = 'lpanel-pembelian'; // Fallback screenshot pembelian jika gabungan
-        toast('Info: Mode Gabungan akan memfoto panel Pembelian. Gunakan mode Teks untuk rincian keduanya.', 'info');
+      // 1. Isi template struk tersembunyi dengan data yang dipilih
+      populateHiddenReceipt(type);
+
+      // 2. Arahkan html2canvas ke elemen struk tersembunyi
+      const el = document.getElementById('thermal-receipt');
+      if (!el) {
+        toast('Elemen HTML struk belum ditambahkan!', 'danger');
+        return;
       }
 
-      const el = document.getElementById(targetId) || document.body;
-
-      // Konfigurasi html2canvas agar font lebih jelas dan background putih
+      // Konfigurasi html2canvas untuk merender struk
       const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
 
       if (format === 'foto') {
         canvas.toBlob(async (blob) => {
-          const file = new File([blob], `Laporan_${type}.png`, { type: 'image/png' });
+          const file = new File([blob], `Struk_Laporan_${type}.png`, { type: 'image/png' });
           await attemptShareOrDownload(file, type, waNumber, `Laporan ${type.toUpperCase()}`);
         }, 'image/png');
       } else if (format === 'pdf') {
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        // Setting ukuran PDF menyesuaikan proporsi kertas thermal 80mm
+        const pdf = new jspdf.jsPDF('p', 'mm', [80, (canvas.height * 80) / canvas.width]);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
         const pdfBlob = pdf.output('blob');
-        const file = new File([pdfBlob], `Laporan_${type}.pdf`, { type: 'application/pdf' });
+        const file = new File([pdfBlob], `Struk_Laporan_${type}.pdf`, { type: 'application/pdf' });
         await attemptShareOrDownload(file, type, waNumber, `Laporan ${type.toUpperCase()}`);
       }
+    }
+
+    function populateHiddenReceipt(type) {
+      const { from, to } = getLapDateRange();
+      const dateStr = `${fmtDateShort(from)} - ${fmtDateShort(to)}`;
+
+      const storeNameEl = document.getElementById('tr-store-name');
+      const dateEl = document.getElementById('tr-date');
+      if (storeNameEl) storeNameEl.textContent = settingNamaToko.toUpperCase();
+      if (dateEl) dateEl.textContent = 'Periode: ' + dateStr;
+
+      let title = 'Laporan Transaksi';
+      let itemsHtml = '';
+      let grandTotal = 0;
+
+      if (type === 'pembelian') {
+        title = 'LAPORAN PEMBELIAN';
+        const filtBeli = getFilteredPembelian();
+        filtBeli.forEach(b => {
+          const p = products.find(x => x.id === b.produkId);
+          const nama = p ? p.nama : '(Item Dihapus)';
+          const subtotal = b.qty * b.hargaBeli;
+          grandTotal += subtotal;
+          itemsHtml += `
+            <div class="tr-row">
+              <div class="tr-item-desc">${nama}<br><small>${b.qty} x ${rp(b.hargaBeli)}</small></div>
+              <div class="tr-item-val">${rp(subtotal)}</div>
+            </div>
+          `;
+        });
+      }
+      else if (type === 'pengeluaran') {
+        title = 'LAPORAN PENGELUARAN';
+        const filtPgl = pengeluaran.filter(p => {
+          const d = new Date(p.tanggal);
+          return d >= from && d <= to;
+        });
+        filtPgl.forEach(p => {
+          grandTotal += p.nominal;
+          itemsHtml += `
+            <div class="tr-row">
+              <div class="tr-item-desc">${p.keterangan}<br><small>[${p.kategori}]</small></div>
+              <div class="tr-item-val">${rp(p.nominal)}</div>
+            </div>
+          `;
+        });
+      }
+      else if (type === 'gabungan') {
+        title = 'BELI & PENGELUARAN';
+        const filtBeli = getFilteredPembelian();
+        const filtPgl = pengeluaran.filter(p => { const d = new Date(p.tanggal); return d >= from && d <= to; });
+
+        itemsHtml += `<div style="border-bottom:1px dashed #000; margin:8px 0; padding-bottom:4px;"><b>PEMBELIAN</b></div>`;
+        filtBeli.forEach(b => {
+          const p = products.find(x => x.id === b.produkId);
+          const subtotal = b.qty * b.hargaBeli;
+          grandTotal += subtotal;
+          itemsHtml += `
+            <div class="tr-row">
+              <div class="tr-item-desc">${p ? p.nama : 'Item'}<br><small>${b.qty} x ${rp(b.hargaBeli)}</small></div>
+              <div class="tr-item-val">${rp(subtotal)}</div>
+            </div>
+          `;
+        });
+
+        itemsHtml += `<div style="border-bottom:1px dashed #000; margin:12px 0 8px 0; padding-bottom:4px;"><b>PENGELUARAN</b></div>`;
+        filtPgl.forEach(p => {
+          grandTotal += p.nominal;
+          itemsHtml += `
+            <div class="tr-row">
+              <div class="tr-item-desc">${p.keterangan}</div>
+              <div class="tr-item-val">${rp(p.nominal)}</div>
+            </div>
+          `;
+        });
+      }
+      else {
+        title = 'LAPORAN ' + type.toUpperCase();
+        itemsHtml = `<div style="text-align:center; padding:10px 0;">Pilih format TEKS untuk detail laporan ini.</div>`;
+      }
+
+      const titleEl = document.getElementById('tr-title');
+      if (titleEl) titleEl.textContent = title;
+
+      if (!itemsHtml) itemsHtml = `<div style="text-align:center; padding:10px 0;">Tidak ada data</div>`;
+
+      const itemsContainer = document.getElementById('tr-items');
+      if (itemsContainer) itemsContainer.innerHTML = itemsHtml;
+
+      const totalEl = document.getElementById('tr-total');
+      if (totalEl) totalEl.textContent = rp(grandTotal);
     }
 
     async function attemptShareOrDownload(file, type, waNumber, textMsg) {
