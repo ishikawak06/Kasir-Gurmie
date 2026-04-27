@@ -123,6 +123,12 @@
     .modal-body { padding: 16px; }
     .modal-footer { padding: 11px 16px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 7px; }
     
+    /* Strategy Modal Styles */
+    .strategy-box { background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; padding: 12px; margin-top: 12px; }
+    .strategy-highlight { font-size: 16px; font-weight: 800; color: var(--primary); }
+    .strategy-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-200); }
+    .strategy-row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
     /* Global Loader */
     #global-loader { position: fixed; inset: 0; background: rgba(243, 244, 246, 0.85); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     #global-loader .spinner { width: 48px; height: 48px; border: 4px solid var(--gray-300); border-top-color: var(--teal); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
@@ -143,13 +149,11 @@
 </head>
 <body>
 
-<!-- GLOBAL LOADER -->
 <div id="global-loader">
   <div class="spinner"></div>
   <div class="text" id="loader-text">Menyinkronkan dengan Kasir...</div>
 </div>
 
-<!-- MOBILE HEADER (Muncul hanya di HP) -->
 <div class="mobile-header">
   <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px;">
     <span style="font-size:20px;">🍲</span> Gurmie BOM
@@ -176,23 +180,18 @@
 </div>
 
 <div class="main">
-
-  <!-- PAGE: BAHAN BAKU & MENTAH -->
   <div id="page-bahan" class="page active">
     <div class="page-header">
       <div class="page-title">Setup Data Bahan</div>
       <div class="page-subtitle">Kelola Bahan Baku Dasar dan Bahan Mentah (Olahan / Sub-Resep).</div>
     </div>
-
     <div class="tabs">
       <button class="tab-btn active" onclick="switchBahanTab('baku', this)">🧅 Bahan Baku Dasar</button>
       <button class="tab-btn" onclick="switchBahanTab('mentah', this)">🥘 Bahan Mentah (Olahan)</button>
     </div>
     
-    <!-- SUB-TAB: BAHAN BAKU -->
     <div id="tab-bahan-baku">
       <div class="resep-layout">
-        <!-- Tabel Bahan Baku -->
         <div class="card">
           <div class="card-header">
               <span class="card-title">Daftar Bahan Baku Dasar</span>
@@ -205,16 +204,14 @@
             </table>
           </div>
         </div>
-        <!-- Form Tambah Bahan Baku -->
         <div class="card">
           <div class="card-header"><span class="card-title" id="form-title-bahan">Tambah Bahan Dasar</span></div>
           <div class="card-body">
             <div class="alert-margin" style="background:var(--primary-light); color:var(--primary-dark); border-color:var(--primary); margin-bottom:12px;">
-                💡 <b>Cara Input:</b> Masukkan Total Isi Kapasitas (misal: 19 Liter, 20 Potong, atau 1 Ikat) dan Harga Total belinya (misal: 5000). Sistem otomatis menghitung harga per satuan.
+                💡 <b>Cara Input:</b> Masukkan Total Kapasitas dan Harga Total belinya. Sistem otomatis menghitung harga per satuan.
             </div>
-            
             <input type="hidden" id="bb-id">
-            <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Air Mineral Galon / Sawi / Mie"></div>
+            <div class="form-group"><label class="form-label">Nama Bahan Baku *</label><input type="text" id="bb-nama" class="form-control" placeholder="Contoh: Air Mineral Galon / Mie"></div>
             <div class="form-group"><label class="form-label">Satuan Dasar *</label>
               <select id="bb-satuan" class="form-control" onchange="updateSatuanBB()">
                 <option value="gram">Gram (g)</option>
@@ -228,22 +225,18 @@
                 <option value="pcs">Pcs</option>
               </select>
             </div>
-            
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Total Kapasitas / Isi (<span id="lbl-satuan-bb">gram</span>) *</label>
-                    <input type="number" id="bb-qty-beli" class="form-control" placeholder="Misal: 19" oninput="hitungPreviewHargaSatuan()">
+                    <label class="form-label">Total Kapasitas (<span id="lbl-satuan-bb">gram</span>) *</label>
+                    <input type="number" id="bb-qty-beli" class="form-control" oninput="hitungPreviewHargaSatuan()">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Harga Total Pembelian (Rp) *</label>
-                    <input type="number" id="bb-total-harga" class="form-control" placeholder="Misal: 5000" oninput="hitungPreviewHargaSatuan()">
+                    <input type="number" id="bb-total-harga" class="form-control" oninput="hitungPreviewHargaSatuan()">
                 </div>
             </div>
-            
             <div class="calculated-price-box" id="preview-harga-satuan">Harga Satuan: Rp 0 / satuan</div>
-            
-            <div class="form-group" style="margin-top:12px;"><label class="form-label">Update Stok Fisik Saat Ini (Opsional)</label><input type="number" id="bb-stok" class="form-control" placeholder="0"></div>
-            
+            <div class="form-group" style="margin-top:12px;"><label class="form-label">Update Stok Fisik Saat Ini (Opsional)</label><input type="number" id="bb-stok" class="form-control"></div>
             <div style="display:flex; gap:8px; margin-top:16px;">
               <button class="btn btn-primary btn-full" onclick="saveBahanBaku()">💾 Simpan & Push</button>
               <button class="btn btn-outline" onclick="resetFormBahan()">Batal</button>
@@ -253,10 +246,8 @@
       </div>
     </div>
 
-    <!-- SUB-TAB: BAHAN MENTAH (Sub-Recipe) -->
     <div id="tab-bahan-mentah" style="display:none;">
       <div class="resep-layout">
-        <!-- Tabel Bahan Mentah -->
         <div class="card">
           <div class="card-header"><span class="card-title">Daftar Bahan Mentah (Sub-Resep)</span></div>
           <div style="overflow-x:auto;">
@@ -266,18 +257,15 @@
             </table>
           </div>
         </div>
-        <!-- Form Builder Bahan Mentah -->
         <div class="card">
           <div class="card-header"><span class="card-title" id="form-title-mentah">Buat Bahan Mentah</span></div>
           <div class="card-body">
             <input type="hidden" id="bm-id">
             <div class="form-grid">
-                <div class="form-group"><label class="form-label">Nama Bahan Olahan *</label><input type="text" id="bm-nama" class="form-control" placeholder="Contoh: Sawi Potong / Bumbu Ayam"></div>
-                <div class="form-group"><label class="form-label">Satuan Hasil (Output) *</label>
+                <div class="form-group"><label class="form-label">Nama Bahan Olahan *</label><input type="text" id="bm-nama" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Satuan Hasil *</label>
                 <select id="bm-satuan" class="form-control">
                     <option value="porsi">Porsi</option>
-                    <option value="potong">Potong</option>
-                    <option value="lembar">Lembar</option>
                     <option value="gram">Gram</option>
                     <option value="kg">Kilogram</option>
                     <option value="ml">Mililiter</option>
@@ -287,39 +275,33 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Kuantitas Hasil Jadi (Yield) *</label>
-                <input type="number" id="bm-hasil-jadi" class="form-control" placeholder="Berapa banyak hasil jadinya?" value="1" oninput="kalkulasiHppMentah()">
-                <div style="font-size:10px; color:var(--gray-500); margin-top:2px;">Contoh: 1 Ikat sawi menghasilkan 20 Potong.</div>
+                <label class="form-label">Yield (Kuantitas Hasil Jadi) *</label>
+                <input type="number" id="bm-hasil-jadi" class="form-control" value="1" oninput="kalkulasiHppMentah()">
             </div>
-
-            <!-- Builder Komposisi Mentah -->
             <div style="background:var(--gray-50); padding:12px; border-radius:8px; border:1px solid var(--gray-200); margin-top:16px;">
-                <div style="font-size:11px; font-weight:700; margin-bottom:8px;">Bahan Baku Penyusun:</div>
+                <div style="font-size:11px; font-weight:700; margin-bottom:8px;">Komposisi:</div>
                 <div id="list-komposisi-mentah"></div>
-                
                 <div class="form-grid" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--gray-300);">
                     <div>
                         <label class="form-label">Bahan Dasar</label>
                         <select id="bm-bahan-sel" class="form-control" onchange="updateLabelSatuanMentah()"></select>
                     </div>
                     <div>
-                        <label class="form-label">Kapasitas yg dipakai</label>
+                        <label class="form-label">Kapasitas</label>
                         <div style="display:flex; gap:6px; align-items:center;">
-                            <input type="number" id="bm-qty" class="form-control" placeholder="Misal: 150">
-                            <select id="bm-satuan-pakai" class="form-control" style="width:90px; padding:8px 4px; font-size:12px;"></select>
+                            <input type="number" id="bm-qty" class="form-control" placeholder="Qty">
+                            <select id="bm-satuan-pakai" class="form-control" style="width:90px;"></select>
                             <button class="btn btn-primary" onclick="addBahanKeMentah()">+ Add</button>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="summary-box" style="margin-top:16px; margin-bottom:16px; padding:12px;">
-                <div class="summary-row"><span>Total Modal Bahan:</span><span id="bm-sum-modal">Rp 0</span></div>
-                <div class="summary-row" style="color:var(--teal-light); font-weight:700; border-top:1px dashed rgba(255,255,255,0.2); padding-top:6px;"><span>HPP per Satuan:</span><span id="bm-sum-hpp">Rp 0</span></div>
+            <div class="summary-box" style="margin-top:16px; padding:12px;">
+                <div class="summary-row"><span>Total Modal:</span><span id="bm-sum-modal">Rp 0</span></div>
+                <div class="summary-row" style="color:var(--teal-light); font-weight:700;"><span>HPP / Satuan:</span><span id="bm-sum-hpp">Rp 0</span></div>
             </div>
-
-            <div style="display:flex; gap:8px;">
-              <button class="btn btn-success btn-full" onclick="saveBahanMentah()">💾 Simpan Bahan Mentah</button>
+            <div style="display:flex; gap:8px; margin-top:16px;">
+              <button class="btn btn-success btn-full" onclick="saveBahanMentah()">💾 Simpan Olahan</button>
               <button class="btn btn-outline" onclick="resetFormMentah()">Batal</button>
             </div>
           </div>
@@ -328,137 +310,137 @@
     </div>
   </div>
 
-  <!-- PAGE: RESEP PRODUK -->
   <div id="page-resep" class="page">
     <div class="page-header">
-      <div class="page-title">Resep & Kalkulasi HPP Produk Akhir</div>
-      <div class="page-subtitle">Tentukan komposisi. HPP akan otomatis tersinkronisasi ke Kasir lewat Sheets.</div>
+      <div class="page-title">Resep & Kalkulasi HPP Produk</div>
     </div>
-
     <div class="resep-layout">
-      <!-- Setup Resep -->
       <div class="card">
         <div class="card-header"><span class="card-title">Komposisi Produk Final</span></div>
         <div class="card-body">
           <div class="form-group">
-            <label class="form-label">Pilih Produk (Dari Kasir) *</label>
+            <label class="form-label">Pilih Produk *</label>
             <select id="rs-produk" class="form-control" onchange="loadResepForProduk()">
               <option value="">-- Pilih Produk --</option>
             </select>
           </div>
-
           <div id="resep-builder" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--gray-200);">
-            <div style="font-size:12px; font-weight:700; margin-bottom:10px;">Bahan yang digunakan:</div>
             <div id="list-komposisi"></div>
-
             <div style="background:var(--gray-50); padding:12px; border-radius:8px; margin-top:12px; border:1px dashed var(--gray-300);">
               <div class="form-grid">
                 <div>
-                  <label class="form-label">Pilih Bahan/Mentah/Produk</label>
+                  <label class="form-label">Pilih Bahan</label>
                   <select id="rs-bahan" class="form-control" onchange="updateLabelSatuanResep()"></select>
                 </div>
                 <div>
-                  <label class="form-label">Kapasitas yg dipakai</label>
+                  <label class="form-label">Kapasitas</label>
                   <div style="display:flex; gap:6px; align-items:center;">
-                    <input type="number" id="rs-qty" class="form-control" placeholder="Misal: 3">
-                    <select id="rs-satuan-pakai" class="form-control" style="width:90px; padding:8px 4px; font-size:12px;"></select>
+                    <input type="number" id="rs-qty" class="form-control">
+                    <select id="rs-satuan-pakai" class="form-control" style="width:90px;"></select>
                     <button class="btn btn-primary" onclick="addBahanKeResep()">+ Add</button>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <button class="btn btn-success btn-full" style="margin-top:16px;" onclick="saveResep()">💾 Simpan Resep & Push HPP</button>
+            <button class="btn btn-success btn-full" style="margin-top:16px;" onclick="saveResep()">💾 Simpan & Push HPP</button>
           </div>
         </div>
       </div>
-
-      <!-- Analisis Margin -->
       <div>
         <div class="summary-box" id="margin-box" style="display:none;">
-          <div style="font-size:11px; color:var(--gray-400); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px;">Estimasi per Porsi</div>
-          <div class="summary-row"><span>Total HPP (Modal)</span><span id="sum-hpp">Rp 0</span></div>
-          <div class="summary-row"><span>Harga Jual Produk</span><span id="sum-jual">Rp 0</span></div>
+          <div class="summary-row"><span>Total HPP</span><span id="sum-hpp">Rp 0</span></div>
+          <div class="summary-row"><span>Harga Jual</span><span id="sum-jual">Rp 0</span></div>
           <div class="summary-row summary-total"><span>Estimasi Laba</span><span id="sum-laba">Rp 0</span></div>
-          <div class="summary-row" style="margin-top:4px;"><span>Persentase Margin</span><span id="sum-margin" style="font-weight:700; color:var(--warning);">0%</span></div>
+          <div class="summary-row"><span>Margin</span><span id="sum-margin">0%</span></div>
         </div>
         <div id="margin-alert"></div>
       </div>
     </div>
   </div>
 
-  <!-- PAGE: LAPORAN -->
   <div id="page-laporan" class="page">
     <div class="page-header">
       <div class="page-title">Laporan Inventori Real-time</div>
-      <div class="page-subtitle">Sistem otomatis menghitung mundur sisa stok Bahan Baku Dasar hingga ke tingkat Sub-Resep.</div>
     </div>
-
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchLapTab('stok', this)">📦 Stok Bahan Dasar</button>
-      <button class="tab-btn" onclick="switchLapTab('hpp', this)">💰 Analisis Profitabilitas Produk</button>
+      <button class="tab-btn active" onclick="switchLapTab('stok', this)">📦 Stok</button>
+      <button class="tab-btn" onclick="switchLapTab('hpp', this)">💰 Profitabilitas</button>
     </div>
-
-    <!-- TAB: STOK RIIL -->
     <div id="tab-stok">
       <div class="kpi-grid">
-        <div class="kpi-card teal"><div class="kpi-title">Total Bahan Dasar</div><div class="kpi-val" id="kpi-jenis-bahan">0</div></div>
-        <div class="kpi-card red"><div class="kpi-title">Stok Menipis / Kritis</div><div class="kpi-val" id="kpi-stok-kritis">0</div></div>
+        <div class="kpi-card teal"><div class="kpi-title">Bahan Dasar</div><div class="kpi-val" id="kpi-jenis-bahan">0</div></div>
+        <div class="kpi-card red"><div class="kpi-title">Kritis</div><div class="kpi-val" id="kpi-stok-kritis">0</div></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">Sisa Stok Bahan Baku Dasar (Riil)</span><button class="btn btn-sm btn-outline" onclick="pullFromSpreadsheet()">🔄 Sync Sekarang</button></div>
-        <div style="overflow-x:auto;">
+        <div class="table-wrap">
           <table>
-            <thead><tr><th>Nama Bahan Dasar</th><th>Stok Master</th><th>Terpakai (POS & Olahan)</th><th>Sisa Riil</th><th>Status</th></tr></thead>
+            <thead><tr><th>Bahan</th><th>Master</th><th>Terpakai</th><th>Sisa</th><th>Status</th></tr></thead>
             <tbody id="tbl-laporan-stok"></tbody>
           </table>
         </div>
       </div>
     </div>
-
-    <!-- TAB: ANALISIS HPP -->
     <div id="tab-hpp" style="display:none;">
       <div class="resep-layout">
         <div class="card">
-          <div class="card-header"><span class="card-title">Tabel Profitabilitas Produk</span></div>
-          <div style="overflow-x:auto;">
+          <div class="table-wrap">
             <table>
-              <thead><tr><th>Produk</th><th>HPP (Resep)</th><th>Harga Jual</th><th>Profit (Rp)</th><th>Margin (%)</th></tr></thead>
+              <thead><tr><th>Produk</th><th>HPP</th><th>Jual</th><th>Profit</th><th>Margin</th><th>Aksi</th></tr></thead>
               <tbody id="tbl-laporan-hpp"></tbody>
             </table>
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">Top Margin Produk (%)</span></div>
-          <div class="card-body">
-            <canvas id="chart-margin"></canvas>
-          </div>
+          <div class="card-body"><canvas id="chart-margin"></canvas></div>
         </div>
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- MODAL: SYNC SHEETS -->
+<!-- MODAL: STRATEGI PENJUALAN -->
+<div class="modal-overlay" id="strategy-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🎯 Strategi Balik Modal (BEP)</span>
+      <button class="modal-close" onclick="closeStrategyModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 12px;">
+        <div style="font-size:14px; font-weight:700;" id="strat-nama">Nama Produk</div>
+        <div style="font-size:12px; color:var(--gray-500);">HPP: <span id="strat-hpp-txt" style="color:var(--danger); font-weight:600;">Rp 0</span> | Jual: <span id="strat-jual-txt" style="color:var(--primary); font-weight:600;">Rp 0</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Simulasi Produksi (Porsi) *</label>
+        <input type="number" id="strat-qty" class="form-control" value="10" oninput="kalkulasiStrategi()">
+      </div>
+      <div class="strategy-box">
+        <div class="strategy-row"><span>Total Modal:</span><span id="strat-total-modal">Rp 0</span></div>
+        <div class="strategy-row" style="background:var(--warning-light); padding:8px; border-radius:6px;">
+          <span style="font-weight:700;">Target BEP:</span><span id="strat-bep-qty" class="strategy-highlight">0 Porsi</span>
+        </div>
+        <div class="strategy-row"><span>Sisa Porsi:</span><span id="strat-sisa-porsi">0 Porsi</span></div>
+        <div class="strategy-row"><span>Potensi Laba:</span><span id="strat-potensi-laba" class="strategy-highlight">Rp 0</span></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline btn-full" onclick="closeStrategyModal()">Tutup</button></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="sync-modal">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">☁️ Sync ke Google Spreadsheet</span><button class="modal-close" onclick="closeSyncModal()" style="background:none;border:none;font-size:16px;cursor:pointer;">✕</button></div>
+    <div class="modal-header"><span class="modal-title">☁️ Sync Cloud</span><button class="modal-close" onclick="closeSyncModal()">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">Web App URL (Sama dengan Kasir) *</label><input class="form-control" id="sync-url-input" placeholder="https://script.google.com/macros/s/..."></div>
-      <div class="form-group" style="display:flex;align-items:center;gap:8px;">
-        <input type="checkbox" id="sync-auto-check" style="width:16px;height:16px;cursor:pointer;">
-        <label for="sync-auto-check" style="font-size:12px;font-weight:500;color:var(--gray-700);cursor:pointer;">Auto-sync (Tarik & Dorong data otomatis)</label>
+      <input class="form-control" id="sync-url-input" placeholder="URL Apps Script">
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+        <input type="checkbox" id="sync-auto-check"><label style="font-size:12px;">Auto-sync</label>
       </div>
-      <div style="display:flex;gap:6px;margin-top:4px;">
-        <button class="btn btn-primary btn-sm btn-full" onclick="saveSyncConfig()">💾 Simpan URL</button>
-      </div>
-      <div id="sync-status-msg" style="margin-top:10px;font-size:12px;font-weight:500;"></div>
+      <div id="sync-status-msg" style="margin-top:10px;font-size:11px;"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeSyncModal()">Tutup</button>
-      <button class="btn btn-primary btn-sm" onclick="pullFromSpreadsheet()">📥 Manual Pull (Tarik)</button>
-      <button class="btn btn-success" onclick="syncToSpreadsheet()">☁️ Manual Push (Dorong)</button>
+      <button class="btn btn-primary" onclick="saveSyncConfig()">Simpan</button>
+      <button class="btn btn-outline" onclick="pullFromSpreadsheet()">Pull</button>
+      <button class="btn btn-success" onclick="syncToSpreadsheet()">Push</button>
     </div>
   </div>
 </div>
@@ -466,882 +448,289 @@
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
-  // --- KONFIGURASI GLOBAL & LOKAL ---
   let syncConfig = JSON.parse(localStorage.getItem('kkSyncConfig') || '{}');
-  
-  // Data Master
   let products = JSON.parse(localStorage.getItem('kkProduk') || '[]');
   let transactions = JSON.parse(localStorage.getItem('kkTransaksi') || '[]');
   let bahanBaku = JSON.parse(localStorage.getItem('kkBahanBaku') || '[]');
   let bahanMentah = JSON.parse(localStorage.getItem('kkBahanMentah') || '[]');
   let resep = JSON.parse(localStorage.getItem('kkResep') || '[]');
   
-  // Kasir Support Data (for preservation during push)
-  let pembelian = JSON.parse(localStorage.getItem('kkPembelian') || '[]');
-  let pengeluaran = JSON.parse(localStorage.getItem('kkPengeluaran') || '[]');
-  let sedekahLog = JSON.parse(localStorage.getItem('kkSedekah') || '[]');
-  let pelanggan = JSON.parse(localStorage.getItem('kkPelanggan') || '[]');
-  let bundles = JSON.parse(localStorage.getItem('kkBundles') || '[]');
+  let currentProdukId = null, currentKomposisi = [], currentKomposisiMentah = [];
+  let chartInstance = null, _autoSyncTimer = null;
+  let currentStratHpp = 0, currentStratJual = 0;
 
-  // State
-  let currentProdukId = null;
-  let currentKomposisi = []; // For Resep Produk
-  let currentKomposisiMentah = []; // For Bahan Mentah Builder
-  let chartInstance = null;
-  let _autoSyncTimer = null;
-
-  // --- UTILS ---
   function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
   function rp(n) { return 'Rp ' + Number(n||0).toLocaleString('id-ID'); }
   function toast(msg, type='success') {
     const el = document.createElement('div'); el.className = 'toast ' + type; el.textContent = msg;
     document.getElementById('toast-wrap').appendChild(el);
-    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2800);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2800);
   }
 
-  // LOGIKA KONVERSI SATUAN
-  function populateSatuanOptions(masterSat, selectId) {
-      const sel = document.getElementById(selectId);
-      sel.innerHTML = '';
-      if(!masterSat) {
-          sel.innerHTML = '<option value="">-</option>';
-          return;
-      }
-      const m = masterSat.toLowerCase();
-      
-      // Capitalize first letter for display
-      const displayM = m.charAt(0).toUpperCase() + m.slice(1);
-      sel.innerHTML += `<option value="${m}">${displayM} (Asli)</option>`;
-
-      // Beri opsi konversi silang
-      if (m === 'liter' || m === 'l') {
-          sel.innerHTML += `<option value="ml">Mililiter (ml)</option>`;
-      } else if (m === 'ml') {
-          sel.innerHTML += `<option value="liter">Liter (L)</option>`;
-      } else if (m === 'kg' || m === 'kilogram') {
-          sel.innerHTML += `<option value="gram">Gram (g)</option>`;
-      } else if (m === 'gram' || m === 'gr') {
-          sel.innerHTML += `<option value="kg">Kilogram (kg)</option>`;
-      }
+  function getConvertedQty(inputQty, pak, mas) {
+    if ((mas === 'liter' || mas === 'l') && pak === 'ml') return inputQty / 1000;
+    if (mas === 'ml' && (pak === 'liter' || pak === 'l')) return inputQty * 1000;
+    if ((mas === 'kg' || mas === 'kilogram') && pak === 'gram') return inputQty / 1000;
+    if ((mas === 'gram' || mas === 'gr') && (pak === 'kg' || pak === 'kilogram')) return inputQty * 1000;
+    return inputQty;
   }
 
-  function getConvertedQty(inputQty, satuanPakai, masterSat) {
-      const pak = satuanPakai.toLowerCase();
-      const mas = masterSat.toLowerCase();
-
-      // Liter <-> ml
-      if ((mas === 'liter' || mas === 'l') && pak === 'ml') return inputQty / 1000;
-      if (mas === 'ml' && (pak === 'liter' || pak === 'l')) return inputQty * 1000;
-      
-      // Kg <-> Gram
-      if ((mas === 'kg' || mas === 'kilogram') && pak === 'gram') return inputQty / 1000;
-      if ((mas === 'gram' || mas === 'gr') && (pak === 'kg' || pak === 'kilogram')) return inputQty * 1000;
-
-      return inputQty; // Jika sama / custom, tidak ada konversi numerik (1:1)
+  function populateSatuanOptions(m, id) {
+    const sel = document.getElementById(id); sel.innerHTML = '';
+    if(!m) { sel.innerHTML = '<option value="">-</option>'; return; }
+    sel.innerHTML += `<option value="${m}">${m}</option>`;
+    if (['liter','l','ml'].includes(m)) sel.innerHTML += `<option value="${m==='ml'?'liter':'ml'}">${m==='ml'?'Liter':'ml'}</option>`;
+    if (['kg','gram','kilogram','gr'].includes(m)) sel.innerHTML += `<option value="${['kg','kilogram'].includes(m)?'gram':'kg'}">${['kg','kilogram'].includes(m)?'Gram':'kg'}</option>`;
   }
 
-  // --- MENU MOBILE ---
-  function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
-  }
-
-  // --- SYNC ENGINE ---
-  function updateSidebarSyncDot(connected) {
-    const dot = document.getElementById('sidebar-sync-dot');
-    if(dot) dot.className = 'sync-status-dot' + (connected ? ' active' : '');
-  }
-  function updateSyncStatus(type, msg) {
-    const el = document.getElementById('sync-status-msg');
-    if(!el) return;
-    el.style.color = type === 'error' ? 'var(--danger)' : (type === 'syncing' ? 'var(--warning)' : 'var(--success)');
-    el.textContent = msg;
-  }
-  function showGlobalLoader(text) { 
-    document.getElementById('loader-text').textContent = text; 
-    document.getElementById('global-loader').style.display = 'flex'; 
-  }
-  function hideGlobalLoader() { 
-    document.getElementById('global-loader').style.display = 'none'; 
-  }
-
-  function saveLocalAll() {
-      localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku));
-      localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah));
-      localStorage.setItem('kkResep', JSON.stringify(resep));
-      localStorage.setItem('kkProduk', JSON.stringify(products));
-  }
-
-  async function fetchCloudData() {
-    const url = syncConfig.webAppUrl;
-    if (!url) throw new Error('URL Sync belum disetting');
-    const res = await fetch(`${url}?action=pullAll`, { cache: 'no-store' });
-    const text = await res.text();
-    const result = JSON.parse(text);
-    if (!result.ok) throw new Error(result.error || 'Gagal pull');
-    return result.data;
-  }
-
-  function applyCloudData(d) {
-    if(d.products) { products = d.products; localStorage.setItem('kkProduk', JSON.stringify(products)); }
-    if(d.transactions) { transactions = d.transactions; localStorage.setItem('kkTransaksi', JSON.stringify(transactions)); }
-    if(d.bahanBaku) { bahanBaku = d.bahanBaku; localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku)); }
-    if(d.bahanMentah) { bahanMentah = d.bahanMentah; localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah)); }
-    if(d.resep) { resep = d.resep; localStorage.setItem('kkResep', JSON.stringify(resep)); }
-    
-    // Safety sync back kasir data
-    if(d.pembelian) localStorage.setItem('kkPembelian', JSON.stringify(d.pembelian));
-    if(d.pengeluaran) localStorage.setItem('kkPengeluaran', JSON.stringify(d.pengeluaran));
-    if(d.pelanggan) localStorage.setItem('kkPelanggan', JSON.stringify(d.pelanggan));
-    if(d.bundles) localStorage.setItem('kkBundles', JSON.stringify(d.bundles));
-    if(d.sedekahLog) localStorage.setItem('kkSedekah', JSON.stringify(d.sedekahLog));
-
-    // Refresh UI
-    if(document.getElementById('page-bahan').classList.contains('active')) { renderBahanBaku(); renderBahanMentah(); }
-    if(document.getElementById('page-resep').classList.contains('active')) initResepPage();
-    if(document.getElementById('page-laporan').classList.contains('active')) {
-        generateStokReport();
-        if(document.getElementById('tab-hpp').style.display === 'block') renderLaporanHPP();
-    }
-  }
-
-  async function pullFromSpreadsheet() {
-    if(!syncConfig.webAppUrl) { toast('URL Sync belum diisi', 'danger'); openSyncModal(); return; }
-    showGlobalLoader('Menarik data dari Google Sheets...');
-    try {
-      const cloudData = await fetchCloudData();
-      applyCloudData(cloudData); 
-      toast('Data berhasil ditarik dan diperbarui ✓', 'success');
-      updateSidebarSyncDot(true);
-    } catch (err) {
-      toast('Gagal menarik data: ' + err.message, 'danger');
-    }
-    hideGlobalLoader();
-  }
-
-  async function syncToSpreadsheet(retryCount = 0) {
-    const url = syncConfig.webAppUrl;
-    if(!url) return;
-    
-    updateSyncStatus('syncing', `⏳ Menyinkronkan data... (percobaan ${retryCount+1}/3)`);
-    showGlobalLoader('Mendorong data ke Google Sheets...');
-    
-    const payload = {
-        action: 'syncAll', 
-        data: { 
-            products, transactions, bahanBaku, bahanMentah, resep,
-            pembelian, pengeluaran, sedekahLog, pelanggan, bundles
-        }
-    };
-
-    try {
-      const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-      const textRes = await res.text();
-      const result = JSON.parse(textRes);
-      if(!result.ok) throw new Error(result.error || 'Gagal push sync');
-      
-      syncConfig.lastSync = new Date().toISOString();
-      localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
-      updateSyncStatus('success', '✅ Sync berhasil: ' + new Date().toLocaleTimeString('id-ID'));
-      updateSidebarSyncDot(true); 
-    } catch (err) {
-      if(retryCount < 2) {
-         updateSyncStatus('syncing', `⚠️ Gagal, retry ${retryCount+2}/3 dalam 2 detik...`);
-         setTimeout(() => syncToSpreadsheet(retryCount + 1), 2000);
-         return;
-      }
-      updateSyncStatus('error', '❌ Gagal: ' + err.message); 
-      toast('Sync gagal: ' + err.message, 'danger');
-    }
-    hideGlobalLoader();
-  }
-
-  function autoSyncIfEnabled() {
-    if(!syncConfig.autoSync || !syncConfig.webAppUrl) return;
-    clearTimeout(_autoSyncTimer);
-    _autoSyncTimer = setTimeout(() => { syncToSpreadsheet(); }, 2000);
-  }
-
-  // --- SYNC UI MODAL ---
-  function openSyncModal() {
-    document.getElementById('sync-url-input').value = syncConfig.webAppUrl || '';
-    document.getElementById('sync-auto-check').checked = syncConfig.autoSync || false;
-    document.getElementById('sync-status-msg').textContent = '';
-    document.getElementById('sync-modal').classList.add('open');
-  }
-  function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
-  function saveSyncConfig() {
-    const url = document.getElementById('sync-url-input').value.trim();
-    const auto = document.getElementById('sync-auto-check').checked;
-    if(url && !url.includes('script.google.com')) { toast('URL tidak valid', 'danger'); return; }
-    syncConfig.webAppUrl = url;
-    syncConfig.autoSync = auto;
-    localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig));
-    updateSidebarSyncDot(!!url);
-    toast('Konfigurasi sync disimpan ✓', 'success');
-  }
-
-  // --- NAVIGATION ---
-  function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('open'); }
+  function showPage(p) {
+    document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + pageId).classList.add('active');
-    document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
-    
-    // Otomatis tutup sidebar di HP setelah pindah halaman
-    if(window.innerWidth <= 768) {
-        document.querySelector('.sidebar').classList.remove('open');
-    }
-
-    if(pageId === 'bahan') { renderBahanBaku(); renderBahanMentah(); initBahanMentahBuilder(); }
-    if(pageId === 'resep') initResepPage();
-    if(pageId === 'laporan') generateStokReport();
+    document.getElementById('page-' + p).classList.add('active');
+    const n = document.querySelector(`[data-page="${p}"]`); if(n) n.classList.add('active');
+    if(p === 'bahan') { renderBahanBaku(); renderBahanMentah(); initBahanMentahBuilder(); }
+    if(p === 'resep') initResepPage();
+    if(p === 'laporan') generateStokReport();
   }
 
-  function switchBahanTab(tab, btn) {
-    document.querySelectorAll('#page-bahan .tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-bahan-baku').style.display = tab === 'baku' ? 'block' : 'none';
-    document.getElementById('tab-bahan-mentah').style.display = tab === 'mentah' ? 'block' : 'none';
+  function switchBahanTab(t, b) {
+    document.querySelectorAll('#page-bahan .tab-btn').forEach(btn => btn.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-bahan-baku').style.display = t === 'baku' ? 'block' : 'none';
+    document.getElementById('tab-bahan-mentah').style.display = t === 'mentah' ? 'block' : 'none';
   }
 
-  function switchLapTab(tab, btn) {
-    document.querySelectorAll('#page-laporan .tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-stok').style.display = tab === 'stok' ? 'block' : 'none';
-    document.getElementById('tab-hpp').style.display = tab === 'hpp' ? 'block' : 'none';
-    if(tab === 'hpp') renderLaporanHPP();
-  }
-
-  // ==========================================
-  // PAGE 1A: BAHAN BAKU DASAR
-  // ==========================================
-  
-  function updateSatuanBB() {
-      const sat = document.getElementById('bb-satuan').value;
-      // Capitalize for display label
-      document.getElementById('lbl-satuan-bb').textContent = sat.charAt(0).toUpperCase() + sat.slice(1);
-      hitungPreviewHargaSatuan();
+  function switchLapTab(t, b) {
+    document.querySelectorAll('#page-laporan .tab-btn').forEach(btn => btn.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-stok').style.display = t === 'stok' ? 'block' : 'none';
+    document.getElementById('tab-hpp').style.display = t === 'hpp' ? 'block' : 'none';
+    if(t === 'hpp') renderLaporanHPP();
   }
 
   function renderBahanBaku() {
     const tbody = document.getElementById('tbl-bahan');
-    if(!bahanBaku.length) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada bahan dasar terdaftar</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = bahanBaku.map(b => `
-      <tr>
-        <td style="font-weight:600;">${b.nama}</td>
-        <td><span style="color:var(--primary); font-weight:700;">${rp(b.hargaSatuan)}</span> <span style="font-size:9px;color:var(--gray-400);">/ ${b.satuan}</span></td>
-        <td style="font-weight:700;">${b.stokAwal} <span style="font-size:10px;font-weight:normal;">${b.satuan}</span></td>
-        <td>
-          <button class="btn btn-xs btn-outline" onclick="editBahan('${b.id}')">✏️ Edit</button>
-          <button class="btn btn-xs btn-danger" onclick="hapusBahan('${b.id}')">🗑️</button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = bahanBaku.map(b => `<tr><td style="font-weight:600;">${b.nama}</td><td>${rp(b.hargaSatuan)} / ${b.satuan}</td><td>${b.stokAwal} ${b.satuan}</td><td><button class="btn btn-xs btn-outline" onclick="editBahan('${b.id}')">✏️</button> <button class="btn btn-xs btn-danger" onclick="hapusBahan('${b.id}')">🗑️</button></td></tr>`).join('');
   }
 
   function hitungPreviewHargaSatuan() {
-    const qty = parseFloat(document.getElementById('bb-qty-beli').value) || 0;
-    const totalHarga = parseFloat(document.getElementById('bb-total-harga').value) || 0;
-    const satuan = document.getElementById('bb-satuan').value;
-    
-    let hargaSatuan = 0;
-    if(qty > 0 && totalHarga > 0) {
-        hargaSatuan = totalHarga / qty;
-    }
-    
-    // Check if the number has decimals, limit to 2 for display
-    const hargaSatuanFormatted = hargaSatuan % 1 !== 0 ? hargaSatuan.toFixed(2) : hargaSatuan;
-    
-    document.getElementById('preview-harga-satuan').textContent = `Harga Satuan: Rp ${hargaSatuanFormatted} / ${satuan}`;
+    const q = parseFloat(document.getElementById('bb-qty-beli').value) || 0, h = parseFloat(document.getElementById('bb-total-harga').value) || 0;
+    const res = q > 0 ? (h/q).toFixed(2) : 0;
+    document.getElementById('preview-harga-satuan').textContent = `Harga Satuan: Rp ${res} / ${document.getElementById('bb-satuan').value}`;
   }
 
   function saveBahanBaku() {
-    const id = document.getElementById('bb-id').value;
-    const nama = document.getElementById('bb-nama').value.trim();
-    const satuan = document.getElementById('bb-satuan').value;
-    const qtyBeli = parseFloat(document.getElementById('bb-qty-beli').value) || 0;
-    const totalHarga = parseFloat(document.getElementById('bb-total-harga').value) || 0;
-    const stokAwal = parseFloat(document.getElementById('bb-stok').value) || 0;
-
-    if(!nama || qtyBeli <= 0 || totalHarga <= 0) return toast('Nama, Kapasitas Total, dan Harga wajib diisi!', 'danger');
-
-    const hargaSatuan = totalHarga / qtyBeli;
-
-    if(id) {
-      const idx = bahanBaku.findIndex(x => x.id === id);
-      if(idx > -1) bahanBaku[idx] = { id, nama, satuan, hargaSatuan, qtyBeli, totalHarga, stokAwal };
-    } else {
-      bahanBaku.push({ id: genId(), nama, satuan, hargaSatuan, qtyBeli, totalHarga, stokAwal });
-    }
-    
-    saveLocalAll();
-    toast('Bahan Baku tersimpan!');
-    resetFormBahan();
-    renderBahanBaku();
-    autoSyncIfEnabled();
+    const id = document.getElementById('bb-id').value, n = document.getElementById('bb-nama').value.trim(), s = document.getElementById('bb-satuan').value;
+    const q = parseFloat(document.getElementById('bb-qty-beli').value), h = parseFloat(document.getElementById('bb-total-harga').value), st = parseFloat(document.getElementById('bb-stok').value) || 0;
+    if(!n || q <= 0) return toast('Lengkapi data', 'danger');
+    const data = { id: id || genId(), nama: n, satuan: s, hargaSatuan: h/q, qtyBeli: q, totalHarga: h, stokAwal: st };
+    if(id) { const i = bahanBaku.findIndex(x => x.id === id); if(i>-1) bahanBaku[i] = data; } else bahanBaku.push(data);
+    localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku)); toast('Tersimpan'); resetFormBahan(); renderBahanBaku(); autoSyncIfEnabled();
   }
 
-  function editBahan(id) {
-    const b = bahanBaku.find(x => x.id === id);
-    if(!b) return;
-    document.getElementById('form-title-bahan').textContent = 'Edit Bahan Dasar';
-    document.getElementById('bb-id').value = b.id;
-    document.getElementById('bb-nama').value = b.nama;
-    document.getElementById('bb-satuan').value = b.satuan;
-    document.getElementById('bb-qty-beli').value = b.qtyBeli || 1;
-    document.getElementById('bb-total-harga').value = b.totalHarga || b.hargaSatuan;
-    document.getElementById('bb-stok').value = b.stokAwal;
-    updateSatuanBB();
-  }
+  function resetFormBahan() { document.getElementById('bb-id').value = ''; document.getElementById('bb-nama').value = ''; document.getElementById('bb-qty-beli').value = ''; document.getElementById('bb-total-harga').value = ''; }
+  function updateSatuanBB() { document.getElementById('lbl-satuan-bb').textContent = document.getElementById('bb-satuan').value; hitungPreviewHargaSatuan(); }
 
-  function hapusBahan(id) {
-    if(!confirm('Hapus bahan dasar ini? Komposisi yang memakainya akan terpengaruh.')) return;
-    bahanBaku = bahanBaku.filter(x => x.id !== id);
-    saveLocalAll();
-    toast('Bahan berhasil dihapus');
-    renderBahanBaku();
-    autoSyncIfEnabled();
-  }
-
-  function resetFormBahan() {
-    document.getElementById('form-title-bahan').textContent = 'Tambah Bahan Dasar';
-    document.getElementById('bb-id').value = '';
-    document.getElementById('bb-nama').value = '';
-    document.getElementById('bb-qty-beli').value = '';
-    document.getElementById('bb-total-harga').value = '';
-    document.getElementById('bb-stok').value = '';
-    updateSatuanBB();
-  }
-
-  // ==========================================
-  // PAGE 1B: BAHAN MENTAH (OLAHAN)
-  // ==========================================
   function renderBahanMentah() {
     const tbody = document.getElementById('tbl-bahan-mentah');
-    if(!bahanMentah.length) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada bahan mentah (olahan)</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = bahanMentah.map(bm => `
-      <tr>
-        <td style="font-weight:600;"><span class="badge badge-purple" style="margin-right:6px;">Olahan</span>${bm.nama}</td>
-        <td>${bm.hasilJadi} ${bm.satuan}</td>
-        <td>${rp(bm.totalModal)}</td>
-        <td><span style="color:var(--teal); font-weight:700;">${rp(bm.hpp)}</span> <span style="font-size:9px;">/ ${bm.satuan}</span></td>
-        <td>
-          <button class="btn btn-xs btn-outline" onclick="editBahanMentah('${bm.id}')">✏️ Edit</button>
-          <button class="btn btn-xs btn-danger" onclick="hapusBahanMentah('${bm.id}')">🗑️</button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = bahanMentah.map(bm => `<tr><td style="font-weight:600;">${bm.nama}</td><td>${bm.hasilJadi} ${bm.satuan}</td><td>${rp(bm.totalModal)}</td><td>${rp(bm.hpp)}</td><td><button class="btn btn-xs btn-outline" onclick="editBahanMentah('${bm.id}')">✏️</button></td></tr>`).join('');
   }
 
   function initBahanMentahBuilder() {
-    const sel = document.getElementById('bm-bahan-sel');
-    sel.innerHTML = '<option value="">-- Pilih Bahan Baku Dasar --</option>' + 
-                    bahanBaku.map(b => `<option value="${b.id}" data-sat="${b.satuan}">${b.nama} (Stok: ${b.satuan} - ${rp(b.hargaSatuan)})</option>`).join('');
-    updateLabelSatuanMentah();
-    kalkulasiHppMentah();
+    const s = document.getElementById('bm-bahan-sel');
+    s.innerHTML = '<option value="">Pilih Dasar</option>' + bahanBaku.map(b => `<option value="${b.id}" data-sat="${b.satuan}">${b.nama}</option>`).join('');
   }
 
   function updateLabelSatuanMentah() {
-    const opt = document.getElementById('bm-bahan-sel').selectedOptions[0];
-    const masterSat = (opt && opt.value) ? opt.dataset.sat : '';
-    populateSatuanOptions(masterSat, 'bm-satuan-pakai');
+    const o = document.getElementById('bm-bahan-sel').selectedOptions[0];
+    populateSatuanOptions(o ? o.dataset.sat : '', 'bm-satuan-pakai');
   }
 
   function addBahanKeMentah() {
-    const bahanId = document.getElementById('bm-bahan-sel').value;
-    const inputQty = parseFloat(document.getElementById('bm-qty').value);
-    const satuanPakai = document.getElementById('bm-satuan-pakai').value;
-    
-    if(!bahanId || !inputQty || inputQty <= 0) return toast('Pilih bahan dasar dan masukkan kapasitas dipakai!', 'danger');
-    
-    const opt = document.getElementById('bm-bahan-sel').selectedOptions[0];
-    const masterSat = opt.dataset.sat;
-    
-    // Konversi nilai inputan ke satuan master (Misal: 150 ml -> 0.15 Liter)
-    const qtyMaster = getConvertedQty(inputQty, satuanPakai, masterSat);
-
-    const exists = currentKomposisiMentah.findIndex(x => x.bahanId === bahanId);
-    if(exists > -1) {
-        currentKomposisiMentah[exists].qty += qtyMaster;
-        currentKomposisiMentah[exists].displayQty = null; // Reset ke format master jika di-tumpuk
-    } else {
-        currentKomposisiMentah.push({ 
-            bahanId: bahanId, 
-            qty: qtyMaster, 
-            displayQty: inputQty, 
-            displaySatuan: satuanPakai 
-        });
-    }
-    
-    document.getElementById('bm-qty').value = '';
-    kalkulasiHppMentah();
-  }
-
-  function hapusBahanDariMentah(index) {
-    currentKomposisiMentah.splice(index, 1);
+    const bId = document.getElementById('bm-bahan-sel').value, qIn = parseFloat(document.getElementById('bm-qty').value), sP = document.getElementById('bm-satuan-pakai').value;
+    if(!bId || qIn <= 0) return;
+    const b = bahanBaku.find(x => x.id === bId);
+    currentKomposisiMentah.push({ bahanId: bId, qty: getConvertedQty(qIn, sP, b.satuan), displayQty: qIn, displaySatuan: sP });
     kalkulasiHppMentah();
   }
 
   function kalkulasiHppMentah() {
-    const list = document.getElementById('list-komposisi-mentah');
-    const hasilJadi = parseFloat(document.getElementById('bm-hasil-jadi').value) || 1;
-    let totalModal = 0;
-
-    if(!currentKomposisiMentah.length) {
-      list.innerHTML = `<div style="font-size:11px; color:var(--gray-400); font-style:italic;">Pilih bahan baku penyusun...</div>`;
-    } else {
-      list.innerHTML = currentKomposisiMentah.map((k, i) => {
-        const b = bahanBaku.find(x => x.id === k.bahanId);
-        if(!b) return '';
-        const biaya = b.hargaSatuan * k.qty;
-        totalModal += biaya;
-
-        // Teks Format Cantik (Misal: "150 ml (0.15 Liter)")
-        let textQty = `${k.qty} ${b.satuan}`;
-        if (k.displayQty && k.displaySatuan && k.displaySatuan.toLowerCase() !== b.satuan.toLowerCase()) {
-            textQty = `${k.displayQty} ${k.displaySatuan} <span style="color:#aaa;">(${k.qty} ${b.satuan})</span>`;
-        }
-
-        return `
-          <div class="resep-item" style="padding:6px 10px;">
-            <div>
-              <div style="font-size:12px; font-weight:600;">${b.nama}</div>
-              <div style="font-size:10px; color:var(--gray-500);">Terpakai: ${textQty} × ${rp(b.hargaSatuan)} = <strong>${rp(biaya)}</strong></div>
-            </div>
-            <button class="btn btn-xs btn-outline" style="color:var(--danger); border-color:var(--danger-light); padding:2px 6px;" onclick="hapusBahanDariMentah(${i})">✕</button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    const hppPerSatuan = totalModal / hasilJadi;
-    document.getElementById('bm-sum-modal').textContent = rp(totalModal);
-    document.getElementById('bm-sum-hpp').textContent = rp(hppPerSatuan);
+    const l = document.getElementById('list-komposisi-mentah'), hj = parseFloat(document.getElementById('bm-hasil-jadi').value) || 1;
+    let tm = 0;
+    l.innerHTML = currentKomposisiMentah.map((k, i) => {
+      const b = bahanBaku.find(x => x.id === k.bahanId); if(!b) return '';
+      const bi = b.hargaSatuan * k.qty; tm += bi;
+      return `<div class="resep-item"><span>${b.nama} (${k.displayQty} ${k.displaySatuan})</span><span>${rp(bi)}</span></div>`;
+    }).join('');
+    document.getElementById('bm-sum-modal').textContent = rp(tm);
+    document.getElementById('bm-sum-hpp').textContent = rp(tm/hj);
   }
 
   function saveBahanMentah() {
-    const id = document.getElementById('bm-id').value;
-    const nama = document.getElementById('bm-nama').value.trim();
-    const satuan = document.getElementById('bm-satuan').value;
-    const hasilJadi = parseFloat(document.getElementById('bm-hasil-jadi').value) || 1;
-
-    if(!nama) return toast('Nama Bahan Olahan wajib diisi!', 'danger');
-    if(!currentKomposisiMentah.length) return toast('Minimal harus ada 1 bahan baku penyusun!', 'danger');
-
-    // Kalkulasi akhir HPP
-    let totalModal = 0;
-    currentKomposisiMentah.forEach(k => {
-        const b = bahanBaku.find(x => x.id === k.bahanId);
-        if(b) totalModal += b.hargaSatuan * k.qty;
-    });
-    const hpp = totalModal / hasilJadi;
-
-    const data = { id: id || genId(), nama, satuan, hasilJadi, komposisi: currentKomposisiMentah, totalModal, hpp };
-
-    if(id) {
-      const idx = bahanMentah.findIndex(x => x.id === id);
-      if(idx > -1) bahanMentah[idx] = data;
-    } else {
-      bahanMentah.push(data);
-    }
-    
-    saveLocalAll();
-    toast('Bahan Mentah tersimpan!');
-    resetFormMentah();
-    renderBahanMentah();
-    autoSyncIfEnabled();
+    const id = document.getElementById('bm-id').value, n = document.getElementById('bm-nama').value, s = document.getElementById('bm-satuan').value, hj = parseFloat(document.getElementById('bm-hasil-jadi').value) || 1;
+    let tm = 0; currentKomposisiMentah.forEach(k => { const b = bahanBaku.find(x => x.id === k.bahanId); if(b) tm += b.hargaSatuan * k.qty; });
+    const data = { id: id || genId(), nama: n, satuan: s, hasilJadi: hj, komposisi: currentKomposisiMentah, totalModal: tm, hpp: tm/hj };
+    if(id) { const i = bahanMentah.findIndex(x => x.id === id); if(i>-1) bahanMentah[i] = data; } else bahanMentah.push(data);
+    localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah)); toast('Tersimpan'); renderBahanMentah(); resetFormMentah(); autoSyncIfEnabled();
   }
 
-  function editBahanMentah(id) {
-    const bm = bahanMentah.find(x => x.id === id);
-    if(!bm) return;
-    document.getElementById('form-title-mentah').textContent = 'Edit Bahan Mentah';
-    document.getElementById('bm-id').value = bm.id;
-    document.getElementById('bm-nama').value = bm.nama;
-    document.getElementById('bm-satuan').value = bm.satuan;
-    document.getElementById('bm-hasil-jadi').value = bm.hasilJadi;
-    
-    currentKomposisiMentah = [...bm.komposisi];
-    initBahanMentahBuilder();
-  }
+  function resetFormMentah() { document.getElementById('bm-id').value = ''; currentKomposisiMentah = []; kalkulasiHppMentah(); }
 
-  function hapusBahanMentah(id) {
-    if(!confirm('Hapus bahan mentah ini? Resep yang menggunakannya akan terpengaruh.')) return;
-    bahanMentah = bahanMentah.filter(x => x.id !== id);
-    saveLocalAll();
-    toast('Bahan mentah dihapus');
-    renderBahanMentah();
-    autoSyncIfEnabled();
-  }
-
-  function resetFormMentah() {
-    document.getElementById('form-title-mentah').textContent = 'Buat Bahan Mentah';
-    document.getElementById('bm-id').value = '';
-    document.getElementById('bm-nama').value = '';
-    document.getElementById('bm-hasil-jadi').value = '1';
-    currentKomposisiMentah = [];
-    kalkulasiHppMentah();
-  }
-
-  // ==========================================
-  // PAGE 2: RESEP PRODUK
-  // ==========================================
   function initResepPage() {
-    const sel = document.getElementById('rs-produk');
-    sel.innerHTML = '<option value="">-- Pilih Produk Akhir --</option>' + products.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
-    if(currentProdukId) sel.value = currentProdukId; 
-
-    loadResepForProduk();
-  }
-
-  function updateLabelSatuanResep() {
-    const opt = document.getElementById('rs-bahan').selectedOptions[0];
-    const masterSat = (opt && opt.value) ? opt.dataset.sat : '';
-    populateSatuanOptions(masterSat, 'rs-satuan-pakai');
+    const s = document.getElementById('rs-produk');
+    s.innerHTML = '<option value="">Pilih Produk</option>' + products.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
   }
 
   function loadResepForProduk() {
     currentProdukId = document.getElementById('rs-produk').value;
-    
-    // Refresh Dropdown Bahan (Sekarang termasuk Produk)
+    if(!currentProdukId) { document.getElementById('resep-builder').style.display='none'; return; }
+    document.getElementById('resep-builder').style.display='block';
     const bSel = document.getElementById('rs-bahan');
-    let optionsHTML = `<option value="">-- Pilih Bahan --</option>`;
-    
-    if(bahanMentah.length > 0) {
-        optionsHTML += `<optgroup label="Bahan Mentah (Olahan)">`;
-        optionsHTML += bahanMentah.map(bm => `<option value="mentah_${bm.id}" data-sat="${bm.satuan}">[Olahan] ${bm.nama} (${bm.satuan} - ${rp(bm.hpp)})</option>`).join('');
-        optionsHTML += `</optgroup>`;
-    }
-
-    if(products.length > 0) {
-        // Filter agar produk tidak bisa menjadi bahan untuk dirinya sendiri
-        const otherProducts = products.filter(p => p.id !== currentProdukId);
-        if(otherProducts.length > 0) {
-            optionsHTML += `<optgroup label="Produk Lainnya">`;
-            optionsHTML += otherProducts.map(p => `<option value="produk_${p.id}" data-sat="${p.satuan || 'pcs'}">[Produk] ${p.nama} (${p.satuan || 'pcs'} - ${rp(p.hargaBeli)})</option>`).join('');
-            optionsHTML += `</optgroup>`;
-        }
-    }
-    
-    if(bahanBaku.length > 0) {
-        optionsHTML += `<optgroup label="Bahan Baku Dasar">`;
-        optionsHTML += bahanBaku.map(b => `<option value="baku_${b.id}" data-sat="${b.satuan}">[Dasar] ${b.nama} (${b.satuan} - ${rp(b.hargaSatuan)})</option>`).join('');
-        optionsHTML += `</optgroup>`;
-    }
-
-    bSel.innerHTML = optionsHTML;
-    updateLabelSatuanResep();
-
-    if(!currentProdukId) {
-      document.getElementById('resep-builder').style.display = 'none';
-      document.getElementById('margin-box').style.display = 'none';
-      document.getElementById('margin-alert').innerHTML = '';
-      return;
-    }
-    
-    document.getElementById('resep-builder').style.display = 'block';
+    bSel.innerHTML = '<option value="">Pilih Bahan</option>' + 
+      bahanMentah.map(bm => `<option value="mentah_${bm.id}" data-sat="${bm.satuan}">[Olahan] ${bm.nama}</option>`).join('') +
+      bahanBaku.map(b => `<option value="baku_${b.id}" data-sat="${b.satuan}">[Dasar] ${b.nama}</option>`).join('');
     const r = resep.find(x => x.produkId === currentProdukId);
     currentKomposisi = r ? [...r.komposisi] : [];
     renderKomposisi();
   }
 
-  function renderKomposisi() {
-    const list = document.getElementById('list-komposisi');
-    let totalHpp = 0;
-    
-    if(!currentKomposisi.length) {
-      list.innerHTML = `<div style="font-size:11px; color:var(--gray-400); font-style:italic;">Belum ada bahan ditambahkan.</div>`;
-    } else {
-      list.innerHTML = currentKomposisi.map((k, i) => {
-        let nNama = "Unknown", nSatuan = "unit", nHpp = 0, nBadge = "";
-        
-        if (k.tipe === 'mentah') {
-            const bm = bahanMentah.find(x => x.id === k.bahanId);
-            if(bm) { nNama = bm.nama; nSatuan = bm.satuan; nHpp = bm.hpp; nBadge = `<span class="badge badge-purple">Olahan</span>`; }
-        } else if (k.tipe === 'produk') {
-            const p = products.find(x => x.id === k.bahanId);
-            if(p) { nNama = p.nama; nSatuan = p.satuan || 'pcs'; nHpp = p.hargaBeli || 0; nBadge = `<span class="badge badge-blue">Produk</span>`; }
-        } else {
-            const b = bahanBaku.find(x => x.id === k.bahanId);
-            if(b) { nNama = b.nama; nSatuan = b.satuan; nHpp = b.hargaSatuan; nBadge = `<span class="badge badge-gray">Dasar</span>`; }
-        }
-
-        const biaya = nHpp * k.qty;
-        totalHpp += biaya;
-
-        // Teks Format Cantik (Misal: "150 ml (0.15 Liter)")
-        let textQty = `${k.qty} ${nSatuan}`;
-        if (k.displayQty && k.displaySatuan && k.displaySatuan.toLowerCase() !== nSatuan.toLowerCase()) {
-            textQty = `${k.displayQty} ${k.displaySatuan} <span style="color:#aaa;">(${k.qty} ${nSatuan})</span>`;
-        }
-
-        return `
-          <div class="resep-item">
-            <div>
-              <div style="font-size:13px; font-weight:600;">${nBadge} ${nNama}</div>
-              <div style="font-size:11px; color:var(--gray-500); margin-top:2px;">Terpakai: ${textQty} × ${rp(nHpp)} = <strong style="color:var(--gray-800);">${rp(biaya)}</strong></div>
-            </div>
-            <button class="btn btn-xs btn-outline" style="color:var(--danger); border-color:var(--danger-light);" onclick="hapusKomposisiResep(${i})">✕</button>
-          </div>
-        `;
-      }).join('');
-    }
-    kalkulasiMargin(totalHpp);
+  function updateLabelSatuanResep() {
+    const o = document.getElementById('rs-bahan').selectedOptions[0];
+    populateSatuanOptions(o ? o.dataset.sat : '', 'rs-satuan-pakai');
   }
 
   function addBahanKeResep() {
-    const val = document.getElementById('rs-bahan').value;
-    const inputQty = parseFloat(document.getElementById('rs-qty').value);
-    const satuanPakai = document.getElementById('rs-satuan-pakai').value;
-    
-    if(!val || !inputQty || inputQty <= 0) return toast('Pilih bahan dan masukkan kapasitas dipakai!', 'danger');
-    
-    const parts = val.split('_'); // "baku_xyz", "mentah_abc", atau "produk_123"
-    const tipe = parts[0];
-    const bahanId = parts[1];
-
-    const opt = document.getElementById('rs-bahan').selectedOptions[0];
-    const masterSat = opt.dataset.sat;
-    
-    // Konversi nilai inputan ke satuan master (Misal: 150 ml -> 0.15 Liter)
-    const qtyMaster = getConvertedQty(inputQty, satuanPakai, masterSat);
-
-    const exists = currentKomposisi.findIndex(x => x.bahanId === bahanId && x.tipe === tipe);
-    if(exists > -1) {
-        currentKomposisi[exists].qty += qtyMaster;
-        currentKomposisi[exists].displayQty = null;
-    } else {
-        currentKomposisi.push({ 
-            bahanId: bahanId, 
-            tipe: tipe, 
-            qty: qtyMaster, 
-            displayQty: inputQty, 
-            displaySatuan: satuanPakai 
-        });
-    }
-    
-    document.getElementById('rs-qty').value = '';
+    const v = document.getElementById('rs-bahan').value, qIn = parseFloat(document.getElementById('rs-qty').value), sP = document.getElementById('rs-satuan-pakai').value;
+    if(!v || qIn <= 0) return;
+    const parts = v.split('_'), type = parts[0], id = parts[1], o = document.getElementById('rs-bahan').selectedOptions[0];
+    currentKomposisi.push({ bahanId: id, tipe: type, qty: getConvertedQty(qIn, sP, o.dataset.sat), displayQty: qIn, displaySatuan: sP });
     renderKomposisi();
   }
 
-  function hapusKomposisiResep(index) {
-    currentKomposisi.splice(index, 1);
-    renderKomposisi();
+  function renderKomposisi() {
+    const l = document.getElementById('list-komposisi'); let th = 0;
+    l.innerHTML = currentKomposisi.map((k, i) => {
+      let n = '?', sat = '?', hp = 0;
+      if(k.tipe === 'mentah') { const b = bahanMentah.find(x => x.id === k.bahanId); if(b) { n = b.nama; sat = b.satuan; hp = b.hpp; } }
+      else { const b = bahanBaku.find(x => x.id === k.bahanId); if(b) { n = b.nama; sat = b.satuan; hp = b.hargaSatuan; } }
+      const cost = hp * k.qty; th += cost;
+      return `<div class="resep-item"><span>${n} (${k.displayQty} ${k.displaySatuan})</span><span>${rp(cost)}</span></div>`;
+    }).join('');
+    kalkulasiMargin(th);
   }
 
-  function kalkulasiMargin(totalHpp) {
-    if(!currentProdukId) return;
-    const p = products.find(x => x.id === currentProdukId);
-    if(!p) return;
-    
-    const hargaJual = p.harga || 0;
-    const laba = hargaJual - totalHpp;
-    const margin = hargaJual > 0 ? (laba / hargaJual * 100).toFixed(1) : 0;
-    
-    document.getElementById('margin-box').style.display = 'block';
-    document.getElementById('sum-hpp').textContent = rp(totalHpp);
-    document.getElementById('sum-jual').textContent = rp(hargaJual);
-    document.getElementById('sum-laba').textContent = rp(laba);
-    document.getElementById('sum-margin').textContent = margin + '%';
-    
-    const alertBox = document.getElementById('margin-alert');
-    if(margin < 20) {
-      alertBox.innerHTML = `<div class="alert-margin">⚠️ Peringatan: Margin tipis (< 20%).</div>`;
-      document.getElementById('sum-margin').style.color = 'var(--danger)';
-    } else {
-      alertBox.innerHTML = `<div class="good-margin">✅ Profitabilitas Sehat (Margin >= 20%).</div>`;
-      document.getElementById('sum-margin').style.color = 'var(--success-light)';
-    }
+  function kalkulasiMargin(th) {
+    const p = products.find(x => x.id === currentProdukId); if(!p) return;
+    const j = p.harga || 0, l = j - th;
+    document.getElementById('margin-box').style.display='block';
+    document.getElementById('sum-hpp').textContent = rp(th);
+    document.getElementById('sum-jual').textContent = rp(j);
+    document.getElementById('sum-laba').textContent = rp(l);
+    document.getElementById('sum-margin').textContent = (j > 0 ? (l/j*100).toFixed(1) : 0) + '%';
   }
 
   function saveResep() {
-    if(!currentProdukId) return;
-    
-    const idx = resep.findIndex(x => x.produkId === currentProdukId);
-    if(idx > -1) resep[idx].komposisi = currentKomposisi;
-    else resep.push({ produkId: currentProdukId, komposisi: currentKomposisi });
-
-    // Hitung total HPP final
-    let totalHpp = 0;
-    currentKomposisi.forEach(k => {
-        if (k.tipe === 'mentah') {
-            const bm = bahanMentah.find(x => x.id === k.bahanId);
-            if(bm) totalHpp += bm.hpp * k.qty;
-        } else if (k.tipe === 'produk') {
-            const p = products.find(x => x.id === k.bahanId);
-            if(p) totalHpp += (p.hargaBeli || 0) * k.qty;
-        } else {
-            const b = bahanBaku.find(x => x.id === k.bahanId);
-            if(b) totalHpp += b.hargaSatuan * k.qty;
-        }
+    const i = resep.findIndex(x => x.produkId === currentProdukId);
+    if(i > -1) resep[i].komposisi = currentKomposisi; else resep.push({ produkId: currentProdukId, komposisi: currentKomposisi });
+    let th = 0; currentKomposisi.forEach(k => {
+      if(k.tipe === 'mentah') { const b = bahanMentah.find(x => x.id === k.bahanId); if(b) th += b.hpp * k.qty; }
+      else { const b = bahanBaku.find(x => x.id === k.bahanId); if(b) th += b.hargaSatuan * k.qty; }
     });
-
-    // Otomatis update HPP Produk
-    const pIdx = products.findIndex(x => x.id === currentProdukId);
-    if(pIdx > -1) products[pIdx].hargaBeli = totalHpp;
-    
-    saveLocalAll();
-    toast('Resep final & HPP tersimpan!', 'success');
-    autoSyncIfEnabled();
-  }
-
-  // ==========================================
-  // PAGE 3: LAPORAN STOK & HPP
-  // ==========================================
-  
-  // FUNGSI REKURSIF: Membedah Bahan Mentah & Produk menjadi Bahan Baku Dasar
-  function extractBasicUsage(bahanId, tipe, qtyMultiplier, outputObj, depth = 0) {
-      if (depth > 15) return; // Mencegah infinite loop jika resep saling bertabrakan
-
-      if (tipe === 'baku') {
-          if(!outputObj[bahanId]) outputObj[bahanId] = 0;
-          outputObj[bahanId] += qtyMultiplier;
-      } else if (tipe === 'mentah') {
-          const bm = bahanMentah.find(x => x.id === bahanId);
-          if (bm && bm.hasilJadi > 0) {
-              bm.komposisi.forEach(k => {
-                  const qtyDibutuhkan = (k.qty / bm.hasilJadi) * qtyMultiplier;
-                  extractBasicUsage(k.bahanId, 'baku', qtyDibutuhkan, outputObj, depth + 1);
-              });
-          }
-      } else if (tipe === 'produk') {
-          const r = resep.find(x => x.produkId === bahanId);
-          if (r) {
-              r.komposisi.forEach(k => {
-                  extractBasicUsage(k.bahanId, k.tipe || 'baku', k.qty * qtyMultiplier, outputObj, depth + 1);
-              });
-          }
-      }
-  }
-
-  function hitungPemakaianDariTransaksi() {
-    const terpakaiDasar = {};
-    
-    transactions.forEach(trx => {
-      if (trx.items) {
-          trx.items.forEach(item => {
-            const r = resep.find(x => x.produkId === item.produkId);
-            if(r) {
-              r.komposisi.forEach(k => {
-                  extractBasicUsage(k.bahanId, k.tipe || 'baku', k.qty * item.qty, terpakaiDasar);
-              });
-            }
-          });
-      }
-    });
-    return terpakaiDasar;
+    const pI = products.findIndex(x => x.id === currentProdukId); if(pI > -1) products[pI].hargaBeli = th;
+    localStorage.setItem('kkResep', JSON.stringify(resep)); localStorage.setItem('kkProduk', JSON.stringify(products));
+    toast('Resep & HPP Tersimpan'); autoSyncIfEnabled();
   }
 
   function generateStokReport() {
-    const pemakaian = hitungPemakaianDariTransaksi();
-    const tbody = document.getElementById('tbl-laporan-stok');
-    
-    let jenis = 0;
-    let kritis = 0;
-
-    // Laporan stok fokus pada "Bahan Baku Dasar" (Fisik Asli)
-    tbody.innerHTML = bahanBaku.map(b => {
-      jenis++;
-      const pk = pemakaian[b.id] || 0;
-      const sisa = b.stokAwal - pk;
-      
-      let isKritis = false;
-      let statusHtml = `<span class="badge badge-green">Aman</span>`;
-      
-      if(sisa <= 0) {
-        isKritis = true;
-        statusHtml = `<span class="badge badge-red">Habis!</span>`;
-      } else if(b.stokAwal > 0 && sisa < (b.stokAwal * 0.2)) {
-        isKritis = true;
-        statusHtml = `<span class="badge badge-amber">Menipis</span>`;
-      }
-      
-      if(isKritis) kritis++;
-
-      // Bulatkan angka decimal stok
-      const pkStr = pk % 1 !== 0 ? pk.toFixed(2) : pk;
-      const sisaStr = sisa % 1 !== 0 ? sisa.toFixed(2) : sisa;
-
-      return `
-        <tr>
-          <td style="font-weight:600;">${b.nama}</td>
-          <td>${b.stokAwal} ${b.satuan}</td>
-          <td style="color:var(--warning); font-weight:600;">- ${pkStr} ${b.satuan}</td>
-          <td style="font-weight:700; color:${isKritis ? 'var(--danger)' : 'var(--gray-800)'}">${sisaStr} ${b.satuan}</td>
-          <td>${statusHtml}</td>
-        </tr>
-      `;
-    }).join('') || `<tr><td colspan="5" style="text-align:center;">Data bahan dasar kosong</td></tr>`;
-
-    document.getElementById('kpi-jenis-bahan').textContent = jenis;
-    document.getElementById('kpi-stok-kritis').textContent = kritis;
+    const used = {}; transactions.forEach(t => t.items?.forEach(it => {
+      const r = resep.find(x => x.produkId === it.produkId);
+      r?.komposisi.forEach(k => {
+        if(k.tipe === 'mentah') {
+          const bm = bahanMentah.find(x => x.id === k.bahanId);
+          bm?.komposisi.forEach(bk => { used[bk.bahanId] = (used[bk.bahanId] || 0) + (bk.qty / bm.hasilJadi) * k.qty * it.qty; });
+        } else { used[k.bahanId] = (used[k.bahanId] || 0) + k.qty * it.qty; }
+      });
+    }));
+    let krt = 0;
+    document.getElementById('tbl-laporan-stok').innerHTML = bahanBaku.map(b => {
+      const u = used[b.id] || 0, s = b.stokAwal - u;
+      if(s < b.stokAwal * 0.2) krt++;
+      return `<tr><td>${b.nama}</td><td>${b.stokAwal}</td><td>${u.toFixed(2)}</td><td style="color:${s<0?'red':''}">${s.toFixed(2)}</td><td><span class="badge ${s<b.stokAwal*0.2?'badge-red':'badge-green'}">${s<0?'Habis':'Aman'}</span></td></tr>`;
+    }).join('');
+    document.getElementById('kpi-jenis-bahan').textContent = bahanBaku.length;
+    document.getElementById('kpi-stok-kritis').textContent = krt;
   }
 
   function renderLaporanHPP() {
-    const tbody = document.getElementById('tbl-laporan-hpp');
-    const chartData = { labels: [], margins: [] };
-
-    const rows = products.map(p => {
-      const hpp = p.hargaBeli || 0;
-      const jual = p.harga || 0;
-      const profit = jual - hpp;
-      const margin = jual > 0 ? (profit / jual * 100) : 0;
-      
-      if(jual > 0) {
-        chartData.labels.push(p.nama.length > 12 ? p.nama.substring(0,12)+'...' : p.nama);
-        chartData.margins.push(margin.toFixed(1));
-      }
-
-      return { html: `
-        <tr>
-          <td style="font-weight:600;">${p.nama}</td>
-          <td style="color:var(--danger);">${rp(hpp)}</td>
-          <td style="color:var(--primary); font-weight:600;">${rp(jual)}</td>
-          <td style="color:var(--success); font-weight:600;">${rp(profit)}</td>
-          <td><span class="badge ${margin < 20 ? 'badge-red' : 'badge-green'}">${margin.toFixed(1)}%</span></td>
-        </tr>
-      `, margin };
-    });
-
-    rows.sort((a,b) => b.margin - a.margin);
-    tbody.innerHTML = rows.map(r => r.html).join('') || `<tr><td colspan="5" style="text-align:center;">Tidak ada produk</td></tr>`;
-
-    if(chartInstance) chartInstance.destroy();
-    const ctx = document.getElementById('chart-margin');
-    
-    const sortedChart = chartData.labels.map((l, i) => ({l, m: parseFloat(chartData.margins[i])}))
-                                        .sort((a,b) => b.m - a.m).slice(0,10);
-
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: sortedChart.map(x => x.l),
-        datasets: [{
-          label: 'Margin Profit (%)',
-          data: sortedChart.map(x => x.m),
-          backgroundColor: 'rgba(5, 150, 105, 0.7)',
-          borderRadius: 4
-        }]
-      },
-      options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
-    });
+    const tb = document.getElementById('tbl-laporan-hpp');
+    tb.innerHTML = products.map(p => {
+      const h = p.hargaBeli || 0, j = p.harga || 0, pr = j - h, m = j > 0 ? (pr/j*100).toFixed(1) : 0;
+      return `<tr><td>${p.nama}</td><td>${rp(h)}</td><td>${rp(j)}</td><td>${rp(pr)}</td><td><span class="badge ${m<20?'badge-red':'badge-green'}">${m}%</span></td><td><button class="btn btn-xs btn-primary" onclick="openStrategyModal('${p.id}')">🎯 Strategi</button></td></tr>`;
+    }).join('');
   }
 
-  // MULAI KONEKSI KE CLOUD SAAT HALAMAN DIBUKA
-  window.addEventListener('DOMContentLoaded', () => {
-    updateSatuanBB();
-    if(syncConfig.webAppUrl) {
-       updateSidebarSyncDot(true);
-       if(syncConfig.autoSync) { pullFromSpreadsheet(); }
-    }
-  });
+  function openStrategyModal(id) {
+    const p = products.find(x => x.id === id); if(!p) return;
+    currentStratHpp = p.hargaBeli || 0; currentStratJual = p.harga || 0;
+    document.getElementById('strat-nama').textContent = p.nama;
+    document.getElementById('strat-hpp-txt').textContent = rp(currentStratHpp);
+    document.getElementById('strat-jual-txt').textContent = rp(currentStratJual);
+    document.getElementById('strat-qty').value = 10;
+    kalkulasiStrategi();
+    document.getElementById('strategy-modal').classList.add('open');
+  }
 
+  function closeStrategyModal() { document.getElementById('strategy-modal').classList.remove('open'); }
+
+  function kalkulasiStrategi() {
+    const q = parseFloat(document.getElementById('strat-qty').value) || 0, tm = currentStratHpp * q;
+    let bep = currentStratJual > 0 ? Math.ceil(tm / currentStratJual) : 0;
+    if(bep > q) bep = q;
+    const sp = q - bep, pl = sp * currentStratJual;
+    document.getElementById('strat-total-modal').textContent = rp(tm);
+    document.getElementById('strat-bep-qty').textContent = bep + ' Porsi';
+    document.getElementById('strat-sisa-porsi').textContent = sp + ' Porsi';
+    document.getElementById('strat-potensi-laba').textContent = rp(pl);
+  }
+
+  async function pullFromSpreadsheet() {
+    if(!syncConfig.webAppUrl) return openSyncModal();
+    document.getElementById('global-loader').style.display='flex';
+    try {
+      const r = await fetch(syncConfig.webAppUrl + '?action=pullAll');
+      const res = await r.json();
+      if(res.ok) {
+        if(res.data.products) { products = res.data.products; localStorage.setItem('kkProduk', JSON.stringify(products)); }
+        if(res.data.bahanBaku) { bahanBaku = res.data.bahanBaku; localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku)); }
+        if(res.data.bahanMentah) { bahanMentah = res.data.bahanMentah; localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah)); }
+        if(res.data.resep) { resep = res.data.resep; localStorage.setItem('kkResep', JSON.stringify(resep)); }
+        toast('Data Berhasil Ditarik'); showPage('bahan');
+      }
+    } catch(e) { toast('Error: ' + e.message, 'danger'); }
+    document.getElementById('global-loader').style.display='none';
+  }
+
+  function saveSyncConfig() {
+    syncConfig.webAppUrl = document.getElementById('sync-url-input').value;
+    syncConfig.autoSync = document.getElementById('sync-auto-check').checked;
+    localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig)); toast('Config Saved');
+  }
+
+  async function syncToSpreadsheet() {
+    if(!syncConfig.webAppUrl) return;
+    document.getElementById('global-loader').style.display='flex';
+    const p = { action: 'syncAll', data: { products, transactions, bahanBaku, bahanMentah, resep } };
+    try {
+      const r = await fetch(syncConfig.webAppUrl, { method: 'POST', body: JSON.stringify(p) });
+      const res = await r.json(); if(res.ok) toast('Sync Success');
+    } catch(e) { toast('Error: ' + e.message, 'danger'); }
+    document.getElementById('global-loader').style.display='none';
+  }
+
+  function autoSyncIfEnabled() { if(syncConfig.autoSync) { clearTimeout(_autoSyncTimer); _autoSyncTimer = setTimeout(syncToSpreadsheet, 2000); } }
+
+  window.addEventListener('DOMContentLoaded', () => { showPage('bahan'); if(syncConfig.webAppUrl) { document.getElementById('sidebar-sync-dot').classList.add('active'); if(syncConfig.autoSync) pullFromSpreadsheet(); } });
 </script>
 </body>
 </html>
