@@ -303,11 +303,11 @@
     
     <div class="nav-section">Katalog</div>
     <button class="nav-item" data-page="produk" onclick="showPage('produk')"><span class="nav-icon">📦</span>Produk & Paket</button>
-    <a href="bahan_baku.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">🥩</span>Bahan Baku & Resep</a>
+    <a href="bahan_baku.html" class="nav-item" onclick="trackMenuClick('bahan_baku')" style="text-decoration:none;"><span class="nav-icon">🥩</span>Bahan Baku & Resep</a>
     
     <!-- LINK KE HALAMAN AKUNTANSI DI SINI -->
     <div class="nav-section">Keuangan</div>
-    <a href="akuntansi.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">📒</span>Buku Akuntansi</a>
+    <a href="akuntansi.html" class="nav-item" onclick="trackMenuClick('akuntansi')" style="text-decoration:none;"><span class="nav-icon">📒</span>Buku Akuntansi</a>
 
     <div class="nav-section">Laporan Usaha</div>
     <button class="nav-item" onclick="showPage('laporan');showLapTab('penjualan')"><span class="nav-icon">📈</span>Penjualan</button>
@@ -317,7 +317,13 @@
     
     <div class="nav-section">Dokumen & Sistem</div>
     <!-- LINK KE PUSAT INFORMASI DITAMBAHKAN DI SINI -->
-    <a href="pusat_informasi.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">📚</span>Pusat Info & SOP</a>
+    <a href="pusat_informasi.html" class="nav-item" onclick="trackMenuClick('pusat_info')" style="text-decoration:none;"><span class="nav-icon">📚</span>Pusat Info & SOP</a>
+    
+    <div class="nav-section">Komunikasi & Tim</div>
+    <a href="Discuss.html" class="nav-item" onclick="trackMenuClick('discuss')" style="text-decoration:none;">
+      <span class="nav-icon">💬</span>Discuss / Chat
+      <span class="nav-badge" style="background:var(--rose);">4</span>
+    </a>
     
     <button class="nav-item" onclick="openSyncModal()"><span class="nav-icon">☁️</span>Sync ke Sheets<span class="sync-status-dot" id="sidebar-sync-dot" style="margin-left:auto;"></span></button>
     <button class="nav-item" data-page="setting-global" onclick="showPage('setting-global')"><span class="nav-icon">⚙️</span>Pengaturan</button>
@@ -343,14 +349,8 @@
     <div class="card">
       <div class="card-header"><span class="card-title">⚡ Akses Cepat</span></div>
       <div class="card-body">
-        <div class="shortcut-grid">
-          <div class="shortcut-card" onclick="showPage('transaksi')"><div class="shortcut-icon">🛒</div><div class="shortcut-label">Kasir POS</div></div>
-          <!-- SHORTCUT KE BAHAN BAKU & AKUNTANSI (Mudah diklik di HP) -->
-          <div class="shortcut-card" onclick="window.location.href='bahan_baku.html'"><div class="shortcut-icon">🥩</div><div class="shortcut-label">Bahan Baku</div></div>
-          <div class="shortcut-card" onclick="window.location.href='akuntansi.html'"><div class="shortcut-icon">📒</div><div class="shortcut-label">Akuntansi</div></div>
-          <div class="shortcut-card" onclick="showPage('laporan');showLapTab('penjualan')"><div class="shortcut-icon">📊</div><div class="shortcut-label">Laporan</div></div>
-          <!-- SHORTCUT PUSAT INFO DITAMBAHKAN DI SINI -->
-          <div class="shortcut-card" onclick="window.location.href='pusat_informasi.html'"><div class="shortcut-icon">📚</div><div class="shortcut-label">Pusat Info</div></div>
+        <div class="shortcut-grid" id="quick-access-grid">
+          <!-- Akan di-render secara dinamis via JavaScript berdasarkan klik terbanyak -->
         </div>
       </div>
     </div>
@@ -1083,8 +1083,51 @@ async function preActionSync() {
   hideGlobalLoader();
 }
 
+// ===== FITUR AKSES CEPAT DINAMIS =====
+const allFeatures = [
+  { id: 'transaksi', label: 'Kasir POS', icon: '🛒', action: () => showPage('transaksi') },
+  { id: 'produk', label: 'Produk', icon: '📦', action: () => showPage('produk') },
+  { id: 'laporan', label: 'Laporan', icon: '📊', action: () => { showPage('laporan'); showLapTab('penjualan'); } },
+  { id: 'setting-global', label: 'Pengaturan', icon: '⚙️', action: () => showPage('setting-global') },
+  { id: 'bahan_baku', label: 'Bahan Baku', icon: '🥩', action: () => window.location.href='bahan_baku.html' },
+  { id: 'akuntansi', label: 'Akuntansi', icon: '📒', action: () => window.location.href='akuntansi.html' },
+  { id: 'pusat_info', label: 'Pusat Info', icon: '📚', action: () => window.location.href='pusat_informasi.html' },
+  { id: 'discuss', label: 'Discuss', icon: '💬', action: () => window.location.href='Discuss.html' }
+];
+
+function trackMenuClick(id) {
+  let clicks = JSON.parse(localStorage.getItem('kkMenuClicks') || '{}');
+  clicks[id] = (clicks[id] || 0) + 1;
+  localStorage.setItem('kkMenuClicks', JSON.stringify(clicks));
+  renderQuickAccess(); // Update urutan UI secara real-time
+}
+
+function handleShortcutClick(id) {
+  trackMenuClick(id);
+  const feature = allFeatures.find(f => f.id === id);
+  if(feature) feature.action();
+}
+
+function renderQuickAccess() {
+  let clicks = JSON.parse(localStorage.getItem('kkMenuClicks') || '{}');
+  // Urutkan berdasarkan yang paling sering diklik, ambil maksimal 4
+  let sorted = [...allFeatures].sort((a, b) => (clicks[b.id] || 0) - (clicks[a.id] || 0)).slice(0, 4);
+  
+  const grid = document.getElementById('quick-access-grid');
+  if(!grid) return;
+  
+  grid.innerHTML = sorted.map(f => `
+    <div class="shortcut-card" onclick="handleShortcutClick('${f.id}')">
+      <div class="shortcut-icon">${f.icon}</div>
+      <div class="shortcut-label">${f.label}</div>
+    </div>
+  `).join('');
+}
+
 // ===== NAVIGATION =====
 function showPage(name) {
+  if (name !== 'dashboard') trackMenuClick(name); // Mencatat klik setiap kali halaman dibuka
+
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
@@ -1435,6 +1478,9 @@ function renderDashboard() {
   const recent=[...transactions].reverse().slice(0,8);
   const recEl=document.getElementById('dash-recent-body');
   if(recEl) recEl.innerHTML=recent.length?recent.map(t=>`<tr><td style="font-size:10px;white-space:nowrap;">${fmtDate(t.tanggal)}</td><td style="font-size:10px;">${t.items.slice(0,2).map(i=>i.nama).join(', ')}${t.items.length>2?' +lagi':''}</td><td style="font-weight:600;color:var(--primary);">${rp(t.total)}</td><td style="font-size:10px;color:var(--success);">${rp(t.laba||0)}</td></tr>`).join(''):`<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--gray-400);">Belum ada transaksi</td></tr>`;
+  
+  // Update UI Akses Cepat setiap Dashboard dimuat
+  renderQuickAccess();
 }
 
 function showLapTab(tab) {
