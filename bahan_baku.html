@@ -71,7 +71,6 @@
     .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 13px; outline: none; transition: .2s; }
     .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-light); }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     thead { background: var(--gray-50); }
@@ -96,7 +95,6 @@
     .summary-total { font-size: 18px; font-weight: 800; color: var(--teal-light); border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 8px; margin-top: 8px; }
     
     .alert-margin { background: var(--danger-light); border: 1px solid #fca5a5; color: #991b1b; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .good-margin { background: var(--success-light); border: 1px solid #6ee7b7; color: #065f46; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     
     .toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
     .toast { background: var(--gray-900); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; animation: slideIn .3s; box-shadow: var(--shadow); }
@@ -514,6 +512,27 @@
     tbody.innerHTML = bahanBaku.map(b => `<tr><td style="font-weight:600;">${b.nama}</td><td>${rp(b.hargaSatuan)} / ${b.satuan}</td><td>${b.stokAwal} ${b.satuan}</td><td><button class="btn btn-xs btn-outline" onclick="editBahan('${b.id}')">✏️</button> <button class="btn btn-xs btn-danger" onclick="hapusBahan('${b.id}')">🗑️</button></td></tr>`).join('');
   }
 
+  function editBahan(id) {
+    const b = bahanBaku.find(x => x.id === id);
+    if(!b) return;
+    document.getElementById('bb-id').value = b.id;
+    document.getElementById('bb-nama').value = b.nama;
+    document.getElementById('bb-satuan').value = b.satuan;
+    document.getElementById('bb-qty-beli').value = b.qtyBeli;
+    document.getElementById('bb-total-harga').value = b.totalHarga;
+    document.getElementById('bb-stok').value = b.stokAwal;
+    document.getElementById('form-title-bahan').textContent = "Edit Bahan Dasar";
+    updateSatuanBB();
+  }
+
+  function hapusBahan(id) {
+    if(!confirm('Hapus bahan dasar ini?')) return;
+    bahanBaku = bahanBaku.filter(x => x.id !== id);
+    localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku));
+    renderBahanBaku();
+    toast('Berhasil dihapus');
+  }
+
   function hitungPreviewHargaSatuan() {
     const q = parseFloat(document.getElementById('bb-qty-beli').value) || 0, h = parseFloat(document.getElementById('bb-total-harga').value) || 0;
     const res = q > 0 ? (h/q).toFixed(2) : 0;
@@ -529,12 +548,40 @@
     localStorage.setItem('kkBahanBaku', JSON.stringify(bahanBaku)); toast('Tersimpan'); resetFormBahan(); renderBahanBaku(); autoSyncIfEnabled();
   }
 
-  function resetFormBahan() { document.getElementById('bb-id').value = ''; document.getElementById('bb-nama').value = ''; document.getElementById('bb-qty-beli').value = ''; document.getElementById('bb-total-harga').value = ''; }
+  function resetFormBahan() { 
+    document.getElementById('bb-id').value = ''; 
+    document.getElementById('bb-nama').value = ''; 
+    document.getElementById('bb-qty-beli').value = ''; 
+    document.getElementById('bb-total-harga').value = ''; 
+    document.getElementById('bb-stok').value = '';
+    document.getElementById('form-title-bahan').textContent = "Tambah Bahan Dasar";
+  }
+
   function updateSatuanBB() { document.getElementById('lbl-satuan-bb').textContent = document.getElementById('bb-satuan').value; hitungPreviewHargaSatuan(); }
 
   function renderBahanMentah() {
     const tbody = document.getElementById('tbl-bahan-mentah');
-    tbody.innerHTML = bahanMentah.map(bm => `<tr><td style="font-weight:600;">${bm.nama}</td><td>${bm.hasilJadi} ${bm.satuan}</td><td>${rp(bm.totalModal)}</td><td>${rp(bm.hpp)}</td><td><button class="btn btn-xs btn-outline" onclick="editBahanMentah('${bm.id}')">✏️</button></td></tr>`).join('');
+    tbody.innerHTML = bahanMentah.map(bm => `<tr><td style="font-weight:600;">${bm.nama}</td><td>${bm.hasilJadi} ${bm.satuan}</td><td>${rp(bm.totalModal)}</td><td>${rp(bm.hpp)}</td><td><button class="btn btn-xs btn-outline" onclick="editBahanMentah('${bm.id}')">✏️</button> <button class="btn btn-xs btn-danger" onclick="hapusBahanMentah('${bm.id}')">🗑️</button></td></tr>`).join('');
+  }
+
+  function editBahanMentah(id) {
+    const bm = bahanMentah.find(x => x.id === id);
+    if(!bm) return;
+    document.getElementById('bm-id').value = bm.id;
+    document.getElementById('bm-nama').value = bm.nama;
+    document.getElementById('bm-satuan').value = bm.satuan;
+    document.getElementById('bm-hasil-jadi').value = bm.hasilJadi;
+    currentKomposisiMentah = [...bm.komposisi];
+    document.getElementById('form-title-mentah').textContent = "Edit Bahan Mentah";
+    kalkulasiHppMentah();
+  }
+
+  function hapusBahanMentah(id) {
+    if(!confirm('Hapus bahan olahan ini?')) return;
+    bahanMentah = bahanMentah.filter(x => x.id !== id);
+    localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah));
+    renderBahanMentah();
+    toast('Berhasil dihapus');
   }
 
   function initBahanMentahBuilder() {
@@ -561,10 +608,15 @@
     l.innerHTML = currentKomposisiMentah.map((k, i) => {
       const b = bahanBaku.find(x => x.id === k.bahanId); if(!b) return '';
       const bi = b.hargaSatuan * k.qty; tm += bi;
-      return `<div class="resep-item"><span>${b.nama} (${k.displayQty} ${k.displaySatuan})</span><span>${rp(bi)}</span></div>`;
+      return `<div class="resep-item"><div><span>${b.nama} (${k.displayQty} ${k.displaySatuan})</span></div><button class="btn btn-xs btn-outline" style="color:red;" onclick="removeBahanFromMentah(${i})">✕</button></div>`;
     }).join('');
     document.getElementById('bm-sum-modal').textContent = rp(tm);
     document.getElementById('bm-sum-hpp').textContent = rp(tm/hj);
+  }
+
+  function removeBahanFromMentah(idx) {
+    currentKomposisiMentah.splice(idx, 1);
+    kalkulasiHppMentah();
   }
 
   function saveBahanMentah() {
@@ -575,7 +627,13 @@
     localStorage.setItem('kkBahanMentah', JSON.stringify(bahanMentah)); toast('Tersimpan'); renderBahanMentah(); resetFormMentah(); autoSyncIfEnabled();
   }
 
-  function resetFormMentah() { document.getElementById('bm-id').value = ''; currentKomposisiMentah = []; kalkulasiHppMentah(); }
+  function resetFormMentah() { 
+    document.getElementById('bm-id').value = ''; 
+    document.getElementById('bm-nama').value = '';
+    document.getElementById('form-title-mentah').textContent = "Buat Bahan Mentah";
+    currentKomposisiMentah = []; 
+    kalkulasiHppMentah(); 
+  }
 
   function initResepPage() {
     const s = document.getElementById('rs-produk');
@@ -611,9 +669,9 @@
   function renderKomposisi() {
     const l = document.getElementById('list-komposisi'); let th = 0;
     l.innerHTML = currentKomposisi.map((k, i) => {
-      let n = '?', sat = '?', hp = 0;
-      if(k.tipe === 'mentah') { const b = bahanMentah.find(x => x.id === k.bahanId); if(b) { n = b.nama; sat = b.satuan; hp = b.hpp; } }
-      else { const b = bahanBaku.find(x => x.id === k.bahanId); if(b) { n = b.nama; sat = b.satuan; hp = b.hargaSatuan; } }
+      let n = '?', hp = 0;
+      if(k.tipe === 'mentah') { const b = bahanMentah.find(x => x.id === k.bahanId); if(b) { n = b.nama; hp = b.hpp; } }
+      else { const b = bahanBaku.find(x => x.id === k.bahanId); if(b) { n = b.nama; hp = b.hargaSatuan; } }
       const cost = hp * k.qty; th += cost;
       return `<div class="resep-item"><span>${n} (${k.displayQty} ${k.displaySatuan})</span><span>${rp(cost)}</span></div>`;
     }).join('');
@@ -694,6 +752,9 @@
     document.getElementById('strat-potensi-laba').textContent = rp(pl);
   }
 
+  function openSyncModal() { document.getElementById('sync-modal').classList.add('open'); }
+  function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
+
   async function pullFromSpreadsheet() {
     if(!syncConfig.webAppUrl) return openSyncModal();
     document.getElementById('global-loader').style.display='flex';
@@ -715,6 +776,7 @@
     syncConfig.webAppUrl = document.getElementById('sync-url-input').value;
     syncConfig.autoSync = document.getElementById('sync-auto-check').checked;
     localStorage.setItem('kkSyncConfig', JSON.stringify(syncConfig)); toast('Config Saved');
+    if(syncConfig.webAppUrl) document.getElementById('sidebar-sync-dot').classList.add('active');
   }
 
   async function syncToSpreadsheet() {
