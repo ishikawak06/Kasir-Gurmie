@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
+    <title>OpsPulse — Operational Analytics Platform</title>
+
+    <!-- Chart.js UMD -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <!-- Papa Parse for CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js">
+    </script>
+
+    <style>
+        :root {
+            --bg: #f4f6f9;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --text: #1a1f2e;
+            --text-secondary: #5f6b7a;
+            --text-muted: #8e99a8;
+            --border: #e2e8f0;
+            --border-light: #edf2f7;
+            --primary: #2563eb;
+            --primary-light: #eff4ff;
+            --primary-dark: #1d4ed8;
+            --accent-green: #10b981;
+            --accent-green-bg: #ecfdf5;
+            --accent-amber: #f59e0b;
+            --accent-amber-bg: #fffbeb;
+            --accent-red: #ef4444;
+            --accent-red-bg: #fef2f2;
+            --accent-purple: #8b5cf6;
+            --accent-purple-bg: #f5f3ff;
+            --accent-teal: #14b8a6;
+            --accent-teal-bg: #f0fdfa;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.05);
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --sidebar-width: 250px;
+            --topbar-height: 60px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-alt: #1a2332;
+            --text: #e2e8f0;
+            --text-secondary: #b0bdd0;
+            --text-muted: #7b8ba0;
+            --border: #2e3b4e;
+            --border-light: #253044;
+            --primary: #3b82f6;
+            --primary-light: #1e3a5f;
+            --primary-dark: #60a5fa;
+            --accent-green-bg: #0b2e1f;
+            --accent-amber-bg: #2e2408;
+            --accent-red-bg: #2e0f0f;
+            --accent-purple-bg: #1f1535;
+            --accent-teal-bg: #0a2824;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            transition: background var(--transition), color var(--transition);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ─────────────────────── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: background var(--transition), border var(--transition);
+            box-shadow: var(--shadow-sm);
+            overflow-y: auto;
+        }
+        .sidebar-brand {
+            padding: 20px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+        .sidebar-brand .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow-y: auto;
+        }
+        .sidebar-nav .nav-section {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            padding: 14px 10px 6px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .sidebar-nav button {
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sidebar-nav button:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .sidebar-nav button.active {
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+        }
+        .sidebar-nav button .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .sidebar-footer {
+            padding: 14px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* ── MAIN WRAPPER ────────────────── */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left var(--transition);
+        }
+
+        /* ── TOPBAR ─────────────────────── */
+        .topbar {
+            height: var(--topbar-height);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: background var(--transition), border var(--transition);
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .topbar-left h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        /* ── BUTTONS ────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition);
+            white-space: nowrap;
+            letter-spacing: 0.01em;
+            background: transparent;
+            color: inherit;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-outline {
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover {
+            background: var(--surface-alt);
+            border-color: var(--text-muted);
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.76rem;
+            border-radius: 5px;
+        }
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            transition: all var(--transition);
+        }
+        .btn-icon:hover {
+            background: var(--surface-alt);
+            color: var(--text);
+        }
+        .theme-toggle {
+            font-size: 1.2rem;
+        }
+
+        /* ── CONTENT AREA ───────────────── */
+        .content {
+            flex: 1;
+            padding: 20px 24px 36px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        /* ── KPI CARDS ROW ─────────────── */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+        }
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+        }
+        .kpi-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+        .kpi-card .kpi-label {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .kpi-card .kpi-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 6px;
+            white-space: nowrap;
+        }
+        .kpi-card .kpi-change {
+            font-size: 0.76rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .kpi-change.up {
+            color: var(--accent-green);
+        }
+        .kpi-change.down {
+            color: var(--accent-red);
+        }
+        .kpi-card .kpi-accent {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            opacity: 0.07;
+            pointer-events: none;
+        }
+
+        /* ── SECTION PANELS ────────────── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all var(--transition);
+            width: 100%;
+        }
+        .panel-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .panel-header h3 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .panel-body {
+            padding: 16px 18px;
+        }
+        .panel-body.no-padding {
+            padding: 0;
+        }
+
+        /* ── CHARTS GRID ───────────────── */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .chart-container {
+            position: relative;
+            height: 260px;
+        }
+        .chart-full {
+            grid-column: 1 / -1;
+            height: 280px;
+        }
+
+        /* ── DATA TABLE ────────────────── */
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            background: var(--surface);
+            color: var(--text);
+            min-width: 180px;
+            transition: all var(--transition);
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 420px;
+            overflow-y: auto;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            min-width: 550px;
+        }
+        table thead {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        table th {
+            background: var(--surface-alt);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        table th:hover {
+            color: var(--primary);
+        }
+        table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+            color: var(--text);
+        }
+        table tbody tr:hover {
+            background: var(--surface-alt);
+        }
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+        .pagination button {
+            all: unset;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 0.78rem;
+            transition: all var(--transition);
+        }
+        .pagination button:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── MODAL ─────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.15s ease;
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 650px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px 28px;
+            animation: slideUp 0.2s ease;
+        }
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            color: var(--text-muted);
+        }
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ── TOAST ─────────────────────── */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            box-shadow: var(--shadow-lg);
+            font-size: 0.85rem;
+            font-weight: 500;
+            animation: slideIn 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 250px;
+        }
+        .toast.success {
+            border-left: 4px solid var(--accent-green);
+        }
+        .toast.error {
+            border-left: 4px solid var(--accent-red);
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ── RESPONSIVE ────────────────── */
+        @media (max-width: 1024px) {
+            .kpi-row {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .chart-container {
+                height: 240px;
+            }
+            .chart-full {
+                height: 260px;
+            }
+        }
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform var(--transition);
+                width: var(--sidebar-width);
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 110;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-wrapper {
+                margin-left: 0;
+            }
+            .topbar {
+                padding: 0 16px;
+            }
+            .content {
+                padding: 14px;
+            }
+            .kpi-row {
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                gap: 10px;
+            }
+            .kpi-card .kpi-value {
+                font-size: 1.4rem;
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .table-wrapper {
+                max-height: 360px;
+            }
+            table {
+                min-width: 480px;
+            }
+        }
+
+        /* ── DESKTOP OPTIMIZATION ──────── */
+        @media (min-width: 1200px) {
+            .kpi-row {
+                grid-template-columns: repeat(6, 1fr);
+                max-width: 1300px;
+            }
+            .content {
+                max-width: 1300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .topbar {
+                max-width: 1300px;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: 28px;
+                padding-right: 28px;
+            }
+            .charts-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .chart-container {
+                height: 280px;
+            }
+            .chart-full {
+                height: 300px;
+            }
+            .table-wrapper {
+                max-height: 460px;
+            }
+        }
+        @media (min-width: 1600px) {
+            .content {
+                max-width: 1440px;
+            }
+            .topbar {
+                max-width: 1440px;
+            }
+            .kpi-row {
+                max-width: 1440px;
+            }
+            .chart-container {
+                height: 300px;
+            }
+            .chart-full {
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ── SIDEBAR ────────────────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="logo-icon">◆</span> OpsPulse
+            </div>
+            <nav class="sidebar-nav">
+                <span class="nav-section">Dashboards</span>
+                <button class="active" data-view="executive">
+                    <span class="nav-icon">📊</span> Executive Overview
+                </button>
+                <button data-view="sales">
+                    <span class="nav-icon">💰</span> Sales Analytics
+                </button>
+                <button data-view="operations">
+                    <span class="nav-icon">⚙️</span> Operations
+                </button>
+                <button data-view="financial">
+                    <span class="nav-icon">📈</span> Financial
+                </button>
+                <span class="nav-section">Data & Reports</span>
+                <button data-view="data-management">
+                    <span class="nav-icon">📁</span> Data Management
+                </button>
+                <button data-view="reports">
+                    <span class="nav-icon">📝</span> Reports
+                </button>
+            </nav>
+            <div class="sidebar-footer">OpsPulse v2.1 · Internal</div>
+        </aside>
+
+        <!-- ── MAIN ──────────────────────────── -->
+        <div class="main-wrapper">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="btn-icon" id="mobileMenuBtn" title="Menu" style="display:none;">☰</button>
+                    <h2 id="viewTitle">Executive Overview</h2>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-outline btn-sm" id="btnImportCsv">📥 Import CSV</button>
+                    <button class="btn btn-outline btn-sm" id="btnExportData">📤 Export</button>
+                    <button class="btn-icon theme-toggle" id="themeToggle" title="Toggle theme">🌓</button>
+                    <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">👤 Admin</span>
+                </div>
+            </header>
+
+            <main class="content" id="mainContent">
+                <!-- Dynamic content rendered by JS -->
+            </main>
+        </div>
+    </div>
+
+    <!-- ── CSV IMPORT MODAL ────────────────── -->
+    <div class="modal-overlay" id="importModal" style="display:none;">
+        <div class="modal">
+            <h3 style="margin-bottom:12px;">📥 Import CSV Data</h3>
+            <p style="color:var(--text-secondary);margin-bottom:14px;">Upload a CSV file to append or replace data in the current dataset.</p>
+            <div class="drop-zone" id="dropZone">
+                <p style="font-size:1.5rem;margin-bottom:6px;">📁</p>
+                <p><strong>Click to browse</strong> or drag & drop a CSV file here</p>
+                <p style="font-size:0.78rem;color:var(--text-muted);">Supports .csv files with headers</p>
+                <input type="file" id="csvFileInput" accept=".csv">
+            </div>
+            <div id="csvPreview" style="margin-top:14px;max-height:200px;overflow-y:auto;display:none;"></div>
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+                <label style="font-size:0.82rem;font-weight:600;">Import mode:</label>
+                <select id="importMode" style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);">
+                    <option value="append">Append to existing data</option>
+                    <option value="replace">Replace all data</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+                <button class="btn btn-outline" id="btnCancelImport">Cancel</button>
+                <button class="btn btn-primary" id="btnConfirmImport" disabled>Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TOAST CONTAINER ────────────────── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        (function() {
+            const state = {
+                currentView: 'executive',
+                theme: 'light',
+                salesData: [],
+                operationsData: [],
+                customerData: [],
+                financialData: [],
+                importedDatasets: {},
+                sortColumn: null,
+                sortDirection: 'asc',
+                tablePage: 1,
+                tableSearch: '',
+                rowsPerPage: 12,
+                pendingImportData: null,
+                pendingImportFile: null,
+            };
+
+            function generateSampleData() {
+                const regions = ['North America', 'Europe', 'Asia Pacific', 'Latin America'];
+                const products = ['Enterprise Suite', 'Professional', 'Starter', 'Add-ons', 'Services'];
+                const months = [
+                    '2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06',
+                    '2024-07', '2024-08', '2024-09', '2024-10', '2024-11', '2024-12'
+                ];
+                const salesData = [];
+                const baseRevenue = { 'Enterprise Suite': 420000, 'Professional': 280000, 'Starter': 140000,
+                    'Add-ons': 85000, 'Services': 190000 };
+                const baseUnits = { 'Enterprise Suite': 380, 'Professional': 620, 'Starter': 940, 'Add-ons': 1200,
+                    'Services': 280 };
+                const regionMultiplier = { 'North America': 1.4, 'Europe': 1.0, 'Asia Pacific': 0.85,
+                    'Latin America': 0.45 };
+
+                months.forEach((month, mi) => {
+                    const seasonality = 1 + 0.15 * Math.sin((mi / 12) * Math.PI * 2);
+                    regions.forEach(region => {
+                        products.forEach(product => {
+                            const base = baseRevenue[product] || 150000;
+                            const unitsBase = baseUnits[product] || 500;
+                            const mult = regionMultiplier[region] || 1;
+                            const noise = 0.85 + Math.random() * 0.3;
+                            const revenue = Math.round(base * mult * seasonality * noise);
+                            const units = Math.round(unitsBase * mult * seasonality * noise);
+                            const cost = Math.round(revenue * (0.35 + Math.random() * 0.2));
+                            salesData.push({
+                                month,
+                                region,
+                                product,
+                                revenue,
+                                units,
+                                cost,
+                                profit: revenue - cost,
+                                margin_pct: Math.round(((revenue - cost) / revenue) * 1000) / 10,
+                            });
+                        });
+                    });
+                });
+                state.salesData = salesData;
+
+                const opsData = [];
+                months.forEach((month, mi) => {
+                    const efficiency = Math.round((87 + Math.random() * 8 + (mi * 0.15)) * 10) / 10;
+                    const defectRate = Math.round((2.8 - mi * 0.12 + Math.random() * 0.8) * 100) / 100;
+                    const throughput = Math.round(1800 + mi * 40 + Math.random() * 300);
+                    const downtime = Math.round((14 - mi * 0.5 + Math.random() * 6) * 10) / 10;
+                    const fulfillment = Math.round((93.5 + mi * 0.3 + Math.random() * 3.5) * 10) / 10;
+                    opsData.push({
+                        month,
+                        efficiency_rate: Math.min(98, efficiency),
+                        defect_rate: Math.max(0.3, defectRate),
+                        throughput_units_per_day: throughput,
+                        downtime_hours: Math.max(2, downtime),
+                        fulfillment_rate: Math.min(99.8, fulfillment),
+                    });
+                });
+                state.operationsData = opsData;
+
+                const custData = [];
+                let active = 4200;
+                months.forEach((month, mi) => {
+                    const newCust = Math.round(180 + Math.random() * 120 + mi * 8);
+                    const churned = Math.round(40 + Math.random() * 60 - mi * 1.5);
+                    active = active + newCust - churned;
+                    const nps = Math.round(42 + mi * 1.2 + Math.random() * 18);
+                    custData.push({
+                        month,
+                        new_customers: newCust,
+                        churned_customers: Math.max(15, churned),
+                        total_active: active,
+                        nps_score: Math.min(78, nps),
+                        avg_response_time_hours: Math.round((4.5 - mi * 0.2 + Math.random() * 1.5) * 10) /
+                            10,
+                    });
+                });
+                state.customerData = custData;
+
+                const finData = [];
+                months.forEach(month => {
+                    const totalRevenue = salesData.filter(s => s.month === month).reduce((a, s) => a + s
+                        .revenue, 0);
+                    const totalCost = salesData.filter(s => s.month === month).reduce((a, s) => a + s.cost,
+                    0);
+                    const opex = Math.round(totalRevenue * (0.22 + Math.random() * 0.08));
+                    finData.push({
+                        month,
+                        total_revenue: totalRevenue,
+                        total_cost: totalCost,
+                        gross_profit: totalRevenue - totalCost,
+                        opex,
+                        net_profit: totalRevenue - totalCost - opex,
+                        net_margin_pct: Math.round(((totalRevenue - totalCost - opex) / totalRevenue) *
+                            1000) / 10,
+                    });
+                });
+                state.financialData = finData;
+            }
+
+            const chartInstances = {};
+
+            function destroyChart(key) {
+                if (chartInstances[key]) {
+                    chartInstances[key].destroy();
+                    delete chartInstances[key];
+                }
+            }
+
+            function destroyAllCharts() {
+                Object.keys(chartInstances).forEach(destroyChart);
+            }
+
+            function createChart(canvasId, config) {
+                destroyChart(canvasId);
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return null;
+                const ctx = canvas.getContext('2d');
+                const chart = new Chart(ctx, config);
+                chartInstances[canvasId] = chart;
+                return chart;
+            }
+
+            function getChartColors() {
+                const isDark = state.theme === 'dark';
+                return {
+                    text: isDark ? '#b0bdd0' : '#5f6b7a',
+                    grid: isDark ? '#2e3b4e' : '#e2e8f0',
+                    blue: '#2563eb',
+                    green: '#10b981',
+                    purple: '#8b5cf6',
+                    teal: '#14b8a6',
+                    amber: '#f59e0b',
+                    red: '#ef4444',
+                    blueLight: 'rgba(37,99,235,0.15)',
+                    greenLight: 'rgba(16,185,129,0.15)',
+                    purpleLight: 'rgba(139,92,246,0.15)',
+                    tealLight: 'rgba(20,184,166,0.15)',
+                };
+            }
+
+            function getKPIsForView(view) {
+                const fin = state.financialData;
+                const ops = state.operationsData;
+                const cust = state.customerData;
+                const latestFin = fin.length ? fin[fin.length - 1] : null;
+                const prevFin = fin.length > 1 ? fin[fin.length - 2] : null;
+                const latestOps = ops.length ? ops[ops.length - 1] : null;
+                const prevOps = ops.length > 1 ? ops[ops.length - 2] : null;
+                const latestCust = cust.length ? cust[cust.length - 1] : null;
+                const prevCust = cust.length > 1 ? cust[cust.length - 2] : null;
+                const pctChange = (curr, prev) => prev && prev !== 0 ? Math.round(((curr - prev) / Math.abs(prev)) *
+                    1000) / 10 : 0;
+
+                switch (view) {
+                    case 'executive':
+                        return [
+                            { label: 'Revenue (MTD)', value: '$' + (latestFin ? (latestFin.total_revenue / 1e6)
+                                    .toFixed(1) + 'M' : '—'), change: pctChange(latestFin?.total_revenue || 0,
+                                    prevFin?.total_revenue || 0), accent: 'blue' },
+                            { label: 'Net Margin', value: (latestFin?.net_margin_pct || 0).toFixed(1) + '%',
+                                change: pctChange(latestFin?.net_margin_pct || 0, prevFin?.net_margin_pct || 0),
+                                accent: 'green' },
+                            { label: 'Active Customers', value: latestCust ? (latestCust.total_active)
+                                    .toLocaleString() : '—', change: pctChange(latestCust?.total_active || 0,
+                                    prevCust?.total_active || 0), accent: 'purple' },
+                            { label: 'Fulfillment', value: (latestOps?.fulfillment_rate || 0).toFixed(1) + '%',
+                                change: pctChange(latestOps?.fulfillment_rate || 0, prevOps?.fulfillment_rate ||
+                                    0), accent: 'teal' },
+                            { label: 'Efficiency', value: (latestOps?.efficiency_rate || 0).toFixed(1) + '%',
+                                change: pctChange(latestOps?.efficiency_rate || 0, prevOps?.efficiency_rate || 0),
+                                accent: 'amber' },
+                            { label: 'NPS Score', value: latestCust?.nps_score || '—', change: pctChange(
+                                    latestCust?.nps_score || 0, prevCust?.nps_score || 0), accent: 'blue' },
+                        ];
+                    case 'sales':
+                        const totalSalesRev = state.salesData.reduce((a, s) => a + s.revenue, 0);
+                        const totalUnits = state.salesData.reduce((a, s) => a + s.units, 0);
+                        const avgMargin = state.salesData.length ? Math.round(state.salesData.reduce((a, s) => a +
+                            s.margin_pct, 0) / state.salesData.length * 10) / 10 : 0;
+                        return [
+                            { label: 'Total Revenue', value: '$' + (totalSalesRev / 1e6).toFixed(2) + 'M',
+                                change: 8.3, accent: 'blue' },
+                            { label: 'Units Sold', value: (totalUnits).toLocaleString(), change: 5.7,
+                                accent: 'green' },
+                            { label: 'Avg Margin', value: avgMargin + '%', change: 1.4, accent: 'purple' },
+                            { label: 'Top Region', value: 'North America', change: null, accent: 'teal' },
+                            { label: 'Top Product', value: 'Enterprise Suite', change: null, accent: 'amber' },
+                        ];
+                    case 'operations':
+                        const avgEff = ops.length ? Math.round(ops.reduce((a, o) => a + o.efficiency_rate, 0) /
+                            ops.length * 10) / 10 : 0;
+                        const avgDefect = ops.length ? Math.round(ops.reduce((a, o) => a + o.defect_rate, 0) /
+                            ops.length * 100) / 100 : 0;
+                        return [
+                            { label: 'Avg Efficiency', value: avgEff + '%', change: pctChange(latestOps
+                                    ?.efficiency_rate || 0, prevOps?.efficiency_rate || 0), accent: 'green' },
+                            { label: 'Defect Rate', value: avgDefect + '%', change: pctChange(latestOps
+                                    ?.defect_rate || 0, prevOps?.defect_rate || 0) * -1, accent: 'red' },
+                            { label: 'Downtime (hrs)', value: ops.length ? Math.round(ops.reduce((a, o) => a + o
+                                    .downtime_hours, 0)) : '—', change: pctChange(latestOps?.downtime_hours ||
+                                    0, prevOps?.downtime_hours || 0) * -1, accent: 'amber' },
+                            { label: 'Throughput/day', value: ops.length ? Math.round(ops.reduce((a, o) => a + o
+                                    .throughput_units_per_day, 0) / ops.length) : '—', change: 4.2,
+                                accent: 'blue' },
+                            { label: 'Fulfillment', value: (latestOps?.fulfillment_rate || 0).toFixed(1) + '%',
+                                change: pctChange(latestOps?.fulfillment_rate || 0, prevOps?.fulfillment_rate ||
+                                    0), accent: 'teal' },
+                        ];
+                    case 'financial':
+                        const totalRev = fin.length ? fin.reduce((a, f) => a + f.total_revenue, 0) : 0;
+                        const totalProfit = fin.length ? fin.reduce((a, f) => a + f.net_profit, 0) : 0;
+                        const avgNetMargin = fin.length ? Math.round(fin.reduce((a, f) => a + f.net_margin_pct,
+                            0) / fin.length * 10) / 10 : 0;
+                        return [
+                            { label: 'YTD Revenue', value: '$' + (totalRev / 1e6).toFixed(2) + 'M', change: 11.2,
+                                accent: 'blue' },
+                            { label: 'YTD Net Profit', value: '$' + (totalProfit / 1e6).toFixed(2) + 'M',
+                                change: 14.8, accent: 'green' },
+                            { label: 'Avg Net Margin', value: avgNetMargin + '%', change: 2.1, accent: 'purple' },
+                            { label: 'Total OPEX', value: '$' + (fin.reduce((a, f) => a + f.opex, 0) / 1e6).toFixed(
+                                    2) + 'M', change: -3.5, accent: 'amber' },
+                            { label: 'Gross Profit', value: '$' + (fin.reduce((a, f) => a + f.gross_profit, 0) /
+                                1e6).toFixed(2) + 'M', change: 9.6, accent: 'teal' },
+                        ];
+                    default:
+                        return [];
+                }
+            }
+
+            function renderKPICards(container, view) {
+                const kpis = getKPIsForView(view);
+                container.innerHTML = kpis.map(kpi => `
+                    <div class="kpi-card">
+                        <div class="kpi-accent ${kpi.accent}"></div>
+                        <div class="kpi-label">${kpi.label}</div>
+                        <div class="kpi-value">${kpi.value}</div>
+                        ${kpi.change !== null ? `
+                            <div class="kpi-change ${kpi.change >= 0 ? 'up' : 'down'}">
+                                ${kpi.change >= 0 ? '▲' : '▼'} ${Math.abs(kpi.change).toFixed(1)}% vs prior
+                            </div>` : `<div class="kpi-change" style="color:var(--text-muted);">—</div>`}
+                    </div>
+                `).join('');
+            }
+
+            function renderChartsForView(view) {
+                destroyAllCharts();
+                const colors = getChartColors();
+                const months = state.financialData.map(f => f.month.substring(5));
+                const chartFont = { family: "'Inter','Segoe UI',system-ui,sans-serif", size: 11 };
+                const gridDefaults = { color: colors.grid, drawBorder: false, lineWidth: 0.5 };
+
+                if (view === 'executive') {
+                    createChart('chart-exec-1', {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [{
+                                label: 'Revenue',
+                                data: state.financialData.map(f => f.total_revenue / 1e6),
+                                borderColor: colors.blue,
+                                backgroundColor: colors.blueLight,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 3,
+                                borderWidth: 2.5,
+                            }, {
+                                label: 'Net Profit',
+                                data: state.financialData.map(f => f.net_profit / 1e6),
+                                borderColor: colors.green,
+                                backgroundColor: colors.greenLight,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 3,
+                                borderWidth: 2.5,
+                            }],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: colors.text, font: chartFont, usePointStyle: true,
+                                        padding: 16 } },
+                            },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont,
+                                        callback: v => '$' + v.toFixed(1) + 'M' } },
+                            },
+                        },
+                    });
+                    const regionRevenue = {};
+                    state.salesData.forEach(s => { regionRevenue[s.region] = (regionRevenue[s.region] || 0) + s
+                            .profit; });
+                    createChart('chart-exec-2', {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(regionRevenue),
+                            datasets: [{
+                                data: Object.values(regionRevenue).map(v => v / 1e6),
+                                backgroundColor: [colors.blue, colors.teal, colors.purple, colors.amber],
+                                borderRadius: 8,
+                            }],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont,
+                                        callback: v => '$' + v.toFixed(1) + 'M' } },
+                            },
+                        },
+                    });
+                    createChart('chart-exec-3', {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [
+                                { label: 'NPS Score', data: state.customerData.map(c => c.nps_score),
+                                    borderColor: colors.purple, tension: 0.3, borderWidth: 2.5,
+                                    pointRadius: 3, yAxisID: 'y' },
+                                { label: 'Fulfillment %', data: state.operationsData.map(o => o
+                                        .fulfillment_rate), borderColor: colors.teal, tension: 0.3,
+                                    borderWidth: 2.5, pointRadius: 3, yAxisID: 'y1' },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: colors.text, font: chartFont, usePointStyle: true,
+                                        padding: 16 } },
+                            },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { position: 'left', grid: gridDefaults, ticks: { color: colors.text,
+                                        font: chartFont }, min: 30, max: 85 },
+                                y1: { position: 'right', grid: { display: false }, ticks: { color: colors
+                                        .text, font: chartFont, callback: v => v + '%' }, min: 90,
+                                max: 100 },
+                            },
+                        },
+                    });
+                } else if (view === 'sales') {
+                    const productRevenue = {};
+                    state.salesData.forEach(s => { productRevenue[s.product] = (productRevenue[s.product] || 0) + s
+                            .revenue; });
+                    createChart('chart-sales-1', {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(productRevenue),
+                            datasets: [{ data: Object.values(productRevenue).map(v => v / 1e6),
+                                backgroundColor: [colors.blue, colors.green, colors.purple, colors.teal,
+                                    colors.amber
+                                ], borderWidth: 2, borderColor: state.theme === 'dark' ? '#1e293b' :
+                                    '#fff'
+                            }],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'right', labels: { color: colors.text, font: chartFont,
+                                        padding: 14, usePointStyle: true } },
+                            },
+                        },
+                    });
+                    const monthlySales = {};
+                    state.salesData.forEach(s => { monthlySales[s.month] = (monthlySales[s.month] || 0) + s
+                        .revenue; });
+                    createChart('chart-sales-2', {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(monthlySales).map(m => m.substring(5)),
+                            datasets: [{ data: Object.values(monthlySales).map(v => v / 1e6),
+                                backgroundColor: colors.blue, borderRadius: 6 }],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont,
+                                        callback: v => '$' + v + 'M' } },
+                            },
+                        },
+                    });
+                } else if (view === 'operations') {
+                    createChart('chart-ops-1', {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [
+                                { label: 'Efficiency %', data: state.operationsData.map(o => o
+                                        .efficiency_rate), borderColor: colors.green, tension: 0.3,
+                                    borderWidth: 2.5, pointRadius: 3 },
+                                { label: 'Defect %', data: state.operationsData.map(o => o.defect_rate),
+                                    borderColor: colors.red, tension: 0.3, borderWidth: 2.5,
+                                    pointRadius: 3, yAxisID: 'y1' },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: colors.text, font: chartFont,
+                                        usePointStyle: true, padding: 16 } } },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont,
+                                        callback: v => v + '%' }, min: 80, max: 100 },
+                                y1: { position: 'right', grid: { display: false }, ticks: { color: colors
+                                        .text, font: chartFont, callback: v => v + '%' }, min: 0,
+                                max: 4 },
+                            },
+                        },
+                    });
+                    createChart('chart-ops-2', {
+                        type: 'bar',
+                        data: {
+                            labels: months,
+                            datasets: [
+                                { label: 'Throughput', data: state.operationsData.map(o => o
+                                        .throughput_units_per_day), backgroundColor: colors.teal,
+                                    borderRadius: 6, yAxisID: 'y' },
+                                { label: 'Downtime (hrs)', data: state.operationsData.map(o => o
+                                    .downtime_hours), backgroundColor: colors.amber, borderRadius: 6,
+                                    yAxisID: 'y1' },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: colors.text, font: chartFont,
+                                        usePointStyle: true, padding: 16 } } },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { position: 'left', grid: gridDefaults, ticks: { color: colors.text,
+                                        font: chartFont } },
+                                y1: { position: 'right', grid: { display: false }, ticks: { color: colors
+                                        .text, font: chartFont } },
+                            },
+                        },
+                    });
+                } else if (view === 'financial') {
+                    createChart('chart-fin-1', {
+                        type: 'bar',
+                        data: {
+                            labels: months,
+                            datasets: [
+                                { label: 'Revenue', data: state.financialData.map(f => f.total_revenue /
+                                        1e6), backgroundColor: colors.blue, borderRadius: 6,
+                                    stack: 'stack1' },
+                                { label: 'COGS', data: state.financialData.map(f => f.total_cost / 1e6),
+                                    backgroundColor: colors.red + '80', borderRadius: 6,
+                                stack: 'stack1' },
+                                { label: 'OPEX', data: state.financialData.map(f => f.opex / 1e6),
+                                    backgroundColor: colors.amber + '99', borderRadius: 6,
+                                stack: 'stack1' },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: colors.text, font: chartFont,
+                                        usePointStyle: true, padding: 16 } } },
+                            scales: {
+                                x: { stacked: true, grid: gridDefaults, ticks: { color: colors.text,
+                                        font: chartFont } },
+                                y: { stacked: true, grid: gridDefaults, ticks: { color: colors.text,
+                                        font: chartFont, callback: v => '$' + v + 'M' } },
+                            },
+                        },
+                    });
+                    createChart('chart-fin-2', {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [{
+                                data: state.financialData.map(f => f.net_margin_pct),
+                                borderColor: colors.green,
+                                backgroundColor: colors.greenLight,
+                                fill: true,
+                                tension: 0.3,
+                                borderWidth: 2.5,
+                                pointRadius: 3,
+                            }],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont } },
+                                y: { grid: gridDefaults, ticks: { color: colors.text, font: chartFont,
+                                        callback: v => v + '%' } },
+                            },
+                        },
+                    });
+                }
+            }
+
+            function getTableData(view) {
+                switch (view) {
+                    case 'executive':
+                        return state.financialData.map(f => ({
+                            Month: f.month,
+                            Revenue: '$' + (f.total_revenue / 1e6).toFixed(2) + 'M',
+                            'Gross Profit': '$' + (f.gross_profit / 1e6).toFixed(2) + 'M',
+                            OPEX: '$' + (f.opex / 1e6).toFixed(2) + 'M',
+                            'Net Profit': '$' + (f.net_profit / 1e6).toFixed(2) + 'M',
+                            'Net Margin': f.net_margin_pct.toFixed(1) + '%',
+                        }));
+                    case 'sales':
+                        return state.salesData.map(s => ({
+                            Month: s.month,
+                            Region: s.region,
+                            Product: s.product,
+                            Revenue: '$' + (s.revenue).toLocaleString(),
+                            Units: s.units,
+                            Cost: '$' + (s.cost).toLocaleString(),
+                            'Margin %': s.margin_pct.toFixed(1) + '%',
+                        }));
+                    case 'operations':
+                        return state.operationsData.map(o => ({
+                            Month: o.month,
+                            'Efficiency %': o.efficiency_rate.toFixed(1),
+                            'Defect %': o.defect_rate.toFixed(2),
+                            'Throughput/day': o.throughput_units_per_day,
+                            'Downtime hrs': o.downtime_hours.toFixed(1),
+                            'Fulfillment %': o.fulfillment_rate.toFixed(1),
+                        }));
+                    case 'financial':
+                        return state.financialData.map(f => ({
+                            Month: f.month,
+                            Revenue: '$' + (f.total_revenue).toLocaleString(),
+                            COGS: '$' + (f.total_cost).toLocaleString(),
+                            'Gross Profit': '$' + (f.gross_profit).toLocaleString(),
+                            OPEX: '$' + (f.opex).toLocaleString(),
+                            'Net Profit': '$' + (f.net_profit).toLocaleString(),
+                            'Net Margin %': f.net_margin_pct.toFixed(1) + '%',
+                        }));
+                    default:
+                        return [];
+                }
+            }
+
+            function renderDataTable(container, view) {
+                let data = getTableData(view);
+                if (state.tableSearch) {
+                    const q = state.tableSearch.toLowerCase();
+                    data = data.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(q)));
+                }
+                if (state.sortColumn) {
+                    const col = state.sortColumn;
+                    data.sort((a, b) => {
+                        let va = String(a[col]).replace(/[$,%M]/g, '');
+                        let vb = String(b[col]).replace(/[$,%M]/g, '');
+                        const na = parseFloat(va);
+                        const nb = parseFloat(vb);
+                        if (!isNaN(na) && !isNaN(nb)) return state.sortDirection === 'asc' ? na - nb : nb -
+                            na;
+                        return state.sortDirection === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+                    });
+                }
+                const totalPages = Math.max(1, Math.ceil(data.length / state.rowsPerPage));
+                const page = Math.min(state.tablePage, totalPages);
+                state.tablePage = page;
+                const start = (page - 1) * state.rowsPerPage;
+                const pageData = data.slice(start, start + state.rowsPerPage);
+
+                if (!data.length) {
+                    container.innerHTML =
+                        '<p style="text-align:center;padding:40px;color:var(--text-muted);">No data to display.</p>';
+                    return;
+                }
+                const columns = Object.keys(data[0] || {});
+                const thead = columns.map(col => `
+                    <th data-column="${col}">${col} ${state.sortColumn === col ? (state.sortDirection === 'asc' ? '▴' : '▾') : '⇅'}</th>
+                `).join('');
+                const tbody = pageData.map(row => `<tr>${columns.map(col => `<td>${row[col] ?? '—'}</td>`).join('')}</tr>`)
+                    .join('');
+                container.innerHTML = `
+                    <div class="table-wrapper"><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;flex-wrap:wrap;gap:8px;">
+                        <span style="font-size:0.8rem;color:var(--text-muted);">${start+1}–${Math.min(start+state.rowsPerPage, data.length)} of ${data.length}</span>
+                        <div class="pagination">
+                            <button ${page <= 1 ? 'disabled' : ''} data-page="prev">← Prev</button>
+                            <span>Page ${page} / ${totalPages}</span>
+                            <button ${page >= totalPages ? 'disabled' : ''} data-page="next">Next →</button>
+                        </div>
+                    </div>`;
+                container.querySelectorAll('th[data-column]').forEach(th => {
+                    th.addEventListener('click', () => {
+                        const col = th.dataset.column;
+                        if (state.sortColumn === col) state.sortDirection = state.sortDirection ===
+                            'asc' ? 'desc' : 'asc';
+                        else { state.sortColumn = col;
+                            state.sortDirection = 'asc'; }
+                        state.tablePage = 1;
+                        renderDataTable(container, view);
+                    });
+                });
+                container.querySelectorAll('.pagination button[data-page]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (btn.disabled) return;
+                        if (btn.dataset.page === 'prev') state.tablePage = Math.max(1, state
+                            .tablePage - 1);
+                        else state.tablePage = Math.min(totalPages, state.tablePage + 1);
+                        renderDataTable(container, view);
+                    });
+                });
+            }
+
+            function getChartCanvasHTML(view) {
+                switch (view) {
+                    case 'executive':
+                        return `
+                            <div class="charts-grid">
+                                <div class="chart-container"><canvas id="chart-exec-1"></canvas></div>
+                                <div class="chart-container"><canvas id="chart-exec-2"></canvas></div>
+                                <div class="chart-full"><canvas id="chart-exec-3"></canvas></div>
+                            </div>`;
+                    case 'sales':
+                        return `
+                            <div class="charts-grid">
+                                <div class="chart-container"><canvas id="chart-sales-1"></canvas></div>
+                                <div class="chart-container"><canvas id="chart-sales-2"></canvas></div>
+                            </div>`;
+                    case 'operations':
+                        return `
+                            <div class="charts-grid">
+                                <div class="chart-container"><canvas id="chart-ops-1"></canvas></div>
+                                <div class="chart-container"><canvas id="chart-ops-2"></canvas></div>
+                            </div>`;
+                    case 'financial':
+                        return `
+                            <div class="charts-grid">
+                                <div class="chart-container"><canvas id="chart-fin-1"></canvas></div>
+                                <div class="chart-container"><canvas id="chart-fin-2"></canvas></div>
+                            </div>`;
+                    default:
+                        return '';
+                }
+            }
+
+            function renderView(view) {
+                state.currentView = view;
+                state.tablePage = 1;
+                state.sortColumn = null;
+                state.tableSearch = '';
+                destroyAllCharts();
+                const container = document.getElementById('mainContent');
+                const chartHTML = getChartCanvasHTML(view);
+                const isDataView = view === 'data-management';
+                const isReportsView = view === 'reports';
+
+                document.querySelectorAll('.sidebar-nav button').forEach(b => b.classList.remove('active'));
+                const activeBtn = document.querySelector(`.sidebar-nav button[data-view="${view}"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+
+                const titles = {
+                    executive: 'Executive Overview',
+                    sales: 'Sales Analytics',
+                    operations: 'Operations Dashboard',
+                    financial: 'Financial Performance',
+                    'data-management': 'Data Management',
+                    reports: 'Reports',
+                };
+                document.getElementById('viewTitle').textContent = titles[view] || 'Dashboard';
+
+                if (isDataView) {
+                    container.innerHTML = `
+                        <div class="panel">
+                            <div class="panel-header"><h3>📁 Data Management & Import</h3></div>
+                            <div class="panel-body">
+                                <p style="color:var(--text-secondary);margin-bottom:14px;">Import CSV files from your ERP, CRM, finance tools, or spreadsheets. All data is stored locally.</p>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                                    <button class="btn btn-primary" id="btnImportCsv2">📥 Import CSV</button>
+                                    <button class="btn btn-outline" id="btnLoadSample">🔄 Reload Sample</button>
+                                    <button class="btn btn-outline" id="btnClearData">🗑 Clear All</button>
+                                </div>
+                                <div id="importedDatasetsInfo" style="font-size:0.82rem;color:var(--text-muted);"></div>
+                                <div style="margin-top:14px;"><div id="dataMgmtTable"></div></div>
+                            </div>
+                        </div>`;
+                    renderDataTable(document.getElementById('dataMgmtTable'), 'sales');
+                    updateImportedDatasetsInfo();
+                    document.getElementById('btnImportCsv2')?.addEventListener('click', openImportModal);
+                    document.getElementById('btnLoadSample')?.addEventListener('click', () => {
+                        generateSampleData();
+                        updateImportedDatasetsInfo();
+                        renderDataTable(document.getElementById('dataMgmtTable'), 'sales');
+                        showToast('success', '✅ Sample data reloaded.');
+                    });
+                    document.getElementById('btnClearData')?.addEventListener('click', () => {
+                        if (confirm('Clear all data?')) {
+                            state.salesData = [];
+                            state.operationsData = [];
+                            state.customerData = [];
+                            state.financialData = [];
+                            state.importedDatasets = {};
+                            updateImportedDatasetsInfo();
+                            renderDataTable(document.getElementById('dataMgmtTable'), 'sales');
+                            showToast('success', '🗑 All data cleared.');
+                        }
+                    });
+                } else if (isReportsView) {
+                    container.innerHTML = `
+                        <div class="kpi-row" id="reportsKPIrow"></div>
+                        <div class="panel">
+                            <div class="panel-header"><h3>📝 Generate Report</h3></div>
+                            <div class="panel-body">
+                                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px;">
+                                    <div><label style="font-size:0.8rem;font-weight:600;">Type</label><br>
+                                        <select id="reportType" style="padding:7px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);">
+                                            <option value="executive">Executive Summary</option>
+                                            <option value="sales">Sales Performance</option>
+                                            <option value="operations">Operational Metrics</option>
+                                            <option value="financial">Financial P&L</option>
+                                        </select></div>
+                                    <div><label style="font-size:0.8rem;font-weight:600;">From</label><br><input type="month" id="reportFrom" value="2024-01" style="padding:7px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);"></div>
+                                    <div><label style="font-size:0.8rem;font-weight:600;">To</label><br><input type="month" id="reportTo" value="2024-12" style="padding:7px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);"></div>
+                                    <button class="btn btn-primary" id="btnGenerateReport">📄 Generate</button>
+                                    <button class="btn btn-outline" id="btnExportReport">📥 Export</button>
+                                </div>
+                                <div id="reportOutput" style="background:var(--surface-alt);border-radius:var(--radius);padding:16px;min-height:100px;font-size:0.85rem;"></div>
+                            </div>
+                        </div>`;
+                    renderKPICards(document.getElementById('reportsKPIrow'), 'executive');
+                    document.getElementById('btnGenerateReport')?.addEventListener('click', generateReport);
+                    document.getElementById('btnExportReport')?.addEventListener('click', exportReportCSV);
+                } else {
+                    container.innerHTML = `
+                        <div class="kpi-row" id="dashboardKPIrow"></div>
+                        <div class="panel">
+                            <div class="panel-header"><h3>📊 Charts & Trends</h3><span style="font-size:0.78rem;color:var(--text-muted);">Last 12 months</span></div>
+                            <div class="panel-body">${chartHTML}</div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header"><h3>📋 Data Table</h3><div class="table-controls"><input type="text" class="search-input" id="tableSearchInput" placeholder="🔍 Search..."></div></div>
+                            <div class="panel-body" id="dataTableContainer"></div>
+                        </div>`;
+                    renderKPICards(document.getElementById('dashboardKPIrow'), view);
+                    renderChartsForView(view);
+                    renderDataTable(document.getElementById('dataTableContainer'), view);
+                    document.getElementById('tableSearchInput')?.addEventListener('input', (e) => {
+                        state.tableSearch = e.target.value;
+                        state.tablePage = 1;
+                        renderDataTable(document.getElementById('dataTableContainer'), view);
+                    });
+                }
+            }
+
+            function updateImportedDatasetsInfo() {
+                const div = document.getElementById('importedDatasetsInfo');
+                if (!div) return;
+                const keys = Object.keys(state.importedDatasets);
+                div.innerHTML = keys.length === 0 ? '<p>No external datasets imported.</p>' :
+                    '<p><strong>Imported:</strong> ' + keys.map(k =>
+                        `<span style="background:var(--primary-light);padding:2px 8px;border-radius:4px;">${k} (${state.importedDatasets[k].length} rows)</span>`
+                    ).join(' ') + '</p>';
+            }
+
+            function generateReport() {
+                const from = document.getElementById('reportFrom')?.value || '2024-01';
+                const to = document.getElementById('reportTo')?.value || '2024-12';
+                const output = document.getElementById('reportOutput');
+                if (!output) return;
+                const finFiltered = state.financialData.filter(f => f.month >= from && f.month <= to);
+                const totalRev = finFiltered.reduce((a, f) => a + f.total_revenue, 0);
+                output.innerHTML = `
+                    <p><strong>Period:</strong> ${from} – ${to}</p>
+                    <table style="margin-top:8px;width:100%;max-width:400px;">
+                        <tr><td>Total Revenue</td><td><strong>$${(totalRev/1e6).toFixed(2)}M</strong></td></tr>
+                        <tr><td>Net Profit</td><td><strong>$${(finFiltered.reduce((a,f)=>a+f.net_profit,0)/1e6).toFixed(2)}M</strong></td></tr>
+                    </table>`;
+                showToast('success', '✅ Report generated.');
+            }
+
+            function exportReportCSV() {
+                const from = document.getElementById('reportFrom')?.value || '2024-01';
+                const to = document.getElementById('reportTo')?.value || '2024-12';
+                const csv = Papa.unparse(state.financialData.filter(f => f.month >= from && f.month <= to));
+                downloadFile(csv, `report_${from}_${to}.csv`, 'text/csv');
+            }
+
+            function openImportModal() {
+                document.getElementById('importModal').style.display = 'flex';
+                document.getElementById('csvPreview').style.display = 'none';
+                document.getElementById('btnConfirmImport').disabled = true;
+                state.pendingImportData = null;
+                document.getElementById('csvFileInput').value = '';
+            }
+
+            function closeImportModal() {
+                document.getElementById('importModal').style.display = 'none';
+            }
+
+            function handleFileSelect(file) {
+                if (!file || !file.name.endsWith('.csv')) {
+                    showToast('error', '❌ Invalid CSV file.');
+                    return;
+                }
+                state.pendingImportFile = file;
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        if (results.data.length === 0) return;
+                        state.pendingImportData = results.data;
+                        const preview = document.getElementById('csvPreview');
+                        preview.style.display = 'block';
+                        const cols = Object.keys(results.data[0]);
+                        preview.innerHTML = `<p><strong>${results.data.length} rows</strong>, ${cols.length} columns</p>
+                            <table style="font-size:0.75rem;"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+                            <tbody>${results.data.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${r[c]??'—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+                        document.getElementById('btnConfirmImport').disabled = false;
+                    },
+                });
+            }
+
+            function confirmImport() {
+                if (!state.pendingImportData) return;
+                const mode = document.getElementById('importMode').value;
+                const fileName = state.pendingImportFile.name.replace('.csv', '');
+                const importedRows = state.pendingImportData;
+                const firstRow = importedRows[0] || {};
+                if (('revenue' in firstRow || 'Revenue' in firstRow) && ('month' in firstRow || 'Month' in
+                        firstRow)) {
+                    const mapped = importedRows.map(r => ({
+                        month: r.month || r.Month || '',
+                        region: r.region || r.Region || 'Unknown',
+                        product: r.product || r.Product || 'Unknown',
+                        revenue: parseFloat(r.revenue || r.Revenue || 0),
+                        units: parseInt(r.units || r.Units || 0),
+                        cost: parseFloat(r.cost || r.Cost || 0),
+                        profit: parseFloat(r.profit || r.Profit || 0),
+                        margin_pct: parseFloat(r.margin_pct || r['Margin %'] || 0),
+                    }));
+                    state.salesData = mode === 'replace' ? mapped : [...state.salesData, ...mapped];
+                    rebuildFinancialData();
+                }
+                state.importedDatasets[fileName] = importedRows;
+                closeImportModal();
+                updateImportedDatasetsInfo();
+                renderView(state.currentView);
+                showToast('success', `✅ Imported ${importedRows.length} rows.`);
+            }
+
+            function rebuildFinancialData() {
+                const map = {};
+                state.salesData.forEach(s => {
+                    if (!s.month) return;
+                    if (!map[s.month]) map[s.month] = { rev: 0, cost: 0 };
+                    map[s.month].rev += s.revenue || 0;
+                    map[s.month].cost += s.cost || 0;
+                });
+                state.financialData = Object.entries(map).sort().map(([month, d]) => {
+                    const gp = d.rev - d.cost;
+                    const opex = Math.round(d.rev * 0.25);
+                    const np = gp - opex;
+                    return { month, total_revenue: d.rev, total_cost: d.cost, gross_profit: gp, opex,
+                        net_profit: np, net_margin_pct: d.rev > 0 ? Math.round((np / d.rev) * 1000) / 10 :
+                            0 };
+                });
+            }
+
+            function exportCurrentData() {
+                const csv = Papa.unparse(getTableData(state.currentView));
+                downloadFile(csv, `export_${state.currentView}.csv`, 'text/csv');
+                showToast('success', '📥 Data exported.');
+            }
+
+            function downloadFile(content, filename, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function showToast(type, message) {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(120%)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            function toggleTheme() {
+                state.theme = state.theme === 'light' ? 'dark' : 'light';
+                document.body.classList.toggle('dark', state.theme === 'dark');
+                localStorage.setItem('opspulse-theme', state.theme);
+                if (!['data-management', 'reports'].includes(state.currentView)) renderChartsForView(state
+                    .currentView);
+            }
+
+            function loadTheme() {
+                if (localStorage.getItem('opspulse-theme') === 'dark') {
+                    state.theme = 'dark';
+                    document.body.classList.add('dark');
+                }
+            }
+
+            function setupEventListeners() {
+                document.querySelectorAll('.sidebar-nav button[data-view]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        renderView(btn.dataset.view);
+                        document.getElementById('sidebar').classList.remove('open');
+                    });
+                });
+                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                document.getElementById('btnImportCsv').addEventListener('click', openImportModal);
+                document.getElementById('btnExportData').addEventListener('click', exportCurrentData);
+                document.getElementById('btnCancelImport').addEventListener('click', closeImportModal);
+                document.getElementById('btnConfirmImport').addEventListener('click', confirmImport);
+                document.getElementById('importModal').addEventListener('click', e => {
+                    if (e.target === e.currentTarget) closeImportModal();
+                });
+                const dropZone = document.getElementById('dropZone');
+                const fileInput = document.getElementById('csvFileInput');
+                dropZone.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFileSelect(e.target
+                        .files[0]); });
+                dropZone.addEventListener('dragover', e => { e.preventDefault();
+                    dropZone.classList.add('drag-over'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+                dropZone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+                    if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+                });
+                const mobileBtn = document.getElementById('mobileMenuBtn');
+                if (window.innerWidth <= 768) mobileBtn.style.display = 'inline-flex';
+                mobileBtn.addEventListener('click', () => document.getElementById('sidebar').classList.toggle(
+                    'open'));
+                window.addEventListener('resize', () => {
+                    mobileBtn.style.display = window.innerWidth <= 768 ? 'inline-flex' : 'none';
+                    if (window.innerWidth > 768) document.getElementById('sidebar').classList.remove(
+                        'open');
+                });
+                document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImportModal(); });
+            }
+
+            function init() {
+                loadTheme();
+                generateSampleData();
+                setupEventListeners();
+                renderView('executive');
+            }
+            init();
+        })();
+    </script>
+</body>
+</html>
