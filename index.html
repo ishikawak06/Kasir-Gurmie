@@ -4,6 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Gurmie Ayam Kasir</title>
 
   <link rel="icon"
@@ -1907,105 +1912,123 @@
       </div>
     </div>
 
-    <div class="page" id="page-transaksi">
+    <div id="page-transaksi" class="page">
       <div class="page-header">
         <div>
-          <div class="page-title">Transaksi POS</div>
+          <h2 class="page-title">Kasir POS</h2>
+          <div class="page-subtitle">Pilih produk untuk ditambahkan ke pesanan</div>
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;width:100%;">
-          <input class="form-control" id="search-product" placeholder="🔍 Cari produk..."
-            style="flex:2;min-width:140px;" oninput="renderKasirProducts()">
-          <select class="form-control" id="filter-cat" onchange="renderKasirProducts()" style="flex:1;min-width:110px;">
+        <div class="filter-bar">
+          <input type="text" id="search-product" class="form-control" placeholder="Cari produk..."
+            onkeyup="renderKasirProducts()" style="width:180px; font-size:12px; padding:6px 10px; min-height:0;">
+          <select id="filter-cat" class="form-control" onchange="renderKasirProducts()"
+            style="width:130px; font-size:12px; padding:6px 10px; min-height:0;">
             <option value="">Semua Kategori</option>
-            <option>Produksi</option>
-            <option>Non-Produksi</option>
-            <option>Penjualan</option>
-            <option>Lainnya</option>
+            <option value="Produksi">Produksi</option>
+            <option value="Penjualan">Penjualan</option>
+            <option value="Non-Produksi">Non-Produksi</option>
+            <option value="Lainnya">Lainnya</option>
           </select>
         </div>
       </div>
-      <div style="margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-        <div class="kasir-filter-tabs">
-          <button class="kasir-tab active" onclick="setKasirTab('semua',this)">Semua</button>
-          <button class="kasir-tab" onclick="setKasirTab('produk',this)">Produk</button>
-          <button class="kasir-tab" onclick="setKasirTab('paket',this)">📦 Paket</button>
-        </div>
-        <button class="btn btn-warning btn-sm" id="btn-hold-orders" style="display:none;" onclick="openHoldModal()">📋
-          Pesanan Ditahan (<span id="hold-count">0</span>)</button>
-      </div>
+
       <div class="kasir-layout">
-        <div id="kasir-product-grid" class="product-grid"></div>
-        <div class="order-panel" id="order-panel">
-          <div class="order-header">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="order-title">🧾 Pesanan</div>
-              <button class="btn btn-sm btn-outline" onclick="clearOrder()">Kosongkan</button>
+        <div>
+          <div class="kasir-filter-tabs" style="margin-bottom: 12px;">
+            <button class="kasir-tab active" onclick="setKasirTab('semua', this)">Semua Produk</button>
+            <button class="kasir-tab" onclick="setKasirTab('paket', this)">Paket / Bundle</button>
+          </div>
+          <div id="kasir-product-grid" class="product-grid">
+          </div>
+        </div>
+
+        <div id="order-panel" class="order-panel">
+          <div class="order-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="order-title">Pesanan Saat Ini</div>
+            <div style="display:flex; gap:5px;">
+              <button class="btn btn-xs btn-outline" onclick="openPelangganModal()">+ Pelanggan</button>
+              <button class="btn btn-xs btn-danger" onclick="clearOrder()">Kosongkan</button>
             </div>
           </div>
-          <div class="order-items" id="order-items-list"></div>
-          <div class="order-footer" id="order-footer-wrap">
-            <div style="font-size:10px;color:var(--gray-400);margin-bottom:4px;" id="order-hpp-info"></div>
-            <div id="order-pelanggan-row"
-              style="display:none;margin-bottom:5px;padding:5px 7px;background:var(--primary-light);border-radius:7px;font-size:11px;display:flex;align-items:center;justify-content:space-between;">
-              <span>👤 <span id="order-pelanggan-nama">-</span> · <span id="order-pelanggan-poin"
-                  style="color:var(--warning);">0 poin</span></span>
+
+          <div id="order-pelanggan-row"
+            style="display:none; align-items:center; justify-content:space-between; padding:8px 12px; background:var(--primary-light); border-bottom:1px solid var(--gray-200);">
+            <div style="font-size:12px; font-weight:600; color:var(--primary-dark);">👤 <span
+                id="order-pelanggan-nama">Nama Pelanggan</span></div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="poin-badge" id="order-pelanggan-poin">⭐ 0 poin</span>
               <button onclick="clearPelangganOrder()"
-                style="border:none;background:none;color:var(--danger);cursor:pointer;font-size:13px;">✕</button>
+                style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:12px; font-weight:bold;">✕</button>
             </div>
-            <div style="display:flex;gap:4px;margin-bottom:5px;align-items:center;">
-              <span style="font-size:10px;color:var(--gray-500);">Label:</span>
-              <input class="form-control" id="order-label" placeholder="Meja / Takeaway..."
-                style="flex:1;padding:4px 7px;font-size:11px;" oninput="renderOrder()">
-            </div>
-            <div class="order-total-row"><span class="order-total-label">Subtotal</span><span class="order-total-val"
-                id="order-total">Rp 0</span></div>
+          </div>
 
-            <div
-              style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; background:var(--gray-50); border-radius:8px; padding:6px;">
-              <span style="font-size:11px; font-weight:600; color:var(--gray-700);">Harga Custom</span>
-              <input class="form-control" id="order-harga-custom" type="number" placeholder="Harga ubah..."
-                style="width:120px; padding:4px 7px; font-size:12px; font-weight:bold; color:var(--primary);"
-                oninput="updateOrderCalc()">
+          <div id="order-items-list" class="order-items">
+          </div>
+
+          <div class="order-footer">
+            <div style="font-size:10px; color:var(--gray-500); margin-bottom:8px; text-align:right;"
+              id="order-hpp-info"></div>
+
+            <div class="order-total-row">
+              <span class="order-total-label">Subtotal Bawaan</span>
+              <span class="order-total-val" style="font-size:14px;" id="order-total">Rp 0</span>
             </div>
 
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-              <span style="font-size:11px;font-weight:600;color:var(--gray-700);">Total Bayar</span>
-              <span style="font-size:16px;font-weight:800;color:var(--gray-900);" id="order-total-final">Rp 0</span>
-            </div>
-            <div class="metode-bayar-btns" id="metode-bayar-btns">
-              <button class="mbtn active" onclick="setMetodeBayar('Tunai',this)">💵 Tunai</button>
-              <button class="mbtn" onclick="setMetodeBayar('Transfer',this)">🏦 Transfer</button>
-              <button class="mbtn" onclick="setMetodeBayar('QRIS',this)">📱 QRIS</button>
-              <button class="mbtn" onclick="setMetodeBayar('Debit',this)">💳 Debit</button>
+            <div class="form-group"
+              style="margin-bottom:8px; padding:6px; background:var(--gray-50); border-radius:8px;">
+              <label class="form-label" style="font-size:11px; color:var(--purple); font-weight:700;">Harga Custom /
+                Nego (Opsional)</label>
+              <input type="number" id="order-harga-custom" class="form-control"
+                style="font-size:13px; font-weight:600; color:var(--purple);"
+                placeholder="Ketik nominal akhir di sini..." oninput="updateOrderCalc()">
             </div>
 
-            <div id="nominal-bayar-wrap">
-              <div style="display:flex; gap:5px; margin-bottom:4px;">
-                <input class="form-control" id="order-nominal" type="number" min="0" placeholder="Nominal diterima (Rp)"
-                  style="padding:5px 8px;font-size:12px;flex:1;" oninput="updateKembalian()">
-                <button class="btn btn-outline"
-                  style="padding:5px 10px; font-size:11px; font-weight:600; border-color:var(--success); color:var(--success);"
-                  onclick="setUangPas()">Uang Pas</button>
+            <div class="order-total-row"
+              style="margin-bottom:12px; border-top:1px dashed var(--gray-300); padding-top:8px;">
+              <span class="order-total-label" style="color:var(--gray-900); font-weight:700;">Total Tagihan Akhir</span>
+              <span class="order-total-val" style="color:var(--primary);" id="order-total-final">Rp 0</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px;">
+              <input type="text" id="order-catatan" class="form-control" style="font-size:11px; padding:7px 9px;"
+                placeholder="Catatan pesanan...">
+              <input type="text" id="order-label" class="form-control" style="font-size:11px; padding:7px 9px;"
+                placeholder="Label (ex: Meja 4)">
+            </div>
+
+            <div class="form-label" style="font-size:11px; margin-bottom:4px;">Metode Pembayaran</div>
+            <div class="metode-bayar-btns">
+              <button class="mbtn active" onclick="setMetodeBayar('Tunai', this)">Tunai</button>
+              <button class="mbtn" onclick="setMetodeBayar('Transfer', this)">Transfer</button>
+              <button class="mbtn" onclick="setMetodeBayar('QRIS', this)">QRIS</button>
+              <button class="mbtn" onclick="setMetodeBayar('Debit', this)">Debit</button>
+            </div>
+
+            <div id="nominal-bayar-wrap" style="margin-top:10px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <label class="form-label" style="margin:0;">Nominal Diterima (Rp)</label>
+                <button class="btn btn-xs btn-success" onclick="setUangPas()"
+                  style="padding:4px 8px; font-size:10px; border-radius:6px;">💵 Uang Pas</button>
               </div>
-              <div class="kembalian-row"><span style="font-size:11px;color:var(--gray-500);">Kembalian</span><span
-                  class="kembalian-val" id="order-kembalian">Rp 0</span></div>
+              <input type="number" id="order-nominal" class="form-control" style="font-size:14px; font-weight:600;"
+                placeholder="0" oninput="updateKembalian()">
             </div>
 
-            <input class="form-control" id="order-catatan" placeholder="Catatan transaksi (opsional)"
-              style="padding:4px 8px;font-size:11px;margin-bottom:6px;">
-            <div style="display:flex;gap:5px;margin-bottom:5px;">
-              <button class="btn btn-warning btn-sm" onclick="holdOrder()" id="btn-hold" style="flex:1;" disabled>⏸
-                Tahan</button>
-              <button class="btn btn-outline btn-sm" onclick="openPelangganModal()" style="flex:1;">👤
-                Pelanggan</button>
+            <div class="kembalian-row" style="margin-bottom:12px;">
+              <span style="font-size:12px; font-weight:600; color:var(--gray-700);">Kembalian</span>
+              <span id="order-kembalian" class="kembalian-val">Rp 0</span>
             </div>
-            <button class="btn btn-success btn-full" onclick="bayar()" id="btn-bayar" disabled>✅ Bayar /
-              Selesaikan</button>
+
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline"
+                style="flex:1; justify-content:center; color:var(--warning); border-color:var(--warning-light); font-size:12px;"
+                onclick="holdOrder()">Tahan</button>
+              <button id="btn-bayar" class="btn btn-success" style="flex:2.5;" onclick="bayar()" disabled>BAYAR</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
     <div class="page" id="page-produk">
       <div class="page-header">
         <div class="page-title">Manajemen Produk & Paket</div>
@@ -3838,6 +3861,9 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
+      // Menambahkan perintah ini agar aplikasi langsung membuka halaman Dashboard (Bypass Login)
+      showPage('dashboard');
+
       renderDashboard();
       renderProductTable();
       renderBundleTable();
