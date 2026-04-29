@@ -3374,8 +3374,15 @@
       const tbody = document.getElementById('lap-pjl-table');
       tbody.innerHTML = filt.length ? [...filt].reverse().map((t, i) => `<tr><td>${filt.length - i}</td><td style="white-space:nowrap;font-size:11px;">${fmtDate(t.tanggal)}</td><td style="font-size:10px;color:var(--gray-400);">#${t.id.toUpperCase().slice(-6)}</td><td style="font-size:10px;">${t.items.map(i => i.nama + '(' + i.qty + ')').join(', ')}</td><td>${t.items.reduce((s, i) => s + i.qty, 0)}</td><td style="font-weight:600;color:var(--primary);">${rp(t.total)}</td><td style="font-size:10px;color:var(--gray-500);">${rp(t.totalHPP || 0)}</td><td style="font-size:10px;color:var(--success);font-weight:600;">${rp(t.laba || 0)}</td><td><span class="badge ${t.metodeBayar === 'QRIS' ? 'badge-teal' : t.metodeBayar === 'Transfer' ? 'badge-blue' : t.metodeBayar === 'Debit' ? 'badge-purple' : 'badge-green'}">${t.metodeBayar || 'Tunai'}</span></td><td style="font-size:10px;color:var(--gray-500);">${t.catatan || '-'}</td><td style="white-space:nowrap;"><button class="btn btn-xs btn-danger" onclick="hapusTrx('${t.id}')">🗑️</button></td></tr>`).join('') : `<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--gray-400);">Tidak ada transaksi</td></tr>`;
     }
-    async function hapusTrx(id) { if (!confirm('Hapus transaksi ini?')) return; await preActionSync(); transactions = transactions.filter(t => t.id !== id); saveTrx(); renderLapPenjualan(); renderDashboard(); toast('Transaksi dihapus ✓', 'success'); autoSyncIfEnabled(); }
-
+    async function hapusTrx(id) {
+      if (!confirm('Hapus transaksi ini?')) return;
+      transactions = transactions.filter(t => t.id !== id);
+      saveTrx();
+      renderLapPenjualan();
+      renderDashboard();
+      toast('Transaksi dihapus ✓', 'success');
+      autoSyncIfEnabled();
+    }
     // PEMBELIAN MULTI-ITEM
     function addBeliRow() {
       const container = document.getElementById('beli-items-container');
